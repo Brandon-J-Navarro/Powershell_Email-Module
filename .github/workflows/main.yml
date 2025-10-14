@@ -39,7 +39,7 @@ jobs:
       # Replace SolutionName.sln
       - name: Build project
         run: |
-          msbuild EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
+          msbuild .\EmailLibrary\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
 
       - name: Create release directory
         run: mkdir release
@@ -55,7 +55,7 @@ jobs:
           # Copy-Item -Path ".\bin\Release\MimeKit.dll" -Destination ".\release\"
       - name: Copy build output to release directory
         run: |
-          Get-ChildItem -path ".\bin\Release\" -Recuse -Exclude "*.pdb" | ForEach-Object {
+          Get-ChildItem -path ".\EmailLibrary\bin\Release\" -Recuse -Exclude "*.pdb" | ForEach-Object {
             Try {
                 Copy-Item $_ -Destination ".\release\"
             } Catch {
