@@ -12,7 +12,7 @@
 RootModule = 'EmailModule.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0'
+ModuleVersion = 'v0.0.4'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Windows PowerShell','PowerShell Core')
@@ -93,8 +93,8 @@ FileList = @(
     'EmailModule.psm1',
     'BouncyCastle.Cryptography.dll',
     'BouncyCastle.Cryptography.xml',
-    'EmailLibary.dll',
-    'EmailLibary.dll.config',
+    'EmailLibrary.dll',
+    'EmailLibrary.dll.config',
     'MailKit.dll',
     'MailKit.dll.config',
     'MailKit.xml',
