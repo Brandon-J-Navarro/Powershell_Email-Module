@@ -1,27 +1,99 @@
-name: Create release
+name: Build, Package, and Release .NET Framework 4.7.2
 
-on: 
-  pull_request:
-    types: [closed]
-    branches: [ main ]
+on:
+  # pull_request:
+  #   types: [closed]
+  #   branches: [ main ] # Or your main branch name
+  workflow_dispatch:  # Allows manual triggering
 
 permissions:
   contents: write
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Use a Windows runner for .NET Framework
+    runs-on: windows-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Bump version and push tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.TOKEN }}
+
+      - name: Setup MSBuild path
+        uses: microsoft/setup-msbuild@v2.0.0
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+        with:
+          nuget-version: 'latest'
+
+      # Replace SolutionName.sln with your actual solution file
+      - name: Restore NuGet packages
+        run: nuget restore EmailLibrary.sln
+
+      # Replace SolutionName.sln
+      - name: Build project
+        run: |
+          msbuild EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
+
+      - name: Create release directory
+        run: mkdir release
+
+      # Replace with the path to your compiled executable(s)
+      # This example assumes the executable is in bin\Release
+      # Copy the config file
+      # You can copy other files like DLLs, resources, etc.
+          # Copy-Item -Path ".\bin\Release\EmailLibrary.dll" -Destination ".\release\"
+          # Copy-Item -Path ".\bin\Release\EmailLibrary.dll.config" -Destination ".\release\"
+          # Copy-Item -Path ".\bin\Release\MailKit.dll" -Destination ".\release\"
+          # Copy-Item -Path ".\bin\Release\MailKit.dll.config" -Destination ".\release\"
+          # Copy-Item -Path ".\bin\Release\MimeKit.dll" -Destination ".\release\"
+      - name: Copy build output to release directory
+        run: |
+          Get-ChildItem -path ".\bin\Release\" -Recuse -Exclude "*.pdb" | ForEach-Object {
+            Try {
+                Copy-Item $_ -Destination ".\release\"
+            } Catch {
+                Write-Warning "Could not load assembly: $_"
+            }
+          }
+
+      - name: Zip the release directory
+        run: Compress-Archive -Path ".\release\*" -DestinationPath "release.zip"
+
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1.20.0
         with:
-          artifacts: EmailModule.zip
+          artifacts: release.zip
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
+
+
+      # - name: Create Release
+      #   uses: actions/create-release@v1
+      #   id: create_release
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: v${{ github.run_number }} # Use run number as a simple version
+      #     release_name: Release v${{ github.run_number }}
+      #     body: |
+      #       Automated release of .NET Framework 4.7.2 application.
+      #     draft: false
+      #     prerelease: false
+
+      # - name: Upload Release Asset
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ./release.zip
+      #     asset_name: release.zip
+      #     asset_content_type: application/zip
