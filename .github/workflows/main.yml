@@ -55,7 +55,7 @@ jobs:
           # Copy-Item -Path ".\bin\Release\MimeKit.dll" -Destination ".\release\"
       - name: Copy build output to release directory
         run: |
-          Get-ChildItem -path ".\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
+          Get-ChildItem -path ".\EmailLibrary\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
             Try {
                 Copy-Item $_ -Destination ".\release\"
             } Catch {
