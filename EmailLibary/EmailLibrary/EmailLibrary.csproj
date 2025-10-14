@@ -7,8 +7,8 @@
     <ProjectGuid>{4A38D1AE-A46F-4C08-9124-72AE902F12F5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EmailLibary</RootNamespace>
-    <AssemblyName>EmailLibary</AssemblyName>
+    <RootNamespace>EmailLibrary</RootNamespace>
+    <AssemblyName>EmailLibrary</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
