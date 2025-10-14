@@ -34,7 +34,7 @@ jobs:
 
       # Replace SolutionName.sln with your actual solution file
       - name: Restore NuGet packages
-        run: nuget restore EmailLibrary.sln
+        run: nuget restore .\EmailLibrary\EmailLibrary.sln
 
       # Replace SolutionName.sln
       - name: Build project
