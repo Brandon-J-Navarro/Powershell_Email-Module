@@ -6,8 +6,8 @@ if ($PSEdition -eq 'Core') {
             Write-Warning "Could not load assembly: $_"
         }
     }
-} else { 
-    Get-ChildItem -Path $PSScriptRoot\Lib\Desktop\ -Filter *.dll -Exclude 'System.Formats.Asn1.dll' | ForEach-Object {
+} else {
+    Get-ChildItem -Path $PSScriptRoot\Lib\Desktop\ -Exclude 'System.Formats.Asn1.dll' | where-object Extension -EQ '.dll' | ForEach-Object {
         Try {
             Add-Type -Path $_.FullName -ErrorAction Stop
         } Catch {
