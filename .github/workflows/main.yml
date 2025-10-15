@@ -61,10 +61,10 @@ jobs:
             RootModule = 'EmailModule.psm1'
 
             # Version number of this module.
-            ModuleVersion = '${{ steps.tag_version.outputs.new_tag }}'
+            ModuleVersion = ${{ steps.tag_version.outputs.new_tag }}
 
             # Supported PSEditions
-            CompatiblePSEditions = @('Windows PowerShell','PowerShell Core')
+            CompatiblePSEditions = @('Desktop','Core')
 
             # ID used to uniquely identify this module
             GUID = '6f8c4c8a-6e0d-4139-836c-f798b30ada92'
@@ -82,10 +82,10 @@ jobs:
             Description = 'Powershell Module to send Email using MailKit, MimeKit and STARTTLS'
 
             # Minimum version of the PowerShell engine required by this module
-            PowerShellVersion = 'Windows PowerShell 5.1'
+            PowerShellVersion = '5.1'
 
             # Minimum version of Microsoft .NET Framework required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-            DotNetFrameworkVersion = '.NET Framework 4.7.2'
+            DotNetFrameworkVersion = '4.7.2'
 
             # Processor architecture (None, X86, Amd64) required by this module
             ProcessorArchitecture = 'Amd64'
