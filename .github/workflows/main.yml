@@ -22,46 +22,51 @@ jobs:
         with:
           github_token: ${{ secrets.TOKEN }}
 
-      - name: Setup MSBuild path
-        uses: microsoft/setup-msbuild@v2.0.0
+      # - name: Setup MSBuild path
+      #   uses: microsoft/setup-msbuild@v2.0.0
 
-      - name: Setup NuGet
-        uses: nuget/setup-nuget@v2
-        with:
-          nuget-version: 'latest'
+      # - name: Setup NuGet
+      #   uses: nuget/setup-nuget@v2
+      #   with:
+      #     nuget-version: 'latest'
 
-      - name: Restore NuGet packages
-        run: nuget restore .\EmailLibraryDesktop\EmailLibrary.sln
+      # - name: Restore NuGet packages
+      #   run: nuget restore .\EmailLibraryDesktop\EmailLibrary.sln
 
-      - name: Build project
-        run: |
-          msbuild .\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
+      # - name: Build project
+      #   run: |
+      #     msbuild .\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
 
-      - name: Create directories
-        run: |
-          mkdir release
-          mkdir .\release\lib
-          mkdir .\release\lib\Core
-          mkdir .\release\lib\Desktop
+      # - name: Create directories
+      #   run: |
+      #     mkdir release
+      #     mkdir .\release\lib
+      #     mkdir .\release\lib\Core
+      #     mkdir .\release\lib\Desktop
 
-      - name: Copy build output to library directory
-        run: |
-          $files = @()
-          Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse | Where-Object Extension -EQ '.dll' | ForEach-Object {
-            Try {
-              Get-FileHash $_ -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
-              Copy-Item $_ -Destination ".\release\lib\Desktop\"
-              $files += $_.Name
-            } Catch {
-              Write-Warning "Could not load assembly: $_"
-            }
-          }
+      # - name: Copy build output to library directory
+      #   run: |
+      #     $files = @()
+      #     Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse | Where-Object Extension -EQ '.dll' | ForEach-Object {
+      #       Try {
+      #         Get-FileHash $_ -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
+      #         Copy-Item $_ -Destination ".\release\lib\Desktop\"
+      #         $files += $_.Name
+      #       } Catch {
+      #         Write-Warning "Could not load assembly: $_"
+      #       }
+      #     }
+
 
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v5.0.0
         with:
           dotnet-version: "8.0.x"
 
+      - name: Create directories
+        run: |
+          write-host (Get-Location)
+          
       - name: Install dependencies
         run: dotnet restore .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
 
