@@ -12,7 +12,7 @@
 RootModule = 'EmailModule.psm1'
 
 # Version number of this module.
-ModuleVersion = 'v0.0.4'
+ModuleVersion = 'v0.0.5'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Windows PowerShell','PowerShell Core')
