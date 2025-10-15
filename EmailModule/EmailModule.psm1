@@ -1,3 +1,4 @@
+. $PSScriptRoot\EmailModule.Libraries.ps1
 function Send-Email {
     param (
         [string]$AuthUser,
