@@ -55,14 +55,15 @@ jobs:
 
       - name: Generate Powershell Manifest
         run: |
+          $version = ${{ steps.tag_version.outputs.new_tag }}
+          $version = $version  -replace 'v', ''
           $moduleSettings = @{
             Path = '.\EmailLibrary\EmailModule\EmailModule.psd1'
             # Script module or binary module file associated with this manifest.
             RootModule = 'EmailModule.psm1'
 
             # Version number of this module.
-            ModuleVersion = ${{ steps.tag_version.outputs.new_tag }}
-
+            ModuleVersion = $version
             # Supported PSEditions
             CompatiblePSEditions = @('Desktop','Core')
 
