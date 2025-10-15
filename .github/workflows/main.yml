@@ -47,14 +47,10 @@ jobs:
       - name: Copy .NET Framework build output to lib Desktop directory
         run: |
           $files = @()
-          Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse | Where-Object Extension -EQ '.dll' | ForEach-Object {
-            Try {
-              Get-FileHash $_ -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
-              Copy-Item $_ -Destination ".\release\lib\Desktop\"
-              $files += $_.Name
-            } Catch {
-              Write-Warning "Could not load assembly: $_"
-            }
+          Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
+            Get-FileHash $_ -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
+            Copy-Item $_ -Destination ".\release\lib\Desktop\"
+            $files += $_.Name
           }
 
       - name: Setup .NET Core SDK
@@ -72,6 +68,14 @@ jobs:
         run: dotnet publish .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
         env:
             PublishRelease: true
+
+      - name: Copy .NET Core publish output to lib Core directory
+        run: |
+          Get-ChildItem -path ".\publish\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
+            Get-FileHash $_ -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
+            Copy-Item $_ -Destination ".\release\lib\Core\"
+            $files += $_.Name
+          }
 
       - name: Generate Powershell Manifest
         run: |
@@ -112,7 +116,7 @@ jobs:
             ProcessorArchitecture = 'Amd64'
 
             # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-            ScriptsToProcess = @()
+            ScriptsToProcess = @(EmailModule.Libraries.ps1)
 
             # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
             FunctionsToExport = 'Send-Email'
@@ -173,7 +177,6 @@ jobs:
       - name: Zip the release directory
         run: |
           Compress-Archive -Path ".\release\*" -DestinationPath "EmailModule.zip"
-          Get-ChildItem -Recurse | Select-Object FullName | Out-File -FilePath ".\Files.txt"
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1.20.0
