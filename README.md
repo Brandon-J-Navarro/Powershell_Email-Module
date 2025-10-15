@@ -5,34 +5,6 @@ Powershell Module to send Email using MailKit, MimeKit and STARTTLS
 ### About
 Originally I wrote this in .NET 8 but in order to have it available and work on a wider range of windows machines ( Servers, VMs, Desktops, etc. ) I recompiled it in .NET Framework 4.7.2, allowing it to be ran with Windows Powershell and Powershell Core. I can also put out the .NET 8 Version out, needs to be tested for use with other operating systems outside of windows.
 
-```
-dotnet nuget verify '$env:USERPROFILE\Documents\Github\Powershell_Email-Module\EmailLibrary\packages\MailKit.4.14.1\MailKit.4.14.1.nupkg'
-Verifying MailKit.4.14.1
-
-Signature type: Repository
-  Subject Name: CN=NuGet.org Repository by Microsoft, O=NuGet.org Repository by Microsoft, L=Redmond, S=Washington, C=US
-  SHA256 hash: 1F4B311D9ACC115C8DC8018B5A49E00FCE6DA8E2855F9F014CA6F34570BC482D
-  Valid from: 2/22/2024 7:00:00 PM to 5/18/2027 7:59:59 PM
-```
-
-```
-dotnet nuget verify '$env:USERPROFILE\Documents\Github\Powershell_Email-Module\EmailLibrary\packages\MimeKit.4.14.0\MimeKit.4.14.0.nupkg'
-Verifying MimeKit.4.14.0
-
-Signature type: Repository
-  Subject Name: CN=NuGet.org Repository by Microsoft, O=NuGet.org Repository by Microsoft, L=Redmond, S=Washington, C=US
-  SHA256 hash: 1F4B311D9ACC115C8DC8018B5A49E00FCE6DA8E2855F9F014CA6F34570BC482D
-  Valid from: 2/22/2024 7:00:00 PM to 5/18/2027 7:59:59 PM
-```
-
-```powershell
-Get-FileHash -LiteralPath "$env:USERPROFILE\Documents\Github\Powershell_Email-Module\EmailLibrary\EmailLibrary\bin\Release\EmailLibrary.dll" -Algorithm SHA256 | fl *
-
-Algorithm : SHA256
-Hash      : D9AB6EEF0E0B0BA6489275699BC49196375C7B3FB16C971E2E9162A559D1262D
-Path      : $env:USERPROFILE\Documents\Github\Powershell_Email-Module\EmailLibrary\EmailLibrary\bin\Release\EmailLibrary.dll
-```
-
 - Compatible PSEditions: Windows PowerShell', 'PowerShell Core'
 - Minimum Powershell version: 'Windows PowerShell 5.1'
 - DotNet FrameworkV ersion: '.NET Framework 4.7.2'
@@ -46,7 +18,7 @@ Path      : $env:USERPROFILE\Documents\Github\Powershell_Email-Module\EmailLibra
 
 
 ```powershell
-Import-Module "$env:USERPROFILE\Documents\Github\Powershell_Email-Module\EmailLibrary\EmailModule\EmailModule.psm1"
+Import-Module "PATH\TO\EmailModule.psm1"
 ```
 
 ```powershell
