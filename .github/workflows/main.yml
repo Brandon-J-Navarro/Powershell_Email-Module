@@ -66,7 +66,7 @@ jobs:
         run: dotnet restore .\EmailLibraryDesktop\EmailLibrary\EmailLibrary.csproj
 
       - name: Build project
-        run: dotnet build --source .\EmailLibraryCore\EmailLibrary--configuration Release --no-restore
+        run: dotnet build --source .\EmailLibraryCore\EmailLibrary --configuration Release --no-restore
 
       - name: Publish project
         run: dotnet publish .\EmailLibraryDesktop\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
