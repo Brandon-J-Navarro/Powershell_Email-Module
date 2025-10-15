@@ -46,11 +46,9 @@ jobs:
 
       - name: Copy .NET Framework build output to lib Desktop directory
         run: |
-          $files = @()
           Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
             Get-FileHash $_ -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
             Copy-Item $_ -Destination ".\release\lib\Desktop\"
-            $files += $_.Name
           }
 
       - name: Setup .NET Core SDK
@@ -74,11 +72,14 @@ jobs:
           Get-ChildItem -path ".\publish\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
             Get-FileHash $_ -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
             Copy-Item $_ -Destination ".\release\lib\Core\"
-            $files += $_.Name
           }
 
       - name: Generate Powershell Manifest
         run: |
+          $files = @('.\EmailModule.psd1','.\EmailModule.psm1')
+          Get-ChildItem -Path ".\release\" -Recurse | ForEach-Object { 
+              $files += $_.FullName.ToString().Replace('D:\a\Powershell_Email-Module\Powershell_Email-Module\release','.') 
+          }
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $moduleSettings = @{
