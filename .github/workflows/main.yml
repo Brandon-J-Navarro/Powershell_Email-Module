@@ -31,34 +31,54 @@ jobs:
           nuget-version: 'latest'
 
       - name: Restore NuGet packages
-        run: nuget restore .\EmailLibrary\EmailLibrary.sln
+        run: nuget restore .\EmailLibraryDesktop\EmailLibrary.sln
 
       - name: Build project
         run: |
-          msbuild .\EmailLibrary\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
+          msbuild .\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
 
-      - name: Create release directory
-        run: mkdir release
-
-      - name: Create library directory
-        run: mkdir .\release\library
+      - name: Create directories
+        run: |
+          mkdir release
+          mkdir .\release\lib
+          mkdir .\release\lib\Core
+          mkdir .\release\lib\Desktop
 
       - name: Copy build output to library directory
         run: |
-          Get-ChildItem -path ".\EmailLibrary\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
+          $files = @()
+          Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse | Where-Object Extension -EQ '.dll' | ForEach-Object {
             Try {
-                Copy-Item $_ -Destination ".\release\library\"
+              Get-FileHash $_ -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
+              Copy-Item $_ -Destination ".\release\lib\Desktop\"
+              $files += $_.Name
             } Catch {
-                Write-Warning "Could not load assembly: $_"
+              Write-Warning "Could not load assembly: $_"
             }
           }
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v5.0.0
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Install dependencies
+        run: dotnet restore .\EmailLibraryDesktop\EmailLibrary\EmailLibrary.csproj
+
+      - name: Build project
+        run: dotnet build --source .\EmailLibraryCore\EmailLibrary--configuration Release --no-restore
+
+      - name: Publish project
+        run: dotnet publish .\EmailLibraryDesktop\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
+        env:
+            PublishRelease: true
 
       - name: Generate Powershell Manifest
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $moduleSettings = @{
-            Path = '.\EmailLibrary\EmailModule\EmailModule.psd1'
+            Path = '.\EmailModule\EmailModule.psd1'
             # Script module or binary module file associated with this manifest.
             RootModule = 'EmailModule.psm1'
 
@@ -91,6 +111,9 @@ jobs:
             # Processor architecture (None, X86, Amd64) required by this module
             ProcessorArchitecture = 'Amd64'
 
+            # Script files (.ps1) that are run in the caller's environment prior to importing this module.
+            ScriptsToProcess = @()
+
             # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
             FunctionsToExport = 'Send-Email'
 
@@ -107,57 +130,59 @@ jobs:
             ModuleList = 'EmailModule.psm1'
 
             # List of all files packaged with this module
-            FileList = @(
-                'EmailLib',
-                'EmailModule.psd1',
-                'EmailModule.psm1',
-                'BouncyCastle.Cryptography.dll',
-                'BouncyCastle.Cryptography.xml',
-                'EmailLibrary.dll',
-                'EmailLibrary.dll.config',
-                'MailKit.dll',
-                'MailKit.dll.config',
-                'MailKit.xml',
-                'MimeKit.dll',
-                'MimeKit.xml',
-                'System.Buffers.dll',
-                'System.Buffers.xml',
-                'System.Formats.Asn1.dll',
-                'System.Formats.Asn1.xml',
-                'System.Memory.dll',
-                'System.Memory.xml',
-                'System.Numerics.Vectors.dll',
-                'System.Numerics.Vectors.xml',
-                'System.Runtime.CompilerServices.Unsafe.dll',
-                'System.Runtime.CompilerServices.Unsafe.xml',
-                'System.Threading.Tasks.Extensions.dll',
-                'System.Threading.Tasks.Extensions.xml',
-                'System.ValueTuple.dll',
-                'System.ValueTuple.xml'
-            )
+            FileList = $files
+
+            # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
+            PrivateData = @{
+              PSData = @{
+                # Tags applied to this module. These help with module discovery in online galleries.
+                Tags = @('Desktop','Core','Email','StartTLS')
+
+                # A URL to the license for this module.
+                LicenseUri = 'https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/LICENSE'
+
+                # A URL to the main website for this project.
+                ProjectUri = 'https://github.com/Brandon-J-Navarro/Powershell_Email-Module'
+
+                # A URL to an icon representing this module.
+                # IconUri = ''
+
+                # ReleaseNotes of this module
+                # ReleaseNotes = ''
+
+                # Prerelease string of this module
+                # Prerelease = ''
+
+                # Flag to indicate whether the module requires explicit user acceptance for install/update/save
+                # RequireLicenseAcceptance = $false
+
+                # External dependent modules of this module
+                # ExternalModuleDependencies = @()
+              } # End of PSData hashtable
+            } # End of PrivateData hashtable
           }
           New-ModuleManifest @moduleSettings
 
       - name: Copy powershell module to release directory
         run: |
-          Copy-Item -Path ".\EmailLibrary\EmailModule\EmailModule.psd1" -Destination ".\release\"
-          Copy-Item -Path ".\EmailLibrary\EmailModule\EmailModule.psm1" -Destination ".\release\"
-
-      - name: Get File Hashes
-        run: |
-          Get-ChildItem -path ".\EmailLibrary\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
-            Get-FileHash $_ -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
-          }
-          Get-FileHash -Path ".\EmailLibrary\EmailModule\EmailModule.psm1" -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
-          Get-FileHash -Path ".\EmailLibrary\EmailModule\EmailModule.psd1" -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
+          Get-FileHash -Path ".\EmailModule\EmailModule.psd1" -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
+          Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\release\"
+          Get-FileHash -Path ".\EmailModule\EmailModule.psm1" -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
+          Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\"
 
       - name: Zip the release directory
-        run: Compress-Archive -Path ".\release\*" -DestinationPath "EmailModule.zip"
+        run: |
+          Compress-Archive -Path ".\release\*" -DestinationPath "EmailModule.zip"
+          Get-ChildItem -Recurse | Select-Object FullName | Out-File -FilePath ".\Files.txt"
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1.20.0
         with:
-          artifacts: EmailModule.zip,Hashes.txt
+          artifacts: EmailModule.zip,Hashes.txt,Files.txt
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
+
+      # - name: Publish module to PowerShell Gallery
+      #   run: |
+      #     Publish-Module -Path ./YourModuleName -NugetApiKey '${{ secrets.PS_GALLERY_API_KEY }}' -Force # Adjust path to your module directory

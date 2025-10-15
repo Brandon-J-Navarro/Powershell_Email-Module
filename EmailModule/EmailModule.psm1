@@ -1,12 +1,3 @@
-# Load the DLLs
-Get-ChildItem -Path $PSScriptRoot -Filter *.dll -Exclude 'System.Formats.Asn1.dll' -Recurse | ForEach-Object {
-    Try {
-        Add-Type -Path $_.FullName -ErrorAction Stop
-    } Catch {
-        Write-Warning "Could not load assembly: $_"
-    }
-}
-
 function Send-Email {
     param (
         [string]$AuthUser,
