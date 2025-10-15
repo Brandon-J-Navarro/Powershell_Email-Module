@@ -63,13 +63,13 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Install dependencies
-        run: dotnet restore .\EmailLibraryDesktop\EmailLibrary\EmailLibrary.csproj
+        run: dotnet restore .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
 
       - name: Build project
-        run: dotnet build --source .\EmailLibraryCore\EmailLibrary.sln --configuration Release --no-restore
+        run: dotnet build --source .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore
 
       - name: Publish project
-        run: dotnet publish .\EmailLibraryDesktop\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
+        run: dotnet publish .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
         env:
             PublishRelease: true
 
