@@ -55,7 +55,7 @@ jobs:
 
       - name: Generate Powershell Manifest
         run: |
-          $version = ${{ steps.tag_version.outputs.new_tag }}
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $moduleSettings = @{
             Path = '.\EmailLibrary\EmailModule\EmailModule.psd1'
