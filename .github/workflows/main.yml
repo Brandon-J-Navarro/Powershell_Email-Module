@@ -60,9 +60,11 @@ jobs:
 
       - name: Get File Hashes
         run: |
-          Get-ChildItem -path ".\release" -Recurse | ForEach-Object {
-            Get-FileHash $_ -Algorithm SHA256  | Out-File -FilePath ".\Hashes.txt" -Append
+          Get-ChildItem -path ".\EmailLibrary\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
+            Get-FileHash $_ -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
           }
+          Get-FileHash -Path ".\EmailLibrary\EmailModule\EmailModule.psm1" -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
+          Get-FileHash -Path ".\EmailLibrary\EmailModule\EmailModule.psd1" -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
 
       - name: Zip the release directory
         run: Compress-Archive -Path ".\release\*" -DestinationPath "EmailModule.zip"
