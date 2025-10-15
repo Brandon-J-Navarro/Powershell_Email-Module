@@ -61,7 +61,7 @@ jobs:
             RootModule = 'EmailModule.psm1'
 
             # Version number of this module.
-            ModuleVersion = ${{ steps.tag_version.outputs.new_tag }}
+            ModuleVersion = '${{ steps.tag_version.outputs.new_tag }}'
 
             # Supported PSEditions
             CompatiblePSEditions = @('Windows PowerShell','PowerShell Core')
