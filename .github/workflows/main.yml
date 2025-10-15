@@ -65,13 +65,13 @@ jobs:
 
       - name: Create directories
         run: |
-          write-host (Get-Location)
+          Get-ChildItem -Recurse
           
       - name: Install dependencies
         run: dotnet restore .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
-
+          
       - name: Build project
-        run: dotnet build --source .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore
+        run: dotnet build .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore
 
       - name: Publish project
         run: dotnet publish .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
