@@ -185,36 +185,10 @@ jobs:
           </package>
           '@ | Out-File -FilePath ".\release\EmailModule.nuspec"
 
-      - name: Publish NuGet Package
-        run: |
-          $version = '${{ steps.tag_version.outputs.new_tag }}'
-          $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working*", ''
-          Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\"
-
       - name: Package Module to artifacts
         run: |
             New-Item -ItemType Directory -Path 'artifact' | Out-Null;
             Copy-Item -Recurse -Force .\release\* .\artifact\
-
-      - name: Build NuGet Package
-        run: |
-          Get-ChildItem -path "." -Recurse
-          dotnet pack .\release\EmailModule.nuspec --configuration Release -v detailed
-
-      - name: Publish NuGet Package
-        run: |
-          $version = '${{ steps.tag_version.outputs.new_tag }}'
-          $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working*", ''
-          Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\"
-
-      - name: Package Module to artifacts
-        run: |
-            Copy-Item -Recurse -Force .\release\* .\artifact\
-            Get-ChildItem -path ".\release\" -Recurse -File | ForEach-Object {
-              Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256 | FL | Out-File -FilePath ".\artifact\Hashes.txt" -Append
-            }
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4.6.2
@@ -222,6 +196,32 @@ jobs:
           name: EmailModule
           path: artifact/
           if-no-files-found: error
+
+      - name: Build NuGet Package
+        run: |
+          Get-ChildItem -path "." -Recurse
+          dotnet pack .\release\EmailModule.nuspec --configuration Release -v detailed
+
+      # - name: Publish NuGet Package
+      #   run: |
+      #     $version = '${{ steps.tag_version.outputs.new_tag }}'
+      #     $version = $version  -replace 'v', ''
+      #     $version = $version  -replace "-working*", ''
+      #     Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\"
+
+      # - name: Package Module to artifacts
+      #   run: |
+      #       Copy-Item -Recurse -Force .\release\* .\artifact\
+      #       Get-ChildItem -path ".\release\" -Recurse -File | ForEach-Object {
+      #         Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256 | FL | Out-File -FilePath ".\artifact\Hashes.txt" -Append
+      #       }
+
+      # - name: Upload build artifact
+      #   uses: actions/upload-artifact@v4.6.2
+      #   with:
+      #     name: EmailModule
+      #     path: artifact/
+      #     if-no-files-found: error
 
   # test:
   #   environment: Build and Test PowerShell Module
