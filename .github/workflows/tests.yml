@@ -9,227 +9,227 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # build:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Bump version and push tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
-        with:
-          github_token: ${{ secrets.TOKEN }}
+  #     - name: Bump version and push tag
+  #       id: tag_version
+  #       uses: mathieudutour/github-tag-action@v6.2
+  #       with:
+  #         github_token: ${{ secrets.TOKEN }}
 
-      - name: Setup MSBuild .NET Framework Build
-        uses: microsoft/setup-msbuild@v2.0.0
+  #     - name: Setup MSBuild .NET Framework Build
+  #       uses: microsoft/setup-msbuild@v2.0.0
 
-      - name: Setup NuGet .NET Framework Build
-        uses: nuget/setup-nuget@v2
-        with:
-          nuget-version: 'latest'
+  #     - name: Setup NuGet .NET Framework Build
+  #       uses: nuget/setup-nuget@v2
+  #       with:
+  #         nuget-version: 'latest'
 
-      - name: Restore NuGet packages for .NET Framework Build
-        run: nuget restore .\EmailLibraryDesktop\EmailLibrary.sln
+  #     - name: Restore NuGet packages for .NET Framework Build
+  #       run: nuget restore .\EmailLibraryDesktop\EmailLibrary.sln
 
-      - name: Build .NET Framework project
-        run: |
-          msbuild .\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
+  #     - name: Build .NET Framework project
+  #       run: |
+  #         msbuild .\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
 
-      - name: Create release directories
-        run: |
-          mkdir release
-          mkdir .\release\Tests
-          mkdir .\release\lib
-          mkdir .\release\lib\Core
-          mkdir .\release\lib\Desktop
+  #     - name: Create release directories
+  #       run: |
+  #         mkdir release
+  #         mkdir .\release\Tests
+  #         mkdir .\release\lib
+  #         mkdir .\release\lib\Core
+  #         mkdir .\release\lib\Desktop
 
-      - name: Copy .NET Framework build output to lib Desktop directory
-        run: |
-          Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
-            Copy-Item $_ -Destination ".\release\lib\Desktop\"
-          }
+  #     - name: Copy .NET Framework build output to lib Desktop directory
+  #       run: |
+  #         Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
+  #           Copy-Item $_ -Destination ".\release\lib\Desktop\"
+  #         }
 
-      - name: Setup .NET Core SDK
-        uses: actions/setup-dotnet@v5.0.0
-        with:
-          dotnet-version: "8.0.x"
+  #     - name: Setup .NET Core SDK
+  #       uses: actions/setup-dotnet@v5.0.0
+  #       with:
+  #         dotnet-version: "8.0.x"
 
-      - name: Install dependencies .NET Core Build
-        run: dotnet restore .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
+  #     - name: Install dependencies .NET Core Build
+  #       run: dotnet restore .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
 
-      - name: Build .NET Core project
-        run: dotnet build .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore
+  #     - name: Build .NET Core project
+  #       run: dotnet build .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore
 
-      - name: Publish .NET Core project
-        run: dotnet publish .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
-        env:
-            PublishRelease: true
+  #     - name: Publish .NET Core project
+  #       run: dotnet publish .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
+  #       env:
+  #           PublishRelease: true
 
-      - name: Copy .NET Core publish output to lib Core directory
-        run: |
-          Get-ChildItem -path ".\publish\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
-            Copy-Item $_ -Destination ".\release\lib\Core\"
-          }
+  #     - name: Copy .NET Core publish output to lib Core directory
+  #       run: |
+  #         Get-ChildItem -path ".\publish\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
+  #           Copy-Item $_ -Destination ".\release\lib\Core\"
+  #         }
 
-      - name: Generate Powershell Manifest
-        run: |
-          $files = @('.\EmailModule.psd1','.\EmailModule.psm1','.\EmailModule.Libraries.ps1')
-          Get-ChildItem -Path ".\release\" -Recurse | ForEach-Object { 
-              $files += $_.FullName.ToString().Replace('D:\a\Powershell_Email-Module\Powershell_Email-Module\release','.') 
-          }
-          $version = '${{ steps.tag_version.outputs.new_tag }}'
-          $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working*", ''
-          $moduleSettings = @{
-            Path = '.\EmailModule\EmailModule.psd1'
+  #     - name: Generate Powershell Manifest
+  #       run: |
+  #         $files = @('.\EmailModule.psd1','.\EmailModule.psm1','.\EmailModule.Libraries.ps1')
+  #         Get-ChildItem -Path ".\release\" -Recurse | ForEach-Object { 
+  #             $files += $_.FullName.ToString().Replace('D:\a\Powershell_Email-Module\Powershell_Email-Module\release','.') 
+  #         }
+  #         $version = '${{ steps.tag_version.outputs.new_tag }}'
+  #         $version = $version  -replace 'v', ''
+  #         $version = $version  -replace "-working*", ''
+  #         $moduleSettings = @{
+  #           Path = '.\EmailModule\EmailModule.psd1'
 
-            # Script module or binary module file associated with this manifest.
-            RootModule = 'EmailModule.psm1'
+  #           # Script module or binary module file associated with this manifest.
+  #           RootModule = 'EmailModule.psm1'
 
-            # Version number of this module.
-            ModuleVersion = $version
+  #           # Version number of this module.
+  #           ModuleVersion = $version
 
-            # Supported PSEditions
-            CompatiblePSEditions = @('Desktop','Core')
+  #           # Supported PSEditions
+  #           CompatiblePSEditions = @('Desktop','Core')
 
-            # ID used to uniquely identify this module
-            GUID = '6f8c4c8a-6e0d-4139-836c-f798b30ada92'
+  #           # ID used to uniquely identify this module
+  #           GUID = '6f8c4c8a-6e0d-4139-836c-f798b30ada92'
 
-            # Author of this module
-            Author = 'Brandon Navarro'
+  #           # Author of this module
+  #           Author = 'Brandon Navarro'
 
-            # Company or vendor of this module
-            CompanyName = 'None'
+  #           # Company or vendor of this module
+  #           CompanyName = 'None'
 
-            # Copyright statement for this module
-            Copyright = '(c) Brandon Navarro. All rights reserved.'
+  #           # Copyright statement for this module
+  #           Copyright = '(c) Brandon Navarro. All rights reserved.'
 
-            # Description of the functionality provided by this module
-            Description = 'Powershell Module to send Email using MailKit, MimeKit and STARTTLS'
+  #           # Description of the functionality provided by this module
+  #           Description = 'Powershell Module to send Email using MailKit, MimeKit and STARTTLS'
 
-            # Minimum version of the PowerShell engine required by this module
-            PowerShellVersion = '5.1'
+  #           # Minimum version of the PowerShell engine required by this module
+  #           PowerShellVersion = '5.1'
 
-            # Minimum version of Microsoft .NET Framework required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
-            DotNetFrameworkVersion = '4.7.2'
+  #           # Minimum version of Microsoft .NET Framework required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
+  #           DotNetFrameworkVersion = '4.7.2'
 
-            # Processor architecture (None, X86, Amd64) required by this module
-            ProcessorArchitecture = 'None'
+  #           # Processor architecture (None, X86, Amd64) required by this module
+  #           ProcessorArchitecture = 'None'
 
-            # Script files (.ps1) that are run in the caller's environment prior to importing this module.
-            ScriptsToProcess = @('EmailModule.Libraries.ps1')
+  #           # Script files (.ps1) that are run in the caller's environment prior to importing this module.
+  #           ScriptsToProcess = @('EmailModule.Libraries.ps1')
 
-            # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-            FunctionsToExport = 'Send-Email'
+  #           # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
+  #           FunctionsToExport = 'Send-Email'
 
-            # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
-            CmdletsToExport = 'Send-Email'
+  #           # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
+  #           CmdletsToExport = 'Send-Email'
 
-            # Variables to export from this module
-            VariablesToExport = @()
+  #           # Variables to export from this module
+  #           VariablesToExport = @()
 
-            # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-            AliasesToExport = @()
+  #           # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
+  #           AliasesToExport = @()
 
-            # List of all files packaged with this module
-            FileList = $files
-          }
-          New-ModuleManifest @moduleSettings
+  #           # List of all files packaged with this module
+  #           FileList = $files
+  #         }
+  #         New-ModuleManifest @moduleSettings
 
-      - name: Copy powershell module to release directory
-        run: |
-          Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\release\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\"
+  #     - name: Copy powershell module to release directory
+  #       run: |
+  #         Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\"
+  #         Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\release\"
+  #         Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\"
 
-      - name: Copy powershell test to release directory
-        run: |
-          Copy-Item -Path ".\Tests\EmailModule.Tests.ps1" -Destination ".\release\Tests\"
+  #     - name: Copy powershell test to release directory
+  #       run: |
+  #         Copy-Item -Path ".\Tests\EmailModule.Tests.ps1" -Destination ".\release\Tests\"
 
-      - name: Package Module to artifacts
-        run: |
-            New-Item -ItemType Directory -Path 'artifact' | Out-Null;
-            Copy-Item -Recurse -Force .\release\* .\artifact\
+  #     - name: Package Module to artifacts
+  #       run: |
+  #           New-Item -ItemType Directory -Path 'artifact' | Out-Null;
+  #           Copy-Item -Recurse -Force .\release\* .\artifact\
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: EmailModule
-          path: artifact/
-          if-no-files-found: error
+  #     - name: Upload build artifact
+  #       uses: actions/upload-artifact@v4.6.2
+  #       with:
+  #         name: EmailModule
+  #         path: artifact/
+  #         if-no-files-found: error
 
-  test:
-    name: Test Module on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    needs: build
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+  # test:
+  #   name: Test Module on ${{ matrix.os }}
+  #   runs-on: ${{ matrix.os }}
+  #   needs: build
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest, macos-latest, windows-latest]
 
-    steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v5.0.0
-        with:
-          name: EmailModule
-          path: EmailModule
+  #   steps:
+  #     - name: Download build artifact
+  #       uses: actions/download-artifact@v5.0.0
+  #       with:
+  #         name: EmailModule
+  #         path: EmailModule
 
-      # - name: Run Pester tests
-      #   shell: pwsh
-      #   run: |
-      #     Import-Module ./EmailModule/EmailModule.psd1 -Force;
-      #     Invoke-Pester -Path './EmailModule/Tests' -Output Detailed -EnableExit
+  #     # - name: Run Pester tests
+  #     #   shell: pwsh
+  #     #   run: |
+  #     #     Import-Module ./EmailModule/EmailModule.psd1 -Force;
+  #     #     Invoke-Pester -Path './EmailModule/Tests' -Output Detailed -EnableExit
 
-      - name: Verify module manifest
-        shell: pwsh
-        run: |
-          Test-ModuleManifest -Path '.\EmailModule\EmailModule.psd1'
+  #     - name: Verify module manifest
+  #       shell: pwsh
+  #       run: |
+  #         Test-ModuleManifest -Path '.\EmailModule\EmailModule.psd1'
 
-      - name: Test Module
-        shell: pwsh
-        run: |
-          Import-Module .\EmailModule\
-          $AuthUser = "${{ secrets.AUTHUSER }}"
-          $AuthPass = "${{ secrets.AUTHPASS }}"
+  #     - name: Test Module
+  #       shell: pwsh
+  #       run: |
+  #         Import-Module .\EmailModule\
+  #         $AuthUser = "${{ secrets.AUTHUSER }}"
+  #         $AuthPass = "${{ secrets.AUTHPASS }}"
 
-          $To = "${{ secrets.TO }}"
-          $ToName = "Brandon Navarro"
+  #         $To = "${{ secrets.TO }}"
+  #         $ToName = "Brandon Navarro"
 
-          $From = "${{ secrets.AUTHUSER }}"
-          $FromName = "Brandon Navarro"
+  #         $From = "${{ secrets.AUTHUSER }}"
+  #         $FromName = "Brandon Navarro"
 
-          $Subject = "Github Actions test from ${{ matrix.os }} ${{ steps.tag_version.outputs.new_tag }}"
-          $Body = "test, Test, TEST!, dotnet Core Email Module
-              Linux: $IsLinux
-              MacOS: $IsMacOS
-              Windows: $IsWindows
-              PSEdition: $PSEdition
-          "
+  #         $Subject = "Github Actions test from ${{ matrix.os }} ${{ steps.tag_version.outputs.new_tag }}"
+  #         $Body = "test, Test, TEST!, dotnet Core Email Module
+  #             Linux: $IsLinux
+  #             MacOS: $IsMacOS
+  #             Windows: $IsWindows
+  #             PSEdition: $PSEdition
+  #         "
 
-          $MailServer = "${{ secrets.MAILSERVER }}"
-          $ServerPort = "587"
+  #         $MailServer = "${{ secrets.MAILSERVER }}"
+  #         $ServerPort = "587"
 
-          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
-              -EmailTo $To -EmailToName $ToName `
-              -EmailFrom $From -EmailFromName $FromName `
-              -Subject $Subject -Body $Body `
-              -SmtpServer $MailServer -SmtpPort $ServerPort
+  #         Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+  #             -EmailTo $To -EmailToName $ToName `
+  #             -EmailFrom $From -EmailFromName $FromName `
+  #             -Subject $Subject -Body $Body `
+  #             -SmtpServer $MailServer -SmtpPort $ServerPort
 
   windows_test:
     runs-on: windows-latest
     name: Test Module on windows-latest
-    needs: build
+    # needs: build
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v5.0.0
         with:
-          name: EmailModule
+          artifact-ids: 4284134595
           path: EmailModule
 
       - name: Test Module with Powershell Desktop
         shell: powershell
         run: |
-          Import-Module ./EmailModule/
+          Import-Module .\EmailModule\
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
 
