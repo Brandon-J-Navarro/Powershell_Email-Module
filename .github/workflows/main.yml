@@ -163,7 +163,7 @@ jobs:
               <authors>Brandon Navarro</authors>
               <owners>Brandon Navarro</owners>
               <requireLicenseAcceptance>false</requireLicenseAcceptance>  <!-- Set to true if a license is required -->
-              <license>https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/LICENSE</licenseUrl>  <!-- Link to your license -->
+              <license>https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/LICENSE</license>  <!-- Link to your license -->
               <projectUrl>https://github.com/Brandon-J-Navarro/Powershell_Email-Module</projectUrl>  <!-- Link to your project -->
               <description>Powershell Module to send Email using MailKit, MimeKit and STARTTLS</description>
               <summary>A brief summary of your module.</summary>
@@ -176,11 +176,10 @@ jobs:
               <file src=".\*" target="modules\EmailModule" />  <!--  Important!  Copies all files from the module directory to the 'modules' directory inside the NuGet package -->
             </files>
           </package>
-          '@ | Out-File -FilePath ".\EmailModule.nuspec"
-          Copy-Item -Path ".\EmailModule.nuspec" -Destination ".\release\"
+          '@ | Out-File -FilePath ".\release\EmailModule.nuspec"
 
       - name: Build NuGet Package
-        run: dotnet pack .\EmailModule.nuspec --configuration Release
+        run: dotnet pack .\release\EmailModule.nuspec --configuration Release
 
       - name: Publish NuGet Package
         run: |
