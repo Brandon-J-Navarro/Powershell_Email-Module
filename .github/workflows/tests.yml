@@ -181,6 +181,7 @@ jobs:
       #     Invoke-Pester -Path './EmailModule/Tests' -Output Detailed -EnableExit
 
       - name: Verify module manifest
+        shell: pwsh
         run: |
           Test-ModuleManifest -Path '.\EmailModule\EmailModule.psd1'
 
