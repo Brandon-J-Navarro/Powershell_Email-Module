@@ -231,7 +231,7 @@ jobs:
       - name: Test Module with Powershell Desktop
         shell: powershell
         run: |
-          Import-Module .\EmailModule\
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
 
