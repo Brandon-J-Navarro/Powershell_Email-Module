@@ -12,6 +12,8 @@ jobs:
   build:
     environment: Build and Test PowerShell Module
     runs-on: windows-latest
+    outputs:
+      new_tag: ${{ steps.tag_version.outputs.new_tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -174,7 +176,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         # os: [ubuntu-latest, macos-latest, windows-latest]
-
+    env:
+      OUTPUT1: ${{ needs.build.outputs.new_tag }}
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v5.0.0
@@ -200,7 +203,7 @@ jobs:
           $ToName = "Brandon Navarro"
           $From = "${{ secrets.AUTHUSER }}"
           $FromName = "Brandon Navarro"
-          $Subject = "Github Actions ${{ matrix.os }} PSEdition: $PSEdition"
+          $Subject = "Github Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition"
           $Body = "
             test, Test, TEST!, dotnet Core Email Module
 
@@ -209,7 +212,7 @@ jobs:
             Windows: $Windows
             PSEdition: $PSEdition
 
-            This is a GitHub Actions Automated Test
+            This is a GitHub Actions Automated Test ${{ needs.build.outputs.new_tag }}
           "
           $MailServer = "${{ secrets.MAILSERVER }}"
           $ServerPort = "587"
@@ -224,6 +227,8 @@ jobs:
     runs-on: windows-latest
     name: Test Module on windows-latest
     needs: build
+    env:
+      OUTPUT1: ${{ needs.build.outputs.new_tag }}
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v5.0.0
@@ -241,13 +246,13 @@ jobs:
           $ToName = "Brandon Navarro"
           $From = "${{ secrets.AUTHUSER }}"
           $FromName = "Brandon Navarro"
-          $Subject = "Github Actions windows-latest PSEdition: $PSEdition"
+          $Subject = "Github Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition"
           $Body = "
             test, Test, TEST!, dotNET Framework Email Module
 
             PSEdition: $PSEdition
 
-            This is a GitHub Actions Automated Test
+            This is a GitHub Actions Automated Test ${{ needs.build.outputs.new_tag }}
           "
           $MailServer = "${{ secrets.MAILSERVER }}"
           $ServerPort = "587"
