@@ -39,13 +39,13 @@ jobs:
       #   run: |
       #     msbuild .\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
 
-      # - name: Create release directories
-      #   run: |
-      #     mkdir release
-      #     mkdir .\release\Tests
-      #     mkdir .\release\lib
-      #     mkdir .\release\lib\Core
-      #     mkdir .\release\lib\Desktop
+      - name: Create release directories
+        run: |
+          mkdir release
+          mkdir .\release\Tests
+          mkdir .\release\lib
+          mkdir .\release\lib\Core
+          mkdir .\release\lib\Desktop
 
       # - name: Copy .NET Framework build output to lib Desktop directory
       #   run: |
