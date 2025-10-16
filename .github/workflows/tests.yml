@@ -151,17 +151,12 @@ jobs:
         run: |
             New-Item -ItemType Directory -Path 'artifact' | Out-Null;
             Copy-Item -Recurse -Force .\release\* .\artifact\
-            Get-ChildItem -path ".\release\" -Recurse  | ForEach-Object {
-              Get-FileHash $_ -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
-            }
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4.6.2
         with:
           name: EmailModule
-          path: |
-            artifact/
-            Hashes.txt
+          path: artifact/
           if-no-files-found: error
 
   test:
@@ -253,3 +248,16 @@ jobs:
               -EmailFrom $From -EmailFromName $FromName `
               -Subject $Subject -Body $Body `
               -SmtpServer $MailServer -SmtpPort $ServerPort
+
+      - name: Package Module to artifacts
+        run: |
+            Get-ChildItem -path ".\EmailModule\" -Recurse  | ForEach-Object {
+              Get-FileHash $_ -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
+            }
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: Hashes
+          path: Hashes.txt
+          if-no-files-found: error
