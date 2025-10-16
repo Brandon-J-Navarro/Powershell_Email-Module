@@ -151,12 +151,17 @@ jobs:
         run: |
             New-Item -ItemType Directory -Path 'artifact' | Out-Null;
             Copy-Item -Recurse -Force .\release\* .\artifact\
+            Get-ChildItem -path ".\release\" -Recurse -File | ForEach-Object {
+              Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
+            }
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4.6.2
         with:
           name: EmailModule
-          path: artifact/
+          path: |
+            artifact/
+            Hashes.txt
           if-no-files-found: error
 
   test:
