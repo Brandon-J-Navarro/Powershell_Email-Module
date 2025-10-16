@@ -146,7 +146,6 @@ jobs:
           }
           New-ModuleManifest @moduleSettings
 
-
       - name: Copy powershell module to release directory
         run: |
           Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\"
@@ -156,6 +155,46 @@ jobs:
       - name: Copy powershell test to release directory
         run: |
           Copy-Item -Path ".\Tests\EmailModule.Tests.ps1" -Destination ".\release\Tests\"
+
+      - name: Generate nuspec
+        run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working*", ''
+          @'
+          <?xml version="1.0" encoding="utf-8"?>
+          <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+            <metadata>
+              <id>EmailModule</id>  <!-- Package ID (NuGet package name).  Should match your module name ideally -->
+              <version>$version</version> <!-- Must match the ModuleVersion in your .psd1 file -->
+              <title>EmailModule</title> <!-- A more descriptive title -->
+              <authors>Brandon Navarro</authors>
+              <owners>Brandon Navarro</owners>
+              <requireLicenseAcceptance>false</requireLicenseAcceptance>  <!-- Set to true if a license is required -->
+              <licenseUrl>https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/LICENSE</licenseUrl>  <!-- Link to your license -->
+              <projectUrl>https://github.com/Brandon-J-Navarro/Powershell_Email-Module</projectUrl>  <!-- Link to your project -->
+              <iconUrl>https://github.com/Brandon-J-Navarro/</iconUrl>  <!-- Link to an icon -->
+              <description>Powershell Module to send Email using MailKit, MimeKit and STARTTLS</description>
+              <summary>A brief summary of your module.</summary>
+              <releaseNotes>Initial release with feature X and bug fix Y.</releaseNotes>  <!-- Describe the release -->
+              <copyright>(c) Brandon Navarro. All rights reserved.</copyright>
+              <tags>Desktop Core Email StartTLS</tags>  <!-- Keywords for searching -->
+            </metadata>
+            <files>
+              <!-- Include the PowerShell module files in the correct directory structure -->
+              <file src="release\*" target="modules\EmailModule" />  <!--  Important!  Copies all files from the module directory to the 'modules' directory inside the NuGet package -->
+            </files>
+          </package>
+          '@ | Out-File -FilePath ".\EmailModule.nuspec"
+
+      - name: Build NuGet Package
+        run: dotnet pack .\EmailModule.nuspec --configuration Release
+
+      - name: Publish NuGet Package
+        run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\"
 
       - name: Package Module to artifacts
         run: |
