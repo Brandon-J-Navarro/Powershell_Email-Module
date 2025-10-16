@@ -152,6 +152,7 @@ jobs:
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working*", ''
           @'
           <?xml version="1.0" encoding="utf-8"?>
           <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
@@ -162,9 +163,8 @@ jobs:
               <authors>Brandon Navarro</authors>
               <owners>Brandon Navarro</owners>
               <requireLicenseAcceptance>false</requireLicenseAcceptance>  <!-- Set to true if a license is required -->
-              <licenseUrl>https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/LICENSE</licenseUrl>  <!-- Link to your license -->
+              <license>https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/LICENSE</licenseUrl>  <!-- Link to your license -->
               <projectUrl>https://github.com/Brandon-J-Navarro/Powershell_Email-Module</projectUrl>  <!-- Link to your project -->
-              <iconUrl>https://github.com/Brandon-J-Navarro/</iconUrl>  <!-- Link to an icon -->
               <description>Powershell Module to send Email using MailKit, MimeKit and STARTTLS</description>
               <summary>A brief summary of your module.</summary>
               <releaseNotes>Initial release with feature X and bug fix Y.</releaseNotes>  <!-- Describe the release -->
@@ -173,7 +173,7 @@ jobs:
             </metadata>
             <files>
               <!-- Include the PowerShell module files in the correct directory structure -->
-              <file src="release\*" target="modules\EmailModule" />  <!--  Important!  Copies all files from the module directory to the 'modules' directory inside the NuGet package -->
+              <file src=".\*" target="modules\EmailModule" />  <!--  Important!  Copies all files from the module directory to the 'modules' directory inside the NuGet package -->
             </files>
           </package>
           '@ | Out-File -FilePath ".\EmailModule.nuspec"
