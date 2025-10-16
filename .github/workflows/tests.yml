@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   build:
+    environment: Build and Test PowerShell Module
     runs-on: windows-latest
     steps:
       - name: Checkout code
@@ -165,8 +166,9 @@ jobs:
           if-no-files-found: error
 
   test:
-    name: Test Module on ${{ matrix.os }}
+    environment: Build and Test PowerShell Module
     runs-on: ${{ matrix.os }}
+    name: Test Module on ${{ matrix.os }}
     needs: build
     strategy:
       matrix:
@@ -218,6 +220,7 @@ jobs:
               -SmtpServer $MailServer -SmtpPort $ServerPort
 
   windows_test:
+    environment: Build and Test PowerShell Module
     runs-on: windows-latest
     name: Test Module on windows-latest
     needs: build
