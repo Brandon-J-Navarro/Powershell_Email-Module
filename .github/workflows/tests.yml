@@ -201,7 +201,7 @@ jobs:
           $From = "${{ secrets.AUTHUSER }}"
           $FromName = "Brandon Navarro"
 
-          $Subject = "Github Actions test from ${{ matrix.os }} ${{ steps.tag_version.outputs.new_tag }}"
+          $Subject = "Github Actions test from ${{ matrix.os }}"
           $Body = "test, Test, TEST!, dotnet Core Email Module
               Linux: $Linux
               MacOS: $MacOS
@@ -249,7 +249,7 @@ jobs:
           $From = "${{ secrets.AUTHUSER }}"
           $FromName = "Brandon Navarro"
 
-          $Subject = "Github Actions test from windows-latest ${{ steps.tag_version.outputs.new_tag }}"
+          $Subject = "Github Actions test from windows-latest"
           $Body = "test, Test, TEST!, dotnet Core Email Module
               Linux: $Linux
               MacOS: $MacOS
