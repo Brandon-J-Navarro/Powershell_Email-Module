@@ -1,9 +1,9 @@
 name: Build, Package, and Release
 
 on:
-  # pull_request:
-  #   types: [closed]
-  #   branches: [ main ]
+  pull_request:
+    types: [closed]
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -75,7 +75,7 @@ jobs:
       - name: Generate Powershell Manifest
         run: |
           $files = @('.\EmailModule.psd1','.\EmailModule.psm1','.\EmailModule.Libraries.ps1')
-          Get-ChildItem -Path ".\release\" -Recurse | ForEach-Object { 
+          Get-ChildItem -Path ".\release\" -Recurse -File | ForEach-Object { 
               $files += $_.FullName.ToString().Replace('D:\a\Powershell_Email-Module\Powershell_Email-Module\release','.') 
           }
           $version = '${{ steps.tag_version.outputs.new_tag }}'
@@ -133,6 +133,12 @@ jobs:
 
             # List of all files packaged with this module
             FileList = $files
+
+            # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
+            Tags        = @('Desktop','Core','Email','StartTLS')
+            LicenseUri  = 'https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/LICENSE'
+            ProjectUri  = 'https://github.com/Brandon-J-Navarro/Powershell_Email-Module'
+            IconUri     = 'https://github.com/Brandon-J-Navarro/'
           }
           New-ModuleManifest @moduleSettings
 
