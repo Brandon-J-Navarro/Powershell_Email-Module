@@ -225,6 +225,8 @@ jobs:
         with:
           artifact-ids: 4284134595
           path: EmailModule
+          github-token: ${{ secrets.TOKEN }}
+          run-id: 18549484327
 
       - name: Test Module with Powershell Desktop
         shell: powershell
