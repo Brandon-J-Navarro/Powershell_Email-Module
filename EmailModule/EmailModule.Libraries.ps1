@@ -1,5 +1,5 @@
 if ($PSEdition -eq 'Core') {
-    Get-ChildItem -Path $PSScriptRoot\Lib\Core\ -Filter *.dll | ForEach-Object {
+    Get-ChildItem -Path $PSScriptRoot\lib\Core\ -Filter *.dll | ForEach-Object {
         Try {
             Add-Type -Path $_.FullName -ErrorAction Stop
         } Catch {
@@ -7,7 +7,7 @@ if ($PSEdition -eq 'Core') {
         }
     }
 } else {
-    Get-ChildItem -Path $PSScriptRoot\Lib\Desktop\ -Exclude 'System.Formats.Asn1.dll' | where-object Extension -EQ '.dll' | ForEach-Object {
+    Get-ChildItem -Path $PSScriptRoot\lib\Desktop\ -Exclude 'System.Formats.Asn1.dll' | where-object Extension -EQ '.dll' | ForEach-Object {
         Try {
             Add-Type -Path $_.FullName -ErrorAction Stop
         } Catch {
