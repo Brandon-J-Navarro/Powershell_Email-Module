@@ -174,46 +174,83 @@ jobs:
           name: EmailModule
           path: EmailModule
 
-      - name: Setup PowerShell
-        uses: PowerShell/PowerShell-Action@v2
-        with:
-          pwsh-version: 'latest'
-
       - name: Run Pester tests
+        shell: pwsh
         run: |
-          pwsh -Command "
-            Import-Module ./EmailModule/EmailModule.psd1 -Force;
-            Invoke-Pester -Path './EmailModule/Tests' -Output Detailed -EnableExit
+          Import-Module ./EmailModule/EmailModule.psd1 -Force;
+          Invoke-Pester -Path './EmailModule/Tests' -Output Detailed -EnableExit
 
       - name: Verify module manifest
         run: |
-          pwsh -Command "Test-ModuleManifest -Path '.\EmailModule.psd1'"
+          Test-ModuleManifest -Path '.\EmailModule.psd1'
 
       - name: Test Module
+        shell: pwsh
         run: |
-          pwsh -Command "
-            $AuthUser = "${{ secrets.AUTHUSER }}"
-            $AuthPass = "${{ secrets.AUTHPASS }}"
+          Import-Module ./EmailModule/
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
 
-            $To = "${{ secrets.TO }}"
-            $ToName = "Brandon Navarro"
+          $To = "${{ secrets.TO }}"
+          $ToName = "Brandon Navarro"
 
-            $From = "${{ secrets.AUTHUSER }}"
-            $FromName = "Brandon Navarro"
+          $From = "${{ secrets.AUTHUSER }}"
+          $FromName = "Brandon Navarro"
 
-            $Subject = "Github Actions test from ${{ matrix.os }} ${{ steps.tag_version.outputs.new_tag }}"
-            $Body = "test, Test, TEST!, dotnet Core Email Module
-                Linux: $IsLinux
-                MacOS: $IsMacOS
-                Windows: $IsWindows
-            "
-
-            $MailServer = "${{ secrets.MAILSERVER }}"
-            $ServerPort = "587"
-
-            Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
-                -EmailTo $To -EmailToName $ToName `
-                -EmailFrom $From -EmailFromName $FromName `
-                -Subject $Subject -Body $Body `
-                -SmtpServer $MailServer -SmtpPort $ServerPort
+          $Subject = "Github Actions test from ${{ matrix.os }} ${{ steps.tag_version.outputs.new_tag }}"
+          $Body = "test, Test, TEST!, dotnet Core Email Module
+              Linux: $IsLinux
+              MacOS: $IsMacOS
+              Windows: $IsWindows
+              PSEdition: $PSEdition
           "
+
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          $ServerPort = "587"
+
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailToName $ToName `
+              -EmailFrom $From -EmailFromName $FromName `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer -SmtpPort $ServerPort
+
+  windows_test:
+    runs-on: windows-latest
+    name: Test Module on windows-latest
+    needs: build
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v5.0.0
+        with:
+          name: EmailModule
+          path: EmailModule
+
+      - name: Test Module with Powershell Desktop
+        shell: powershell
+        run: |
+          Import-Module ./EmailModule/
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+
+          $To = "${{ secrets.TO }}"
+          $ToName = "Brandon Navarro"
+
+          $From = "${{ secrets.AUTHUSER }}"
+          $FromName = "Brandon Navarro"
+
+          $Subject = "Github Actions test from windows-latest ${{ steps.tag_version.outputs.new_tag }}"
+          $Body = "test, Test, TEST!, dotnet Core Email Module
+              Linux: $IsLinux
+              MacOS: $IsMacOS
+              Windows: $IsWindows
+              PSEdition: $PSEdition
+          "
+
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          $ServerPort = "587"
+
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailToName $ToName `
+              -EmailFrom $From -EmailFromName $FromName `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer -SmtpPort $ServerPort
