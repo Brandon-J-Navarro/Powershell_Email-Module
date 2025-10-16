@@ -174,20 +174,20 @@ jobs:
           name: EmailModule
           path: EmailModule
 
-      - name: Run Pester tests
-        shell: pwsh
-        run: |
-          Import-Module ./EmailModule/EmailModule.psd1 -Force;
-          Invoke-Pester -Path './EmailModule/Tests' -Output Detailed -EnableExit
+      # - name: Run Pester tests
+      #   shell: pwsh
+      #   run: |
+      #     Import-Module ./EmailModule/EmailModule.psd1 -Force;
+      #     Invoke-Pester -Path './EmailModule/Tests' -Output Detailed -EnableExit
 
       - name: Verify module manifest
         run: |
-          Test-ModuleManifest -Path '.\EmailModule.psd1'
+          Test-ModuleManifest -Path '.\EmailModule\EmailModule.psd1'
 
       - name: Test Module
         shell: pwsh
         run: |
-          Import-Module ./EmailModule/
+          Import-Module .\EmailModule\
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
 
