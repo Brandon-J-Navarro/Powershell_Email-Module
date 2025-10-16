@@ -80,6 +80,7 @@ jobs:
           }
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working*", ''
           $moduleSettings = @{
             Path = '.\EmailModule\EmailModule.psd1'
 
@@ -200,7 +201,7 @@ jobs:
             $From = "${{ secrets.AUTHUSER }}"
             $FromName = "Brandon Navarro"
 
-            $Subject = "This is a Github Actions test from ${{ matrix.os }}"
+            $Subject = "Github Actions test from ${{ matrix.os }} ${{ steps.tag_version.outputs.new_tag }}"
             $Body = "test, Test, TEST!, dotnet Core Email Module
                 Linux: $IsLinux
                 MacOS: $IsMacOS
