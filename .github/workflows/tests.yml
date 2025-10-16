@@ -186,15 +186,16 @@ jobs:
             </files>
           </package>
           '@ | Out-File -FilePath ".\EmailModule.nuspec"
+          Copy-Item -Path ".\EmailModule.nuspec" -Destination ".\release\"
 
-      - name: Build NuGet Package
-        run: dotnet pack .\EmailModule.nuspec --configuration Release
+      # - name: Build NuGet Package
+      #   run: dotnet pack .\EmailModule.nuspec --configuration Release
 
-      - name: Publish NuGet Package
-        run: |
-          $version = '${{ steps.tag_version.outputs.new_tag }}'
-          $version = $version  -replace 'v', ''
-          Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\"
+      # - name: Publish NuGet Package
+      #   run: |
+      #     $version = '${{ steps.tag_version.outputs.new_tag }}'
+      #     $version = $version  -replace 'v', ''
+      #     Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\"
 
       - name: Package Module to artifacts
         run: |
