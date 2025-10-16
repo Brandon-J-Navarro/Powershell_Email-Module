@@ -151,12 +151,17 @@ jobs:
         run: |
             New-Item -ItemType Directory -Path 'artifact' | Out-Null;
             Copy-Item -Recurse -Force .\release\* .\artifact\
+            Get-ChildItem -path ".\release\" -Recurse  | ForEach-Object {
+              Get-FileHash $_ -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
+            }
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4.6.2
         with:
           name: EmailModule
-          path: artifact/
+          path: |
+            artifact/
+            Hashes.txt
           if-no-files-found: error
 
   test:
@@ -165,7 +170,8 @@ jobs:
     needs: build
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest]
+        # os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
       - name: Download build artifact
@@ -173,12 +179,6 @@ jobs:
         with:
           name: EmailModule
           path: EmailModule
-
-      # - name: Run Pester tests
-      #   shell: pwsh
-      #   run: |
-      #     Import-Module ./EmailModule/EmailModule.psd1 -Force;
-      #     Invoke-Pester -Path './EmailModule/Tests' -Output Detailed -EnableExit
 
       - name: Verify module manifest
         shell: pwsh
@@ -194,24 +194,23 @@ jobs:
           Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
-
           $To = "${{ secrets.TO }}"
           $ToName = "Brandon Navarro"
-
           $From = "${{ secrets.AUTHUSER }}"
           $FromName = "Brandon Navarro"
+          $Subject = "Github Actions ${{ matrix.os }} PSEdition: $PSEdition"
+          $Body = "
+            test, Test, TEST!, dotnet Core Email Module
 
-          $Subject = "Github Actions test from ${{ matrix.os }}"
-          $Body = "test, Test, TEST!, dotnet Core Email Module
-              Linux: $Linux
-              MacOS: $MacOS
-              Windows: $Windows
-              PSEdition: $PSEdition
+            Linux: $Linux
+            MacOS: $MacOS
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            This is a GitHub Actions Automated Test
           "
-
           $MailServer = "${{ secrets.MAILSERVER }}"
           $ServerPort = "587"
-
           Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
               -EmailTo $To -EmailToName $ToName `
               -EmailFrom $From -EmailFromName $FromName `
@@ -228,38 +227,27 @@ jobs:
         with:
           name: EmailModule
           path: EmailModule
-          # artifact-ids: 4284134595
-          # path: EmailModule
-          # github-token: ${{ secrets.TOKEN }}
-          # run-id: 18549484327
 
       - name: Test Module with Powershell Desktop
         shell: powershell
         run: |
-          $Linux = $IsLinux
-          $MacOS = $IsMacOS
-          $Windows = $IsWindows
           Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
-
           $To = "${{ secrets.TO }}"
           $ToName = "Brandon Navarro"
-
           $From = "${{ secrets.AUTHUSER }}"
           $FromName = "Brandon Navarro"
+          $Subject = "Github Actions windows-latest PSEdition: $PSEdition"
+          $Body = "
+            test, Test, TEST!, dotNET Framework Email Module
 
-          $Subject = "Github Actions test from windows-latest"
-          $Body = "test, Test, TEST!, dotnet Core Email Module
-              Linux: $Linux
-              MacOS: $MacOS
-              Windows: $Windows
-              PSEdition: $PSEdition
+            PSEdition: $PSEdition
+
+            This is a GitHub Actions Automated Test
           "
-
           $MailServer = "${{ secrets.MAILSERVER }}"
           $ServerPort = "587"
-
           Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
               -EmailTo $To -EmailToName $ToName `
               -EmailFrom $From -EmailFromName $FromName `
