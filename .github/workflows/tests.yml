@@ -208,6 +208,7 @@ jobs:
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $version = $version  -replace "-working.*", ''
+          Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\EmailModule\$version\"
           New-Item -ItemType Directory -Path 'artifact' | Out-Null;
           Copy-Item -Recurse -Force .\release\EmailModule\$version\* .\artifact\
           Get-ChildItem -path ".\artifact\" -Recurse -File | ForEach-Object {
