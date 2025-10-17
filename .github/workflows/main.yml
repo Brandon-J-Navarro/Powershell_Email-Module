@@ -39,15 +39,21 @@ jobs:
 
       - name: Create release directories
         run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
           mkdir release
-          mkdir .\release\lib
-          mkdir .\release\lib\Core
-          mkdir .\release\lib\Desktop
+          mkdir .\release\EmailModule
+          mkdir .\release\EmailModule\$version
+          mkdir .\release\EmailModule\$version\lib
+          mkdir .\release\EmailModule\$version\lib\Core
+          mkdir .\release\EmailModule\$version\lib\Desktop
 
       - name: Copy .NET Framework build output to lib Desktop directory
         run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
           Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
-            Copy-Item $_ -Destination ".\release\lib\Desktop\"
+            Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\Desktop\"
           }
 
       - name: Setup .NET Core SDK
@@ -68,18 +74,22 @@ jobs:
 
       - name: Copy .NET Core publish output to lib Core directory
         run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
           Get-ChildItem -path ".\publish\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
-            Copy-Item $_ -Destination ".\release\lib\Core\"
+            Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\Core\"
           }
 
       - name: Generate Powershell Manifest
         run: |
-          $files = @('.\EmailModule.psd1','.\EmailModule.psm1','.\EmailModule.Libraries.ps1')
-          Get-ChildItem -Path ".\release\" -Recurse -File | ForEach-Object { 
-              $files += $_.FullName.ToString().Replace('D:\a\Powershell_Email-Module\Powershell_Email-Module\release','.') 
-          }
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
+
+          $files = @('.\EmailModule.psd1','.\EmailModule.psm1','.\EmailModule.Libraries.ps1',".\EmailModule.nuspec",".\EmailModule.$version.nupkg")
+          Get-ChildItem -Path ".\release\EmailModule\$version\" -Recurse -File | ForEach-Object { 
+              $files += $_.FullName.ToString().Replace("D:\a\Powershell_Email-Module\Powershell_Email-Module\release\EmailModule\$version",'.') 
+          }
+
           $moduleSettings = @{
             Path = '.\EmailModule\EmailModule.psd1'
 
@@ -144,15 +154,16 @@ jobs:
 
       - name: Copy powershell module to release directory
         run: |
-          Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\release\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\"
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\EmailModule\$version\"
 
       - name: Generate nuspec
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working*", ''
           @"
           <?xml version="1.0" encoding="utf-8"?>
           <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
@@ -175,25 +186,30 @@ jobs:
               <file src=".\*" target="modules\EmailModule" />
             </files>
           </package>
-          "@ | Out-File -FilePath ".\release\EmailModule.nuspec"
+          "@ | Out-File -FilePath ".\release\EmailModule\$version\EmailModule.nuspec"
 
       - name: Build NuGet Package
-        run: nuget pack .\release\EmailModule.nuspec
+        run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          nuget pack .\release\EmailModule\$version\EmailModule.nuspec
 
       - name: Publish NuGet Package
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\"
+          Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\EmailModule\$version\"
           dotnet nuget add source https://nuget.pkg.github.com/Brandon-J-Navarro/index.json --name github --username Brandon-J-Navarro --password ${{ secrets.PACKAGE_TOKEN }}
           dotnet nuget push ".\EmailModule.$version.nupkg" --api-key ${{ secrets.PACKAGE_TOKEN }} --source "github"
 
       - name: Zip the release directory
         run: |
-          Get-ChildItem -path ".\release\" -Recurse -File | ForEach-Object {
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          Get-ChildItem -path ".\release\EmailModule\$version\" -Recurse -File | ForEach-Object {
             Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256 | FL | Out-File -FilePath ".\Hashes.txt" -Append
           }
-          Compress-Archive -Path ".\release\*" -DestinationPath "EmailModule.zip"
+          Compress-Archive -Path ".\release\EmailModule\$version\*" -DestinationPath "EmailModule.zip"
 
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1.20.0
@@ -205,9 +221,6 @@ jobs:
 
       - name: Publish to PSGallery
         run: |
-          $files = Get-ChildItem -path ".\release\" -Recurse 
-          New-Item -ItemType Directory -Path '.\release\EmailModule' | Out-Null;
-          $files | ForEach-Object {
-            Move-Item -Path $_ -Destination .\release\EmailModule\
-          }
-          Publish-Module -Path .\release\EmailModule\ -NuGetApiKey ${{ secrets.PSGALLERY_KEY }} -Verbose
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          Publish-Module -Path .\release\EmailModule\$version\ -NuGetApiKey ${{ secrets.PSGALLERY_KEY }} -Verbose
