@@ -160,7 +160,7 @@ jobs:
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working*", ''
+          $version = $version  -replace "-working.*", ''
           @"
           <?xml version="1.0" encoding="utf-8"?>
           <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
