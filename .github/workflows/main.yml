@@ -185,6 +185,7 @@ jobs:
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\"
+          dotnet nuget add source https://nuget.pkg.github.com/Brandon-J-Navarro/index.json --name github --username Brandon-J-Navarro --password ${{ secrets.TOKEN }}
           dotnet nuget push ".\EmailModule.$version.nupkg" --api-key ${{ secrets.TOKEN }} --source "github"
 
       - name: Zip the release directory
@@ -202,6 +203,11 @@ jobs:
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           body: ${{ steps.tag_version.outputs.changelog }}
 
-      # - name: Publish module to PowerShell Gallery
+      # - name: Publish to PSGallery
       #   run: |
-      #     Publish-Module -Path ./YourModuleName -NugetApiKey '${{ secrets.PS_GALLERY_API_KEY }}' -Force # Adjust path to your module directory
+      #     $files = Get-ChildItem -path ".\release\" -Recurse 
+      #     New-Item -ItemType Directory -Path '.\release\EmailModule' | Out-Null;
+      #     $files | ForEach-Object {
+      #       Move-Item -Recurse -Path $_ -Destination .\release\EmailModule\
+      #     }
+      #     Publish-Module -Path .\release\EmailModule\ -NuGetApiKey ${{ secrets.NUGET_KEY }} -Verbose
