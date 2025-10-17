@@ -41,16 +41,23 @@ jobs:
 
       - name: Create release directories
         run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working.*", ''
           mkdir release
-          mkdir .\release\Tests
-          mkdir .\release\lib
-          mkdir .\release\lib\Core
-          mkdir .\release\lib\Desktop
+          mkdir .\release\EmailModule
+          mkdir .\release\EmailModule\$version
+          mkdir .\release\EmailModule\$version\lib
+          mkdir .\release\EmailModule\$version\lib\Core
+          mkdir .\release\EmailModule\$version\lib\Desktop
 
       - name: Copy .NET Framework build output to lib Desktop directory
         run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working.*", ''
           Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
-            Copy-Item $_ -Destination ".\release\lib\Desktop\"
+            Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\Desktop\"
           }
 
       - name: Setup .NET Core SDK
@@ -71,19 +78,24 @@ jobs:
 
       - name: Copy .NET Core publish output to lib Core directory
         run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working.*", ''
           Get-ChildItem -path ".\publish\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
-            Copy-Item $_ -Destination ".\release\lib\Core\"
+            Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\Core\"
           }
 
       - name: Generate Powershell Manifest
         run: |
-          $files = @('.\EmailModule.psd1','.\EmailModule.psm1','.\EmailModule.Libraries.ps1')
-          Get-ChildItem -Path ".\release\" -Recurse -File | ForEach-Object { 
-              $files += $_.FullName.ToString().Replace('D:\a\Powershell_Email-Module\Powershell_Email-Module\release','.') 
-          }
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working*", ''
+          $version = $version  -replace "-working.*", ''
+
+          $files = @('.\EmailModule.psd1','.\EmailModule.psm1','.\EmailModule.Libraries.ps1',".\EmailModule.nuspec",".\EmailModule.$version.nupkg")
+          Get-ChildItem -Path ".\release\EmailModule\$version\" -Recurse -File | ForEach-Object { 
+              $files += $_.FullName.ToString().Replace("D:\a\Powershell_Email-Module\Powershell_Email-Module\release\EmailModule\$version",'.') 
+          }
+
           $moduleSettings = @{
             Path = '.\EmailModule\EmailModule.psd1'
 
@@ -148,13 +160,12 @@ jobs:
 
       - name: Copy powershell module to release directory
         run: |
-          Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\release\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\"
-
-      - name: Copy powershell test to release directory
-        run: |
-          Copy-Item -Path ".\Tests\EmailModule.Tests.ps1" -Destination ".\release\Tests\"
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working.*", ''
+          Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\EmailModule\$version\"
 
       - name: Generate nuspec
         run: |
@@ -183,25 +194,26 @@ jobs:
               <file src=".\*" target="modules\EmailModule" />
             </files>
           </package>
-          "@ | Out-File -FilePath ".\release\EmailModule.nuspec"
+          "@ | Out-File -FilePath ".\release\EmailModule\$version\EmailModule.nuspec"
 
       - name: Build NuGet Package
-        run: nuget pack .\release\EmailModule.nuspec
+        run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working.*", ''
+          nuget pack .\release\EmailModule\$version\EmailModule.nuspec
 
       - name: Publish NuGet Package
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $version = $version  -replace "-working.*", ''
-          Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\"
-
-      - name: Package Module to artifacts
-        run: |
-            New-Item -ItemType Directory -Path 'artifact' | Out-Null;
-            Copy-Item -Recurse -Force .\release\* .\artifact\
-            Get-ChildItem -path ".\artifact\" -Recurse -File | ForEach-Object {
-              Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256 | FL | Out-File -FilePath ".\artifact\Hashes.txt" -Append
-            }
+          Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\EmailModule\$version\"
+          New-Item -ItemType Directory -Path 'artifact' | Out-Null;
+          Copy-Item -Recurse -Force .\release\EmailModule\$version\* .\artifact\
+          Get-ChildItem -path ".\artifact\" -Recurse -File | ForEach-Object {
+            Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256 | FL | Out-File -FilePath ".\artifact\Hashes.txt" -Append
+          }
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4.6.2
