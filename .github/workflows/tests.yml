@@ -231,7 +231,7 @@ jobs:
       - name: Verify module manifest
         shell: pwsh
         run: |
-          Test-ModuleManifest -Path '.\EmailModule\artifact\EmailModule.psd1'
+          Test-ModuleManifest -Path '.\EmailModule\EmailModule.psd1'
 
       - name: Test Module
         shell: pwsh
@@ -239,7 +239,7 @@ jobs:
           $Linux = $IsLinux
           $MacOS = $IsMacOS
           $Windows = $IsWindows
-          Import-Module .\EmailModule\artifact\EmailModule.psm1
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -282,7 +282,7 @@ jobs:
       - name: Test Module with Powershell Desktop
         shell: powershell
         run: |
-          Import-Module .\EmailModule\artifact\EmailModule.psm1
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
