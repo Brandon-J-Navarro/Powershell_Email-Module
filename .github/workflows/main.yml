@@ -17,6 +17,7 @@ permissions:
 
 jobs:
   build:
+    environment: Build Package and Release
     runs-on: windows-latest
     steps:
       - name: Checkout code
