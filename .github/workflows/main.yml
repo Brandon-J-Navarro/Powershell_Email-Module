@@ -9,6 +9,7 @@ on:
       - 'EmailLibraryCore/**'
       - '!.github/workflows/**'
       - '!README.md'
+      - '!.wiki/**'
     branches: [ main ]
   workflow_dispatch:
 
@@ -17,6 +18,7 @@ permissions:
 
 jobs:
   build:
+    environment: Build Package and Release
     runs-on: windows-latest
     steps:
       - name: Checkout code

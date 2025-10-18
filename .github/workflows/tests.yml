@@ -8,6 +8,7 @@ on:
       - 'EmailLibraryCore/**'
       - '!.github/workflows/**'
       - '!README.md'
+      - '!.wiki/**'
     branches: [ working ]
   workflow_dispatch:
 
