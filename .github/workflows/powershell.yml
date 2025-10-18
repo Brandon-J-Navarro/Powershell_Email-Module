@@ -12,9 +12,25 @@ name: PSScriptAnalyzer
 on:
   push:
     branches: [ "working" ]
+    paths:
+      - 'EmailModule/**'
+      - 'Tests/**'
+      - '!EmailLibraryDesktop/**'
+      - '!EmailLibraryCore/**'
+      - '!.github/workflows/**'
+      - '!README.md'
+      - '!.wiki/**'
   pull_request:
     types: [closed]
     branches: [ "main" ]
+    paths:
+    - 'EmailModule/**'
+    - 'Tests/**'
+    - '!EmailLibraryDesktop/**'
+    - '!EmailLibraryCore/**'
+    - '!.github/workflows/**'
+    - '!README.md'
+    - '!.wiki/**'
   # schedule:
   #   - cron: '21 19 * * 1'
 
