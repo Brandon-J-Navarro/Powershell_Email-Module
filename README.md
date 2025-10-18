@@ -11,19 +11,23 @@ Originally I wrote this in .NET 8 but in order to have it available and work on 
 - Minimum Powershell version: 'Windows PowerShell 5.1'
 - DotNet Framework Version: '.NET Framework 4.7.2'
 
-## How to use GitHib Release (ZIP)
+## PSGallery
+1. Download from <a href="https://www.powershellgallery.com/packages/EmailModule/">PSGallery</a><br>
+`Install-Module -Name EmailModule -Repository PSGallery`
+2. Import the Module `Import-Module EmailModule`
+3. Define your variables / Run the `Send-Email` Cmdlets
+
+## Build from Source
+- Guide in the <a href="https://github.com/Brandon-J-Navarro/Powershell_Email-Module/wiki/Build-from-source">Wiki</a>
+
+## GitHib Release (ZIP)
 1. Download the <a href="https://github.com/Brandon-J-Navarro/Powershell_Email-Module/releases/latest">Lastest Release</a>
-2. Since it is a ZIP download from the web you might what have to "Unblock" it in the properties. \
+2. Since it is a ZIP download from the web you might what have to "Unblock" it in the properties.<br>
 ` Get-ChildItem $env:USERPROFILE\Downloads\EmailModule.zip | Unblock-File `
 3. Extract `EmailModule.zip`
 4. Place the EmailModule folder where it is accessible to `$env:PSModulePath`
 5. Import the Module `Import-Module "PATH\TO\EmailModule\EmailModule.psm1"`
 6. Define your variables / Run the `Send-Email` Cmdlets
-
-## How to use PSGallery
-1. Download from <a href="https://www.powershellgallery.com/packages/EmailModule/">PSGallery</a> `Install-Module -Name EmailModule -Repository PSGallery`
-2. Import the Module `Import-Module EmailModule`
-3. Define your variables / Run the `Send-Email` Cmdlets
 
 #
 ```powershell
