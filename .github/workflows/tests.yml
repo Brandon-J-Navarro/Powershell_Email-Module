@@ -6,7 +6,7 @@ on:
       - 'EmailModule/**'
       - 'EmailLibraryDesktop/**'
       - 'EmailLibraryCore/**'
-      - 'tests/**'  # Added tests directory
+      - 'tests/**'
       - '!.github/workflows/**'
       - '!README.md'
       - '!.wiki/**'
@@ -236,6 +236,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: Pester Tests on ${{ matrix.os }}
     needs: build
+    if: always()
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -344,7 +345,7 @@ jobs:
               Write-Host "  • $($FailedTest.ExpandedPath)" -ForegroundColor Red
               Write-Host "    $($FailedTest.ErrorRecord.Exception.Message)" -ForegroundColor DarkRed
             }
-            Write-Host "`n💥 Some tests failed!" -ForegroundColor Red
+            Write-Host "`n❌ Some tests failed!" -ForegroundColor Red
             exit 1
           } else {
             Write-Host "`n✅ All tests passed!" -ForegroundColor Green
@@ -365,6 +366,7 @@ jobs:
     runs-on: windows-latest
     name: Pester Tests on Windows PowerShell Desktop
     needs: build
+    if: always()
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -443,7 +445,7 @@ jobs:
               Write-Host "  • $($FailedTest.Name)" -ForegroundColor Red
               Write-Host "    $($FailedTest.FailureMessage)" -ForegroundColor DarkRed
             }
-            Write-Host "`n💥 Some tests failed!" -ForegroundColor Red
+            Write-Host "`n❌ Some tests failed!" -ForegroundColor Red
             exit 1
           } else {
             Write-Host "`n✅ All tests passed!" -ForegroundColor Green
@@ -462,6 +464,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: Integration Test on ${{ matrix.os }}
     needs: [build, pester-tests]  # Now depends on Pester tests passing
+    if: always()
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -517,6 +520,7 @@ jobs:
     runs-on: windows-latest
     name: Integration Test on Windows Desktop
     needs: [build, pester-tests-desktop]  # Now depends on Desktop Pester tests passing
+    if: always()
     env:
       OUTPUT1: ${{ needs.build.outputs.new_tag }}
     steps:
