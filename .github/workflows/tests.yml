@@ -279,11 +279,7 @@ jobs:
           Copy-Item -Path ".\EmailModule\*" -Destination ".\" -Recurse -Force
           
           # Define test files to run
-          $TestFiles = @(
-            '.\Tests\EmailModule.Tests.ps1',
-            '.\Tests\EmailModule.Libraries.Tests.ps1',
-            '.\Tests\EmailModule.Integration.Tests.ps1'
-          )
+          $TestFiles = Get-ChildItem -Path '.\Tests' -Filter '*.Tests.ps1' -Recurse | ForEach-Object { $_.FullName }
           
           # Check which test files exist
           $ExistingTestFiles = @()
@@ -401,11 +397,7 @@ jobs:
           Copy-Item -Path ".\EmailModule\*" -Destination ".\" -Recurse -Force
           
           # Define test files to run
-          $TestFiles = @(
-            '.\Tests\EmailModule.Tests.ps1',
-            '.\Tests\EmailModule.Libraries.Tests.ps1',
-            '.\Tests\EmailModule.Integration.Tests.ps1'
-          )
+          $TestFiles = Get-ChildItem -Path '.\Tests' -Filter '*.Tests.ps1' -Recurse | ForEach-Object { $_.FullName }
           
           # Check which test files exist
           $ExistingTestFiles = @()
@@ -579,9 +571,9 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           
           echo "### Test Files Executed:" >> $GITHUB_STEP_SUMMARY
-          echo "- 📋 EmailModule.Tests.ps1 (Main module tests)" >> $GITHUB_STEP_SUMMARY
-          echo "- 📚 EmailModule.Libraries.Tests.ps1 (Library loading tests)" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔗 EmailModule.Integration.Tests.ps1 (Integration tests)" >> $GITHUB_STEP_SUMMARY
+          for file in Tests/*.Tests.ps1; do
+            echo "- 📋 $file" >> $GITHUB_STEP_SUMMARY
+          done
           echo "" >> $GITHUB_STEP_SUMMARY
           
           if [ -f "TestResults.xml" ]; then
