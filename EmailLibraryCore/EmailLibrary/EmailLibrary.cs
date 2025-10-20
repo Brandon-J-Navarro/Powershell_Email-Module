@@ -3,12 +3,18 @@ using MailKit.Security;
 public class EmailCommands
 {
     public static void SendEmail(string _AuthUser, string _AuthPass, string _EmailTo,
-        string _EmailToName, string _EmailFrom, string _EmailFromName, string _EmailSubject,
+        string? _EmailToName, string _EmailFrom, string? _EmailFromName, string _EmailSubject,
         string _EmailBody, string _EmailMailServer, int _EmailServerPort)
     {
         var mailMessage = new MimeMessage();
-        mailMessage.From.Add(new MailboxAddress(_EmailFromName, _EmailFrom));
-        mailMessage.To.Add(new MailboxAddress(_EmailToName, _EmailTo));
+        mailMessage.From.Add(string.IsNullOrEmpty(_EmailFromName) 
+        ? new MailboxAddress(_EmailFrom, _EmailFrom) 
+        : new MailboxAddress(_EmailFromName, _EmailFrom));
+
+        mailMessage.To.Add(string.IsNullOrEmpty(_EmailToName) 
+        ? new MailboxAddress(_EmailTo, _EmailTo) 
+        : new MailboxAddress(_EmailToName, _EmailTo));
+
         mailMessage.Subject = _EmailSubject;
         mailMessage.Body = new TextPart("plain")
         {

@@ -5,42 +5,53 @@ function Send-Email {
         [Parameter(Mandatory = $true)]
         [string]
         # Specifies the username used to authenticate to the SMTP server.
-        # This is typically the sender’s email address (EmailFrom).
+        # This is typically the sender's email address (EmailFrom).
         $AuthUser,
+        
         [Parameter(Mandatory = $true)]
         [string]
         # Specifies the password used to authenticate to the SMTP server.
         # Use secure methods (e.g. `Get-Credential`)to protect sensitive data when possible.
         $AuthPass,
+        
         [Parameter(Mandatory = $true)]
         [string]
-        # Specifies the recipient’s email address.
+        # Specifies the recipient's email address.
         $EmailTo,
-        [Parameter(Mandatory = $true)]
+        
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
         [string]
-        # Specifies the display name of the recipient.
+        # Specifies the display name of the recipient. Optional - if not provided, email address will be used.
         $EmailToName,
-        [Parameter(Mandatory = $true)]
+        
+        [Parameter(Mandatory = $true)]   # You might want to change this to $false too
         [string]
-        # Specifies the sender’s email address.
+        # Specifies the sender's email address.
         $EmailFrom,
-        [Parameter(Mandatory = $true)]
+        
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
         [string]
-        # Specifies the display name of the sender.
+        # Specifies the display name of the sender. Optional - if not provided, email address will be used.
         $EmailFromName,
+        
         [Parameter(Mandatory = $true)]
         [string]
         # Specifies the subject line of the email.
         $Subject,
+        
         [Parameter(Mandatory = $true)]
         [string]
         # Specifies the body content of the email message.
         # The message is sent as plain text.
         $Body,
+        
         [Parameter(Mandatory = $true)]
         [string]
         # Specifies the hostname or fully qualified domain name (FQDN) of the SMTP server to connect to.
         $SmtpServer,
+        
         [int]
         # Specifies the TCP port number used for the SMTP connection. The default is 587.
         $SmtpPort = 587
