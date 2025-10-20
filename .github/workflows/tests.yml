@@ -404,14 +404,14 @@ jobs:
           foreach ($TestFile in $TestFiles) {
             if (Test-Path $TestFile) {
               $ExistingTestFiles += $TestFile
-              Write-Host "✅ Found test file: $TestFile" -ForegroundColor Green
+              Write-Host "Found test file: $TestFile" -ForegroundColor Green
             } else {
-              Write-Host "⚠️  Test file not found: $TestFile" -ForegroundColor Yellow
+              Write-Host "Test file not found: $TestFile" -ForegroundColor Yellow
             }
           }
           
           if ($ExistingTestFiles.Count -eq 0) {
-            Write-Host "❌ No test files found!" -ForegroundColor Red
+            Write-Host "No test files found!" -ForegroundColor Red
             exit 1
           }
           
@@ -422,7 +422,7 @@ jobs:
           $Results = Invoke-Pester -Path $ExistingTestFiles -OutputFormat NUnitXml -OutputFile 'TestResults-Desktop.xml' -PassThru -Verbose
           
           # Output test summary
-          Write-Host "📊 Test Results Summary (Desktop):" -ForegroundColor Green
+          Write-Host "Test Results Summary (Desktop):" -ForegroundColor Green
           Write-Host "════════════════════════════════" -ForegroundColor Green
           Write-Host "Total Tests: $($Results.TotalCount)" -ForegroundColor White
           Write-Host "Passed: $($Results.PassedCount)" -ForegroundColor Green
@@ -432,16 +432,16 @@ jobs:
           
           # Show failed tests details if any
           if ($Results.FailedCount -gt 0) {
-            Write-Host "❌ Failed Tests:" -ForegroundColor Red
+            Write-Host "Failed Tests:" -ForegroundColor Red
             Write-Host "═══════════════" -ForegroundColor Red
             foreach ($FailedTest in $Results.TestResult | Where-Object {$_.Result -eq "Failed"}) {
               Write-Host "  • $($FailedTest.Name)" -ForegroundColor Red
               Write-Host "    $($FailedTest.FailureMessage)" -ForegroundColor DarkRed
             }
-            Write-Host "❌ Some tests failed!" -ForegroundColor Red
+            Write-Host "Some tests failed!" -ForegroundColor Red
             exit 1
           } else {
-            Write-Host "✅ All tests passed!" -ForegroundColor Green
+            Write-Host "All tests passed!" -ForegroundColor Green
           }
 
       - name: Upload Pester Test Results (Desktop)
