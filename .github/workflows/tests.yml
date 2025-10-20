@@ -32,8 +32,197 @@ jobs:
         with:
           github_token: ${{ secrets.TOKEN }}
 
-      # ... (keep all your existing build steps exactly as they are) ...
-      
+      - name: Setup MSBuild .NET Framework Build
+        uses: microsoft/setup-msbuild@v2.0.0
+
+      - name: Setup NuGet .NET Framework Build
+        uses: nuget/setup-nuget@v2
+        with:
+          nuget-version: 'latest'
+
+      - name: Restore NuGet packages for .NET Framework Build
+        run: nuget restore .\EmailLibraryDesktop\EmailLibrary.sln
+
+      - name: Build .NET Framework project
+        run: |
+          msbuild .\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
+
+      - name: Create release directories
+        run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working.*", ''
+          mkdir release
+          mkdir .\release\EmailModule
+          mkdir .\release\EmailModule\$version
+          mkdir .\release\EmailModule\$version\lib
+          mkdir .\release\EmailModule\$version\lib\Core
+          mkdir .\release\EmailModule\$version\lib\Desktop
+
+      - name: Copy .NET Framework build output to lib Desktop directory
+        run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working.*", ''
+          Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
+            Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\Desktop\"
+          }
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v5.0.0
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Install dependencies .NET Core Build
+        run: dotnet restore .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
+
+      - name: Build .NET Core project
+        run: dotnet build .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore
+
+      - name: Publish .NET Core project
+        run: dotnet publish .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
+        env:
+            PublishRelease: true
+
+      - name: Copy .NET Core publish output to lib Core directory
+        run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working.*", ''
+          Get-ChildItem -path ".\publish\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
+            Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\Core\"
+          }
+
+      - name: Generate Powershell Manifest
+        run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working.*", ''
+
+          $files = @('.\EmailModule.psd1','.\EmailModule.psm1','.\EmailModule.Libraries.ps1',".\EmailModule.nuspec",".\EmailModule.$version.nupkg")
+          Get-ChildItem -Path ".\release\EmailModule\$version\" -Recurse -File | ForEach-Object { 
+              $files += $_.FullName.ToString().Replace("D:\a\Powershell_Email-Module\Powershell_Email-Module\release\EmailModule\$version",'.') 
+          }
+
+          $moduleSettings = @{
+            Path = '.\EmailModule\EmailModule.psd1'
+
+            # Script module or binary module file associated with this manifest.
+            RootModule = 'EmailModule.psm1'
+
+            # Version number of this module.
+            ModuleVersion = $version
+
+            # Supported PSEditions
+            CompatiblePSEditions = @('Desktop','Core')
+
+            # ID used to uniquely identify this module
+            GUID = '6f8c4c8a-6e0d-4139-836c-f798b30ada92'
+
+            # Author of this module
+            Author = 'Brandon Navarro'
+
+            # Company or vendor of this module
+            CompanyName = 'None'
+
+            # Copyright statement for this module
+            Copyright = '(c) Brandon Navarro. All rights reserved.'
+
+            # Description of the functionality provided by this module
+            Description = 'Powershell Module to send Email using MailKit, MimeKit and STARTTLS'
+
+            # Minimum version of the PowerShell engine required by this module
+            PowerShellVersion = '5.1'
+
+            # Minimum version of Microsoft .NET Framework required by this module. This prerequisite is valid for the PowerShell Desktop edition only.
+            DotNetFrameworkVersion = '4.7.2'
+
+            # Processor architecture (None, X86, Amd64) required by this module
+            ProcessorArchitecture = 'None'
+
+            # Script files (.ps1) that are run in the caller's environment prior to importing this module.
+            ScriptsToProcess = @('EmailModule.Libraries.ps1')
+
+            # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
+            FunctionsToExport = 'Send-Email'
+
+            # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
+            CmdletsToExport = 'Send-Email'
+
+            # Variables to export from this module
+            VariablesToExport = @()
+
+            # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
+            AliasesToExport = @()
+
+            # List of all files packaged with this module
+            FileList = $files
+
+            # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
+            Tags        = @('Desktop','Core','Email','StartTLS')
+            LicenseUri  = 'https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/LICENSE'
+            ProjectUri  = 'https://github.com/Brandon-J-Navarro/Powershell_Email-Module'
+            IconUri     = 'https://github.com/Brandon-J-Navarro/'
+          }
+          New-ModuleManifest @moduleSettings
+
+      - name: Copy powershell module to release directory
+        run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working.*", ''
+          Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\EmailModule\$version\"
+
+      - name: Generate nuspec
+        run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working.*", ''
+          @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+            <metadata>
+              <id>EmailModule</id>
+              <version>$version</version>
+              <title>EmailModule</title>
+              <authors>Brandon Navarro</authors>
+              <owners>Brandon Navarro</owners>
+              <requireLicenseAcceptance>false</requireLicenseAcceptance>
+              <licenseUrl>https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/LICENSE</licenseUrl>
+              <projectUrl>https://github.com/Brandon-J-Navarro/Powershell_Email-Module</projectUrl>
+              <description>Powershell Module to send Email using MailKit, MimeKit and STARTTLS</description>
+              <summary>A brief summary of your module.</summary>
+              <releaseNotes>Initial release with feature X and bug fix Y.</releaseNotes>
+              <copyright>(c) Brandon Navarro. All rights reserved.</copyright>
+              <tags>Desktop Core Email StartTLS</tags>
+            </metadata>
+            <files>
+              <file src=".\*" target="modules\EmailModule" />
+            </files>
+          </package>
+          "@ | Out-File -FilePath ".\release\EmailModule\$version\EmailModule.nuspec"
+
+      - name: Build NuGet Package
+        run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working.*", ''
+          nuget pack .\release\EmailModule\$version\EmailModule.nuspec
+
+      - name: Publish NuGet Package
+        run: |
+          $version = '${{ steps.tag_version.outputs.new_tag }}'
+          $version = $version  -replace 'v', ''
+          $version = $version  -replace "-working.*", ''
+          Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\EmailModule\$version\"
+          New-Item -ItemType Directory -Path 'artifact' | Out-Null;
+          Copy-Item -Recurse -Force .\release\EmailModule\$version\* .\artifact\
+          Get-ChildItem -path ".\artifact\" -Recurse -File | ForEach-Object {
+            Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256 | FL | Out-File -FilePath ".\artifact\Hashes.txt" -Append
+          }
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4.6.2
         with:
