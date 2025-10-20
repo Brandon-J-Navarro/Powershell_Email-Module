@@ -63,6 +63,6 @@ BeforeAll {
     }
 
     # Import module under test
-    $Global:ModulePath = Join-Path $PSScriptRoot "EmailModule.psm1"
+    $Global:ModulePath = Join-Path $PSScriptRoot '..\EmailModule.psm1'
     Import-Module $Global:ModulePath -Force
 }
