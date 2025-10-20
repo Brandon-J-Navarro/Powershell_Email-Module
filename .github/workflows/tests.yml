@@ -255,7 +255,7 @@ jobs:
           path: EmailModule
 
       - name: Install Pester
-        shell: shell
+        shell: pwsh
         run: |
           if (Get-Module -ListAvailable -Name Pester) {
             Write-Host "Pester is already installed"
@@ -271,7 +271,7 @@ jobs:
           Write-Host "Pester version: $PesterVersion"
 
       - name: Run Pester Tests
-        shell: shell
+        shell: pwsh
         run: |
           # Copy module files to current directory for testing
           Copy-Item -Path ".\EmailModule\*" -Destination ".\" -Recurse -Force
