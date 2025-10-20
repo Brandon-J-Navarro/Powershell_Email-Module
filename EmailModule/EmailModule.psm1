@@ -184,3 +184,10 @@ function Send-Email {
 }
 
 Export-ModuleMember Send-Email
+
+
+# Show banner after module is imported (optional)
+if (-not (Test-Path variable:global:EmailModule_BannerShown)) {
+    $global:EmailModule_BannerShown = $true
+    Get-Banner
+}
