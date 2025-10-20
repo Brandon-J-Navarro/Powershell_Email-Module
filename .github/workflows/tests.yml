@@ -174,7 +174,7 @@ jobs:
           Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\EmailModule\$version\"
           Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\release\EmailModule\$version\"
           Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\EmailModule\$version\"
-          Copy-Item -Path ".\tests\" -Recurse -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\Tests\" -Recurse -Destination ".\release\EmailModule\$version\"
 
       - name: Generate nuspec
         run: |
@@ -280,9 +280,9 @@ jobs:
           
           # Define test files to run
           $TestFiles = @(
-            '.\tests\EmailModule.Tests.ps1',
-            '.\tests\EmailModule.Libraries.Tests.ps1',
-            '.\tests\EmailModule.Integration.Tests.ps1'
+            '.\Tests\EmailModule.Tests.ps1',
+            '.\Tests\EmailModule.Libraries.Tests.ps1',
+            '.\Tests\EmailModule.Integration.Tests.ps1'
           )
           
           # Check which test files exist
@@ -402,9 +402,9 @@ jobs:
           
           # Define test files to run
           $TestFiles = @(
-            '.\tests\EmailModule.Tests.ps1',
-            '.\tests\EmailModule.Libraries.Tests.ps1',
-            '.\tests\EmailModule.Integration.Tests.ps1'
+            '.\Tests\EmailModule.Tests.ps1',
+            '.\Tests\EmailModule.Libraries.Tests.ps1',
+            '.\Tests\EmailModule.Integration.Tests.ps1'
           )
           
           # Check which test files exist
