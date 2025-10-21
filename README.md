@@ -1,4 +1,13 @@
-# Powershell_Email-Module
+```
+╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
+║  ███████╗███╗   ███╗ █████╗ ██╗██╗        ███╗   ███╗ ██████╗ ██████╗ ██╗   ██╗██╗     ███████╗  ║
+║  ██╔════╝████╗ ████║██╔══██╗██║██║        ████╗ ████║██╔═══██╗██╔══██╗██║   ██║██║     ██╔════╝  ║
+║  █████╗  ██╔████╔██║███████║██║██║        ██╔████╔██║██║   ██║██║  ██║██║   ██║██║     █████╗    ║
+║  ██╔══╝  ██║╚██╔╝██║██╔══██║██║██║        ██║╚██╔╝██║██║   ██║██║  ██║██║   ██║██║     ██╔══╝    ║
+║  ███████╗██║ ╚═╝ ██║██║  ██║██║███████╗   ██║ ╚═╝ ██║╚██████╔╝██████╔╝╚██████╔╝███████╗███████╗  ║
+║  ╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚══════╝   ╚═╝     ╚═╝ ╚═════╝ ╚═════╝  ╚═════╝ ╚══════╝╚══════╝  ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
+```
 Powershell Module to send Email using MailKit, MimeKit and STARTTLS
 > Note: Tested with Exchange Server, and Mailcow.
 
@@ -12,7 +21,7 @@ Originally I wrote this in .NET 8 but in order to have it available and work on 
 - DotNet Framework Version: '.NET Framework 4.7.2'
 
 ## PSGallery
-1. Download from <a href="https://www.powershellgallery.com/packages/EmailModule/">PSGallery</a><br>
+1. Download from <a href="https://www.powershellgallery.com/packages/EmailModule/" target="_blank">PSGallery</a><br>
 `Install-Module -Name EmailModule -Repository PSGallery`
 2. Import the Module `Import-Module EmailModule`
 3. Define your variables / Run the `Send-Email` Cmdlets
