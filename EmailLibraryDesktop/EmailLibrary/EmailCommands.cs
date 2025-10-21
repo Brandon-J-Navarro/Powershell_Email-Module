@@ -4,41 +4,48 @@ using MailKit.Security;
 public class EmailCommands
 {
     public static void SendEmail(
-        string authUser,
-        string authPass,
-        string emailTo,
-        string? emailToName,
-        string emailFrom,
-        string? emailFromName,
-        string? emailSubject,
-        string? emailBody,
-        string emailMailServer,
-        int emailServerPort)
+        string _AuthUser,
+        string _AuthPass,
+        string _EmailTo,
+        string? _EmailToName,
+        string _EmailFrom,
+        string? _EmailFromName,
+        string? _EmailSubject,
+        string? _EmailBody,
+        string _EmailMailServer,
+        int _EmailServerPort)
     {
         var mailMessage = new MimeMessage();
-        mailMessage.From.Add(string.IsNullOrEmpty(emailFromName)
-            ? new MailboxAddress(emailFrom, emailFrom)
-            : new MailboxAddress(emailFromName, emailFrom));
+        mailMessage.From.Add(string.IsNullOrEmpty(_EmailFromName)
+            ? new MailboxAddress(_EmailFrom, _EmailFrom)
+            : new MailboxAddress(_EmailFromName, _EmailFrom));
 
-        mailMessage.To.Add(string.IsNullOrEmpty(emailToName)
-            ? new MailboxAddress(emailTo, emailTo)
-            : new MailboxAddress(emailToName, emailTo));
+        mailMessage.To.Add(string.IsNullOrEmpty(_EmailToName)
+            ? new MailboxAddress(_EmailTo, _EmailTo)
+            : new MailboxAddress(_EmailToName, _EmailTo));
 
-        if (!string.IsNullOrEmpty(emailSubject))
+        if (!string.IsNullOrEmpty(_EmailSubject))
         {
-            mailMessage.Subject = emailSubject;
+            mailMessage.Subject = _EmailSubject;
         }
 
         mailMessage.Body = new TextPart("plain")
         {
-            Text = emailBody ?? string.Empty
+            Text = _EmailBody ?? string.Empty
         };
 
-        var smtpClient = new SmtpClient();
-        smtpClient.Connect(emailMailServer, emailServerPort, SecureSocketOptions.StartTls);
-        smtpClient.Authenticate(authUser, authPass);
-        smtpClient.Send(mailMessage);
-        smtpClient.Disconnect(true);
-        smtpClient.Dispose();
+        using (var smtpClient = new MailKit.Net.Smtp.SmtpClient())
+        {
+            smtpClient.Connect(_EmailMailServer, _EmailServerPort, SecureSocketOptions.StartTls);
+            smtpClient.Authenticate(_AuthUser, _AuthPass);
+            smtpClient.Send(mailMessage);
+            smtpClient.Disconnect(true);
+        }
+        // var smtpClient = new MailKit.Net.Smtp.SmtpClient();
+        // smtpClient.Connect(_EmailMailServer, _EmailServerPort, SecureSocketOptions.StartTls);
+        // smtpClient.Authenticate(_AuthUser, _AuthPass);
+        // smtpClient.Send(mailMessage);
+        // smtpClient.Disconnect(true);
+        // smtpClient.Dispose();
     }
 }
