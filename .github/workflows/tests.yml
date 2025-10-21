@@ -475,7 +475,7 @@ jobs:
         run: |
           Test-ModuleManifest -Path '.\EmailModule\EmailModule.psd1'
 
-      - name: Integration Test Module
+      - name: Integration Test Module Full Parameters
         shell: pwsh
         run: |
           $Linux = $IsLinux
@@ -497,7 +497,7 @@ jobs:
             Windows: $Windows
             PSEdition: $PSEdition
 
-            This is a GitHub Actions Automated Integration Test ${{ needs.build.outputs.new_tag }}
+            This is a GitHub Actions Automated Integration Test ${{ needs.build.outputs.new_tag }} Full Parameters
             Unit tests have passed ✅
           "
           $MailServer = "${{ secrets.MAILSERVER }}"
@@ -506,6 +506,54 @@ jobs:
               -EmailTo $To -EmailToName $ToName `
               -EmailFrom $From -EmailFromName $FromName `
               -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer -SmtpPort $ServerPort
+
+      - name: Integration Test Module Limited Parameters 1
+        shell: pwsh
+        run: |
+          $Linux = $IsLinux
+          $MacOS = $IsMacOS
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $Subject = "Github Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Integration Test"
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          $ServerPort = "587"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailFrom $From `
+              -Subject $Subject `
+              -SmtpServer $MailServer -SmtpPort $ServerPort
+
+      - name: Integration Test Module Limited Parameters 2
+        shell: pwsh
+        run: |
+          $Linux = $IsLinux
+          $MacOS = $IsMacOS
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $Body = "
+            Integration Test - Email Module
+
+            Linux: $Linux
+            MacOS: $MacOS
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            This is a GitHub Actions Automated Integration Test ${{ needs.build.outputs.new_tag }} Limited Parameters 2
+            Unit tests have passed ✅
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          $ServerPort = "587"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailFrom $From -EmailFromName $FromName`
+              -Body $Body `
               -SmtpServer $MailServer -SmtpPort $ServerPort
 
   integration-test-desktop:
@@ -523,7 +571,7 @@ jobs:
           name: EmailModule
           path: EmailModule
 
-      - name: Integration Test Module with PowerShell Desktop
+      - name: Integration Test Module with PowerShell Desktop Full Parameters
         shell: powershell
         run: |
           Import-Module .\EmailModule\EmailModule.psm1
@@ -539,7 +587,7 @@ jobs:
 
             PSEdition: $PSEdition
 
-            This is a GitHub Actions Automated Integration Test ${{ needs.build.outputs.new_tag }}
+            This is a GitHub Actions Automated Integration Test ${{ needs.build.outputs.new_tag }} Full Parameters
             Unit tests have passed ✅
           "
           $MailServer = "${{ secrets.MAILSERVER }}"
@@ -548,6 +596,46 @@ jobs:
               -EmailTo $To -EmailToName $ToName `
               -EmailFrom $From -EmailFromName $FromName `
               -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer -SmtpPort $ServerPort
+
+      - name: Integration Test Module with PowerShell Desktop Limited Parameters 1
+        shell: powershell
+        run: |
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $Subject = "Github Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - Integration Test"
+
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          $ServerPort = "587"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailFrom $From `
+              -Subject $Subject `
+              -SmtpServer $MailServer -SmtpPort $ServerPort
+
+      - name: Integration Test Module with PowerShell Desktop Limited Parameters 2
+        shell: powershell
+        run: |
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $Body = "
+            Integration Test - dotNET Framework Email Module
+
+            PSEdition: $PSEdition
+
+            This is a GitHub Actions Automated Integration Test ${{ needs.build.outputs.new_tag }} Full Parameters
+            Unit tests have passed ✅
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          $ServerPort = "587"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailFrom $From `
+              -Body $Body `
               -SmtpServer $MailServer -SmtpPort $ServerPort
 
   # # NEW: Test Report Summary
