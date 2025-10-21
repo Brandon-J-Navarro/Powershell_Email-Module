@@ -34,12 +34,11 @@ public class EmailCommands
             Text = emailBody ?? string.Empty
         };
 
-        using (var smtpClient = new SmtpClient())
-        {
-            smtpClient.Connect(emailMailServer, emailServerPort, SecureSocketOptions.StartTls);
-            smtpClient.Authenticate(authUser, authPass);
-            smtpClient.Send(mailMessage);
-            smtpClient.Disconnect(true);
-        }
+        var smtpClient = new SmtpClient();
+        smtpClient.Connect(emailMailServer, emailServerPort, SecureSocketOptions.StartTls);
+        smtpClient.Authenticate(authUser, authPass);
+        smtpClient.Send(mailMessage);
+        smtpClient.Disconnect(true);
+        smtpClient.Dispose();
     }
 }
