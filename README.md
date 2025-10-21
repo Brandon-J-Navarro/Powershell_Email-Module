@@ -9,6 +9,10 @@
 ╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
 ```
 Powershell Module to send Email using MailKit, MimeKit and STARTTLS
+
+[![Build and Test PowerShell Module](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/tests.yml/badge.svg?branch=working)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/tests.yml)
+[![Build, Package, and Release](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/main.yml)
+
 > Note: Tested with Exchange Server, and Mailcow.
 
 > Note: MacOS Automated Test Failed
