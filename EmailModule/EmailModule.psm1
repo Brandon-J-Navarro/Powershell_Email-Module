@@ -36,12 +36,14 @@ function Send-Email {
         # Specifies the display name of the sender. Optional - if not provided, email address will be used.
         $EmailFromName,
         
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
         [string]
         # Specifies the subject line of the email.
         $Subject,
         
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
         [string]
         # Specifies the body content of the email message.
         # The message is sent as plain text.
@@ -168,6 +170,23 @@ function Send-Email {
             -EmailFrom $From -EmailFromName $FromName `
             -Subject $Subject -Body $Body `
             -SmtpServer $MailServer -SmtpPort $ServerPort
+
+    .EXAMPLE
+    # Example usage:
+
+    PS> $AuthUser =     "DoNotReply@Domain.com"
+    PS> $AuthPass =     "YourPasswordHere"
+    PS> $To =           "Recipient@Domain.com"
+    PS> $From =         "DoNotReply@Domain.com"
+    PS> $Subject =      "System Notification"
+    PS> $Body =         "This is a test email sent from the Email Module."
+    PS> $MailServer =   "mail.domain.com"
+    PS> $ServerPort =   587
+
+    Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+        -EmailTo $To -EmailFrom $From  `
+        -Subject $Subject -Body $Body `
+        -SmtpServer $MailServer -SmtpPort $ServerPort
 
     .LINK
     Source Code: https://github.com/Brandon-J-Navarro/Powershell_Email-Module
