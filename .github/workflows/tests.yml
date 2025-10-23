@@ -10,7 +10,7 @@ on:
       - '.github/workflows/**'
       - '!README.md'
       - '!.wiki/**'
-    branches: [ working ]
+    branches: [ testing ]
   pull_request:
     types: [closed]
     paths:
