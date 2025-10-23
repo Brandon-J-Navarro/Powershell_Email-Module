@@ -10,7 +10,7 @@ on:
       - '.github/workflows/**'
       - '!README.md'
       - '!.wiki/**'
-    branches: [ working ]
+    branches: [ testing ]
   pull_request:
     types: [closed]
     paths:
@@ -21,7 +21,6 @@ on:
       - '.github/workflows/**'
       - '!README.md'
       - '!.wiki/**'
-    branches: [ working ]
   workflow_dispatch:
 
 permissions:
@@ -186,7 +185,7 @@ jobs:
           Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\EmailModule\$version\"
           Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\release\EmailModule\$version\"
           Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\EmailModule\$version\"
-          Copy-Item -Path ".\Tests\" -Recurse -Destination ".\release\EmailModule\$version\"
+          # Copy-Item -Path ".\Tests\" -Recurse -Destination ".\release\EmailModule\$version\"
           Copy-Item -Path ".\README.md" -Destination ".\release\EmailModule\$version\"
           Copy-Item -Path ".\LICENSE" -Destination ".\release\EmailModule\$version\"
 
