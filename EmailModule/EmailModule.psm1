@@ -11,7 +11,6 @@ function Send-Email {
         [Parameter(Mandatory = $true)]
         [string]
         # Specifies the password used to authenticate to the SMTP server.
-        # Use secure methods (e.g. `Get-Credential`)to protect sensitive data when possible.
         $AuthPass,
         
         [Parameter(Mandatory = $true)]
@@ -79,9 +78,9 @@ function Send-Email {
     depending on the current PowerShell edition:
 
     - When running on `PowerShell Core`, assemblies are loaded from:
-        .\lib\Core\
+        .\lib\net8.0\
     - When running on `Windows PowerShell (Desktop)`, assemblies are loaded from:
-        .\lib\Desktop\
+        .\lib\net472\
 
     This design ensures cross-platform compatibility and supports secure, authenticated email delivery
     from PowerShell scripts or automation environments.
@@ -114,35 +113,17 @@ function Send-Email {
         - Encryption:        STARTTLS via MailKit.Security.SecureSocketOptions.StartTls
         - Auto-loader:       EmailModule.Libraries.ps1
         - Library paths:
-            D:\lib\Core\      → PowerShell Core
-            D:\lib\Desktop\   → Windows PowerShell Desktop
+            EmailModule\lib\net8.0\      → PowerShell Core
+            EmailModule\lib\net472\   → Windows PowerShell Desktop
 
     All assemblies are automatically imported when the module is loaded.
     If a DLL fails to load, a warning will be displayed.
 
     The function relies on a .NET class implemented in C#, defined as:
-
-        public class EmailCommands
-        {
-            public static void SendEmail(string _AuthUser, string _AuthPass, string _EmailTo,
-                string _EmailToName, string _EmailFrom, string _EmailFromName, string _EmailSubject,
-                string _EmailBody, string _EmailMailServer, int _EmailServerPort)
-            {
-                var mailMessage = new MimeMessage();
-                mailMessage.From.Add(new MailboxAddress(_EmailFromName, _EmailFrom));
-                mailMessage.To.Add(new MailboxAddress(_EmailToName, _EmailTo));
-                mailMessage.Subject = _EmailSubject;
-                mailMessage.Body = new TextPart("plain")
-                {
-                    Text = _EmailBody
-                };
-                using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
-                smtpClient.Connect(_EmailMailServer, _EmailServerPort, SecureSocketOptions.StartTls);
-                smtpClient.Authenticate(_AuthUser, _AuthPass);
-                smtpClient.Send(mailMessage);
-                smtpClient.Disconnect(true);
-            }
-        }
+    public static class EmailCommands
+    {
+        public static void SendEmail(...) { ... }
+    }
 
     This class uses:
         - MimeKit for constructing MIME messages.

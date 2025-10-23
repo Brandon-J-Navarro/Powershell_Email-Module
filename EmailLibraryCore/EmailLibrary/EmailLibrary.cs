@@ -24,10 +24,7 @@ public class EmailCommands
             ? new MailboxAddress(_EmailTo, _EmailTo)
             : new MailboxAddress(_EmailToName, _EmailTo));
 
-        if (!string.IsNullOrEmpty(_EmailSubject))
-        {
-            mailMessage.Subject = _EmailSubject;
-        }
+        mailMessage.Subject = _EmailSubject ?? string.Empty;
 
         mailMessage.Body = new TextPart("plain")
         {
