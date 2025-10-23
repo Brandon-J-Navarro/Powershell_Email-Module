@@ -17,7 +17,7 @@ Powershell Module to send Email using MailKit, MimeKit and STARTTLS
 [![GitHub Tag](https://img.shields.io/github/v/tag/Brandon-J-Navarro/Powershell_Email-Module)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/tags)
 
 [![Build, Package, and Release](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/main.yml)&nbsp; 
-[![Build and Test PowerShell Module](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/tests.yml/badge.svg?branch=working)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/tests.yml)
+[![Build and Test PowerShell Module](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/tests.yml/badge.svg?branch=testing)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/tests.yml)
 
 ✔ ![Windows](https://custom-icon-badges.demolab.com/badge/Windows-0078D6?logo=windows11&logoColor=white)&nbsp; &nbsp; &nbsp; 
 ✔ ![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)&nbsp; &nbsp; &nbsp; 
