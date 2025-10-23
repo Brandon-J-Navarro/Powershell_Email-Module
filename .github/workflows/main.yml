@@ -7,9 +7,10 @@ on:
       - 'EmailModule/**'
       - 'EmailLibraryDesktop/**'
       - 'EmailLibraryCore/**'
-      - '.github/workflows/**'
+      - '!.github/workflows/**'
       - '!README.md'
       - '!.wiki/**'
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
