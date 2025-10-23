@@ -21,6 +21,7 @@ on:
       - '.github/workflows/**'
       - '!README.md'
       - '!.wiki/**'
+    branches: [ testing ]
   workflow_dispatch:
 
 permissions:
@@ -61,7 +62,7 @@ jobs:
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
+          $version = $version  -replace "-testing.*", ''
           New-Item -ItemType Directory -Path release | Out-Null;
           New-Item -ItemType Directory -Path .\release\EmailModule | Out-Null;
           New-Item -ItemType Directory -Path .\release\EmailModule\$version | Out-Null;
@@ -73,7 +74,7 @@ jobs:
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
+          $version = $version  -replace "-testing.*", ''
           Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
             Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\net472\"
           }
@@ -98,7 +99,7 @@ jobs:
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
+          $version = $version  -replace "-testing.*", ''
           Get-ChildItem -path ".\publish\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
             Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\net8.0\"
           }
@@ -107,7 +108,7 @@ jobs:
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
+          $version = $version  -replace "-testing.*", ''
 
           $files = @('.\EmailModule.psd1','.\EmailModule.psm1','.\EmailModule.Libraries.ps1',".\EmailModule.nuspec",".\EmailModule.$version.nupkg")
           Get-ChildItem -Path ".\release\EmailModule\$version\" -Recurse -File | ForEach-Object { 
@@ -181,7 +182,7 @@ jobs:
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
+          $version = $version  -replace "-testing.*", ''
           Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\EmailModule\$version\"
           Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\release\EmailModule\$version\"
           Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\EmailModule\$version\"
@@ -193,7 +194,7 @@ jobs:
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
+          $version = $version  -replace "-testing.*", ''
           @"
           <?xml version="1.0" encoding="utf-8"?>
           <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
@@ -246,14 +247,14 @@ jobs:
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
+          $version = $version  -replace "-testing.*", ''
           nuget pack .\release\EmailModule\$version\EmailModule.nuspec -Properties Configuration=Release
 
       - name: Publish NuGet Package
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
+          $version = $version  -replace "-testing.*", ''
           Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\EmailModule\$version\"
           New-Item -ItemType Directory -Path 'artifact' | Out-Null;
           Copy-Item -Recurse -Force .\release\EmailModule\$version\* .\artifact\
