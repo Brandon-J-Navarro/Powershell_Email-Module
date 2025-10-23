@@ -1,6 +1,6 @@
 # EmailModule.Libraries.ps1
 if ($PSEdition -eq 'Core') {
-    Get-ChildItem -Path (Join-Path $PSScriptRoot 'lib/Core') -Filter *.dll | 
+    Get-ChildItem -Path (Join-Path $PSScriptRoot 'lib/net8.0') -Filter *.dll | 
     ForEach-Object {
         try {
             Add-Type -Path $_.FullName -ErrorAction Stop
@@ -9,7 +9,7 @@ if ($PSEdition -eq 'Core') {
         }
     }
 } else {
-    Get-ChildItem -Path (Join-Path $PSScriptRoot 'lib/Desktop') -Filter *.dll |
+    Get-ChildItem -Path (Join-Path $PSScriptRoot 'lib/net472') -Filter *.dll |
     Where-Object Extension -eq '.dll' |
     Where-Object Name -ne 'System.Formats.Asn1.dll' |
     ForEach-Object {
