@@ -7,7 +7,7 @@ on:
       - 'EmailLibraryDesktop/**'
       - 'EmailLibraryCore/**'
       - 'tests/**'
-      - '.github/workflows/**'
+      - '!.github/workflows/**'
       - '!README.md'
       - '!.wiki/**'
     branches: [ testing ]
@@ -18,7 +18,7 @@ on:
       - 'EmailLibraryDesktop/**'
       - 'EmailLibraryCore/**'
       - 'tests/**'
-      - '.github/workflows/**'
+      - '!.github/workflows/**'
       - '!README.md'
       - '!.wiki/**'
     branches: [ testing ]
