@@ -10,7 +10,6 @@ on:
       - '.github/workflows/**'
       - '!README.md'
       - '!.wiki/**'
-    branches: [ main ]
   workflow_dispatch:
 
 permissions:
