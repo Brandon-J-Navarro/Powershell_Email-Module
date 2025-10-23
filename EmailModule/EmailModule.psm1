@@ -78,9 +78,9 @@ function Send-Email {
     depending on the current PowerShell edition:
 
     - When running on `PowerShell Core`, assemblies are loaded from:
-        .\lib\Core\
+        .\lib\net8.0\
     - When running on `Windows PowerShell (Desktop)`, assemblies are loaded from:
-        .\lib\Desktop\
+        .\lib\net472\
 
     This design ensures cross-platform compatibility and supports secure, authenticated email delivery
     from PowerShell scripts or automation environments.
@@ -113,8 +113,8 @@ function Send-Email {
         - Encryption:        STARTTLS via MailKit.Security.SecureSocketOptions.StartTls
         - Auto-loader:       EmailModule.Libraries.ps1
         - Library paths:
-            D:\lib\Core\      → PowerShell Core
-            D:\lib\Desktop\   → Windows PowerShell Desktop
+            EmailModule\lib\net8.0\      → PowerShell Core
+            EmailModule\lib\net472\   → Windows PowerShell Desktop
 
     All assemblies are automatically imported when the module is loaded.
     If a DLL fails to load, a warning will be displayed.
