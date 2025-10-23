@@ -12,15 +12,15 @@
 ```
 Powershell Module to send Email using MailKit, MimeKit and STARTTLS
 
-[![GitHub License](https://img.shields.io/github/license/Brandon-J-Navarro/Powershell_Email-Module?color=blue)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/LICENSE)
-[![issues - badge-generator](https://img.shields.io/github/issues/Brandon-J-Navarro/Powershell_Email-Module?color=red)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/issues)
+[![GitHub License](https://img.shields.io/github/license/Brandon-J-Navarro/Powershell_Email-Module?color=blue)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/LICENSE)&nbsp; 
+[![issues - badge-generator](https://img.shields.io/github/issues/Brandon-J-Navarro/Powershell_Email-Module?color=red)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/issues)&nbsp; 
 [![GitHub Tag](https://img.shields.io/github/v/tag/Brandon-J-Navarro/Powershell_Email-Module)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/tags)
 
-[![Build, Package, and Release](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/main.yml)
+[![Build, Package, and Release](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/main.yml)&nbsp; 
 [![Build and Test PowerShell Module](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/tests.yml/badge.svg?branch=working)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/tests.yml)
 
-✔ ![Windows](https://custom-icon-badges.demolab.com/badge/Windows-0078D6?logo=windows11&logoColor=white)
-✔ ![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)
+✔ ![Windows](https://custom-icon-badges.demolab.com/badge/Windows-0078D6?logo=windows11&logoColor=white)&nbsp; &nbsp; &nbsp; 
+✔ ![Linux](https://img.shields.io/badge/Linux-FCC624?logo=linux&logoColor=black)&nbsp; &nbsp; &nbsp; 
 ❌ ![macOS](https://img.shields.io/badge/macOS-000000?logo=apple&logoColor=F0F0F0)
 
 </div>
@@ -36,10 +36,24 @@ Originally I wrote this in .NET 8 but in order to have it available and work on 
 - Tested with Microsoft Exchange Sever 2019 CU 15 and mailcow: dockerized 2025-09c
 
 ## Change Log
-- Release: 1.0.5 EmailToName, and EmailFromName are NULLABLE
-- Release: 1.0.4 All Parameters are required
+- Release: 1.0.6 
+    - Subject and body are NULLABLE
+    - Updated nuspec file generation to address warnings and missing files in nuget pack
+        - Added dependencies
+        - Added readme metadata
+        - Updated license metadata
+        - Added repository metadata
+    - Change dll directories to address nuget pack warnings
+        - lib\Core → lib\net8.0
+        - lib\Desktop → lib\net472
+    - Added License and Readme Property and Item Groups to csproj files
 
-## PSGallery [![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/EmailModule)](https://www.powershellgallery.com/packages/EmailModule/) [![PowerShell Gallery Downloads](https://img.shields.io/powershellgallery/dt/EmailModule?color=blue)](https://www.powershellgallery.com/packages/EmailModule/)
+- Release: 1.0.5
+    - EmailToName, and EmailFromName are NULLABLE
+- Release: 1.0.4
+    - All Parameters are required
+
+## PSGallery [![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/EmailModule)](https://www.powershellgallery.com/packages/EmailModule/)&nbsp; [![PowerShell Gallery Downloads](https://img.shields.io/powershellgallery/dt/EmailModule?color=blue)](https://www.powershellgallery.com/packages/EmailModule/)
 
 1. Download from <a href="https://www.powershellgallery.com/packages/EmailModule/" target="_blank">PSGallery</a><br>
 `Install-Module -Name EmailModule -Repository PSGallery`
