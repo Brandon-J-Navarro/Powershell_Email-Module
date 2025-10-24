@@ -39,7 +39,7 @@ Powershell Module to send Email using <a href="https://github.com/jstedfast/Mail
 
 </div>
 
-### [Release Notes](#release-notes)
+### [Release Notes](#release-notes-1)
 
 > Note: MacOS Failed GitHub Actions Automated Test and is currently not officially supported
 
