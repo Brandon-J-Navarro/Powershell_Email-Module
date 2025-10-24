@@ -55,10 +55,51 @@ function Send-Email {
         
         [int]
         # Specifies the TCP port number used for the SMTP connection. The default is 587.
-        $SmtpPort = 587
+        $SmtpPort = 587,
+
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [object]
+        $EmailCc = $null,
+
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [object]
+        $CcName = $null,
+
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [object]
+        $EmailBcc = $null,
+
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [object]
+        $BccName = $null,
+
+        [Parameter(Mandatory = $false)]
+        [AllowNull()]
+        [string]
+        $EmailAttachment = $null
     )
 
-    [EmailCommands]::SendEmail($AuthUser, $AuthPass, $EmailTo, $EmailToName, $EmailFrom, $EmailFromName, $Subject, $Body, $SmtpServer, $SmtpPort)
+    [EmailCommands]::SendEmail(
+        $AuthUser,
+        $AuthPass,
+        $EmailTo,
+        $EmailToName,
+        $EmailFrom,
+        $EmailFromName,
+        $Subject,
+        $Body,
+        $SmtpServer,
+        $SmtpPort,
+        $EmailCc,
+        $CcName,
+        $EmailBcc,
+        $BccName,
+        $EmailAttachment
+    )
 
     <#
     .SYNOPSIS
@@ -168,6 +209,34 @@ function Send-Email {
         -EmailTo $To -EmailFrom $From  `
         -Subject $Subject -Body $Body `
         -SmtpServer $MailServer -SmtpPort $ServerPort
+
+    .EXAMPLE
+
+    PS> $AuthUser =     "DoNotReply@Domain.com"
+    PS> $AuthPass =     "YourPasswordHere"
+    PS> $To =           "Recipient1@Domain.com;Recipient2@Domain.com"
+    PS> $ToName =       "Recipient1;Recipient2"
+    PS> $From =         "DoNotReply@Domain.com"
+    PS> $FromName =     "Automation Service"
+    PS> $Subject =      "System Notification"
+    PS> $Body =         "This is a test email sent from the Email Module."
+    PS> $MailServer =   "mail.domain.com"
+    PS> $ServerPort =   587
+    PS> $Cc =           "Recipient3@Domain.com"
+    PS> $CcName =       "Recipient3"
+    PS> $Bcc =          "Recipient4@Domain.com"
+    PS> $BccName =      "Recipient4"
+
+
+    Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+        -EmailTo $To -EmailToName $ToName `
+        -EmailFrom $From -EmailFromName $FromName `
+        -Subject $Subject -Body $Body `
+        -SmtpServer $MailServer -SmtpPort $ServerPort `
+        -EmailCc $Cc -CcName $CcName `
+        -EmailBcc $Bcc -BccName $BccName `
+        -EmailAttachment $null
+
 
     .LINK
     Source Code: https://github.com/Brandon-J-Navarro/Powershell_Email-Module
