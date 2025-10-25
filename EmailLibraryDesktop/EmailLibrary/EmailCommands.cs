@@ -1,6 +1,9 @@
 ﻿// EmailCommands.cs
 using MimeKit;
 using MailKit.Security;
+using System.Net;
+using System.Security;
+using System;
 public class EmailCommands
 {
     public static void SendEmail(
@@ -133,7 +136,7 @@ public class EmailCommands
 
     static private MimeMessage BuildMailMessageCc(MimeMessage mailMessage,string emailCc, string? ccName)
     {
-        var EmailRecipientCc = emailCc.Split(";");
+        var EmailRecipientCc = emailCc.Split(';');
         var EmailRecipientCcName = ccName.Split(';');
         for (int i = 0; i < EmailRecipientCc.Length; i++)
         {
@@ -151,7 +154,7 @@ public class EmailCommands
 
     static private MimeMessage BuildMailMessageBcc(MimeMessage mailMessage, string emailBcc, string? bccName)
     {
-        var EmailRecipientCc = emailBcc.Split(";");
+        var EmailRecipientCc = emailBcc.Split(';');
         var EmailRecipientCcName = bccName.Split(';');
         for (int i = 0; i < EmailRecipientCc.Length; i++)
         {

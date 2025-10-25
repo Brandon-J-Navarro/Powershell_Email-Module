@@ -3,7 +3,6 @@ using MailKit.Security;
 using Microsoft.AspNetCore.StaticFiles;
 using MimeKit;
 using System.Net;
-using System.Net.Mail;
 using System.Security;
 public class EmailCommands
 {
