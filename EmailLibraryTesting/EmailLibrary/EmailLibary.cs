@@ -1,12 +1,15 @@
 ﻿// EmailLibrary.cs
+using EmailLibrary;
 using MailKit.Security;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Configuration;
 using MimeKit;
 using System.Net;
-using System.Net.Mail;
 using System.Security;
+
 public class EmailCommands
 {
+    private static readonly IConfiguration _configuration = Startup.BuildConfiguation();
     public static void SendEmail(
         string authUser, object authPass,
         string emailTo, string? toName,
@@ -107,7 +110,6 @@ public class EmailCommands
         }
         return credentials;
     }
-
     static private MimeMessage BuildMailMessageFrom(MimeMessage mailMessage, string emailFrom, string? fromName)
     {
         mailMessage.From.Add(string.IsNullOrEmpty(fromName)
@@ -115,7 +117,6 @@ public class EmailCommands
             : new MailboxAddress(fromName, emailFrom));
         return mailMessage;
     }
-
     static private MimeMessage BuildMailMessageTo(MimeMessage mailMessage, string emailTo, string? toName)
     {
         var EmailRecipientTo = emailTo.Split(';');
@@ -133,8 +134,7 @@ public class EmailCommands
         }
         return mailMessage;
     }
-
-    static private MimeMessage BuildMailMessageCc(MimeMessage mailMessage,string emailCc, string? ccName)
+    static private MimeMessage BuildMailMessageCc(MimeMessage mailMessage, string emailCc, string? ccName)
     {
         var EmailRecipientCc = emailCc.Split(";");
         var EmailRecipientCcName = ccName.Split(';');
@@ -151,7 +151,6 @@ public class EmailCommands
         }
         return mailMessage;
     }
-
     static private MimeMessage BuildMailMessageBcc(MimeMessage mailMessage, string emailBcc, string? bccName)
     {
         var EmailRecipientCc = emailBcc.Split(";");
@@ -168,5 +167,51 @@ public class EmailCommands
             }
         }
         return mailMessage;
+    }
+    static void Main(string[] args)
+    {
+        string AuthUser = _configuration["EmailParameters:AuthUser"];
+        object AuthPass = _configuration["EmailParameters:AuthPass"];
+        string EmailTo = _configuration["EmailParameters:EmailTo"];
+        string EmailToName = _configuration["EmailParameters:EmailToName"];
+        string EmailFrom = _configuration["EmailParameters:EmailFrom"];
+        string EmailFromName = _configuration["EmailParameters:EmailFromName"];
+        string Subject = _configuration["EmailParameters:Subject"];
+        string Body = _configuration["EmailParameters:Body"];
+        string SmtpServer = _configuration["EmailParameters:SmtpServer"];
+        string SmtpPort = _configuration["EmailParameters:SmtpPort"];
+        //string EmailCc = _configuration["EmailParameters:EmailCc"];
+        //string CcName = _configuration["EmailParameters:CcName"];
+        //string EmailBcc = _configuration["EmailParameters:EmailBcc"];
+        //string BccName = _configuration["EmailParameters:BccName"];
+        //string EmailAttachment = _configuration["EmailParameters:EmailAttachment"];
+        //string EmailPriority = _configuration["EmailParameters:EmailPriority"];
+        //string EmailImportance = _configuration["EmailParameters:EmailImportance"];
+        string EmailCc = null;
+        string CcName = null;
+        string EmailBcc = null;
+        string BccName = null;
+        string EmailAttachment = null;
+        string EmailPriority = null;
+        string EmailImportance = null;
+        SendEmail(
+            authUser: AuthUser,
+            authPass: AuthPass,
+            emailTo: EmailTo,
+            toName: EmailToName,
+            emailFrom: EmailFrom,
+            fromName: EmailFromName,
+            emailSubject: Subject,
+            emailBody: Body,
+            mailServer: SmtpServer,
+            serverPort: Convert.ToInt16(SmtpPort),
+            EmailCc,
+            CcName,
+            EmailBcc,
+            BccName,
+            EmailAttachment,
+            EmailPriority,
+            EmailImportance
+        );
     }
 }
