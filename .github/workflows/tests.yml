@@ -12,8 +12,7 @@ on:
       - '!.wiki/**'
     branches:
       - 'testing'
-      - '!main'
-      - '!development'
+
   pull_request:
     types: [closed]
     paths:
@@ -26,8 +25,7 @@ on:
       - '!.wiki/**'
     branches:
       - 'testing'
-      - '!main'
-      - '!development'
+
   workflow_dispatch:
 
 permissions:
