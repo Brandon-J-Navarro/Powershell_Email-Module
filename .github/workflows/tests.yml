@@ -322,6 +322,12 @@ jobs:
             Windows: $Windows
             PSEdition: $PSEdition
 
+            To = ${{ secrets.TO }}
+            ToName = Integration Test Recipient
+            From = ${{ secrets.AUTHUSER }}
+            FromName = GitHub Actions Bot
+            Subject = GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Original Full Parameters Test
+
             This is a GitHub Actions Automated Integration Test ${{ needs.build.outputs.new_tag }} with all parameters.
           "
           $MailServer = "${{ secrets.MAILSERVER }}"
@@ -353,7 +359,10 @@ jobs:
             Windows: $Windows
             PSEdition: $PSEdition
 
-            This test uses PSCredential for authentication.
+            To = ${{ secrets.TO }}
+            From = ${{ secrets.AUTHUSER }}
+            Subject = GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - PSCredential Test
+              This test uses PSCredential for authentication.
           "
           $MailServer = "${{ secrets.MAILSERVER }}"
           Send-Email -Credential $Credential `
@@ -381,6 +390,10 @@ jobs:
             Windows: $Windows
             PSEdition: $PSEdition
 
+            To = ${{ secrets.TO }}
+            From = ${{ secrets.AUTHUSER }}
+            Subject = GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - SecureString Test
+
             This test uses SecureString for password authentication.
           "
           $MailServer = "${{ secrets.MAILSERVER }}"
@@ -401,7 +414,7 @@ jobs:
           # Multiple recipients separated by semicolons
           $To = "${{ secrets.TO }};${{ secrets.AUTHUSER }}"
           $ToName = "Primary Recipient;Secondary Recipient"
-          $Cc = "${{ secrets.AUTHUSER }}"
+          $Cc = "${{ secrets.CC }}"
           $CcName = "CC Recipient"
           $From = "${{ secrets.AUTHUSER }}"
           $FromName = "Multi-Recipient Test"
@@ -413,6 +426,14 @@ jobs:
             MacOS: $MacOS
             Windows: $Windows
             PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }};${{ secrets.AUTHUSER }}
+            ToName = Primary Recipient;Secondary Recipient
+            Cc = ${{ secrets.CC }}
+            CcName = CC Recipient
+            From = ${{ secrets.AUTHUSER }}
+            FromName = Multi-Recipient Test
+            Subject = GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Multiple Recipients Test
 
             This test validates multiple To and CC recipients with display names.
           "
@@ -443,6 +464,10 @@ jobs:
             MacOS: $MacOS
             Windows: $Windows
             PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }}
+            From = ${{ secrets.AUTHUSER }}
+            Subject = GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Priority Test
 
             This test validates email priority (Urgent) and importance (High) settings.
           "
@@ -489,6 +514,9 @@ jobs:
             Windows: $Windows
             PSEdition: $PSEdition
 
+            To = ${{ secrets.TO }}
+            From = ${{ secrets.AUTHUSER }}
+
             This test validates emails with body content but no subject line.
           "
           $MailServer = "${{ secrets.MAILSERVER }}"
@@ -517,6 +545,11 @@ jobs:
             MacOS: $MacOS
             Windows: $Windows
             PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }};${{ secrets.AUTHUSER }};${{ secrets.AUTHUSER }}
+            ToName = Recipient One;Recipient Two  # Only 2 names for 3 emails
+            From = ${{ secrets.AUTHUSER }}
+            Subject = GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Name Mismatch Test
 
             This test validates fallback behavior when recipient name count doesn't match email count.
             Should use email addresses as display names when counts don't match.
@@ -547,6 +580,10 @@ jobs:
             Windows: $Windows
             PSEdition: $PSEdition
 
+            To = ${{ secrets.TO }}
+            From = ${{ secrets.AUTHUSER }}
+            Subject = GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Case Insensitive Test
+
             This test validates case-insensitive priority and importance parameters.
           "
           $MailServer = "${{ secrets.MAILSERVER }}"
@@ -568,7 +605,7 @@ jobs:
           $To = "${{ secrets.TO }}"
           $ToName = "Primary Recipient"
           # BCC to the same address as the sender for verification
-          $Bcc = "${{ secrets.AUTHUSER }}"
+          $Bcc = "${{ secrets.BCC }}"
           $BccName = "BCC Test Recipient"
           $From = "${{ secrets.AUTHUSER }}"
           $FromName = "BCC Test Sender"
@@ -581,12 +618,17 @@ jobs:
             Windows: $Windows
             PSEdition: $PSEdition
 
+            To = ${{ secrets.TO }}
+            ToName = Primary Recipient
+            Bcc = ${{ secrets.BCC }}
+            BccName = BCC Test Recipient
+            From = ${{ secrets.AUTHUSER }}
+            FromName = BCC Test Sender
+            Subject = GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - BCC Test
+
             This test validates BCC functionality. The BCC recipient should receive this email
-            but not be visible to the TO recipient. BCC sent to: ${{ secrets.AUTHUSER }}
-            
-            **VALIDATION**: Check that this email was received by both:
-            - TO: ${{ secrets.TO }}
-            - BCC: ${{ secrets.AUTHUSER }} (should not see BCC in headers)
+            but not be visible to the TO recipient. BCC sent to: ${{ secrets.BCC }}
+
           "
           $MailServer = "${{ secrets.MAILSERVER }}"
           Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
@@ -608,7 +650,7 @@ jobs:
           $To = "${{ secrets.TO }}"
           $ToName = "Primary Recipient"
           # Multiple BCC recipients - using available addresses
-          $Bcc = "${{ secrets.AUTHUSER }};${{ secrets.TO }}"
+          $Bcc = "${{ secrets.BCC }};${{ secrets.CC }}"
           $BccName = "BCC Recipient 1;BCC Recipient 2"
           $From = "${{ secrets.AUTHUSER }}"
           $FromName = "Multiple BCC Test"
@@ -623,9 +665,13 @@ jobs:
 
             This test validates multiple BCC functionality with semicolon separation.
             
-            **BCC Recipients**: 
-            - ${{ secrets.AUTHUSER }}
-            - ${{ secrets.TO }}
+            To = ${{ secrets.TO }}
+            ToName = Primary Recipient
+            Bcc = ${{ secrets.BCC }};${{ secrets.CC }}
+            BccName = BCC Recipient 1;BCC Recipient 2
+            From = ${{ secrets.AUTHUSER }}
+            FromName = Multiple BCC Test
+            Subject = GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Multiple BCC Test
             
             **VALIDATION**: All BCC recipients should receive this email but not see each other
             in the recipient headers. Only the TO recipient should be visible.
@@ -650,9 +696,9 @@ jobs:
           # Use different combinations of available addresses
           $To = "${{ secrets.TO }}"
           $ToName = "Primary Recipient"
-          $Cc = "${{ secrets.AUTHUSER }}"
+          $Cc = "${{ secrets.CC }}"
           $CcName = "CC Recipient"
-          $Bcc = "${{ secrets.TO }};${{ secrets.AUTHUSER }}"
+          $Bcc = "${{ secrets.BCC }};${{ secrets.AUTHUSER }}"
           $BccName = "BCC Recipient 1;BCC Recipient 2"
           $From = "${{ secrets.AUTHUSER }}"
           $FromName = "Complete Test Sender"
@@ -665,12 +711,16 @@ jobs:
             Windows: $Windows
             PSEdition: $PSEdition
 
-            This test validates all recipient types in one email:
-            
-            **TO**: ${{ secrets.TO }} (Primary Recipient)
-            **CC**: ${{ secrets.AUTHUSER }} (CC Recipient)
-            **BCC**: ${{ secrets.TO }}, ${{ secrets.AUTHUSER }} (Hidden Recipients)
-            
+            To = ${{ secrets.TO }}
+            ToName = Primary Recipient
+            Cc = ${{ secrets.CC }}
+            CcName = CC Recipient
+            Bcc = ${{ secrets.BCC }};${{ secrets.AUTHUSER }}
+            BccName = BCC Recipient 1;BCC Recipient 2
+            From = ${{ secrets.AUTHUSER }}
+            FromName = Complete Test Sender
+            Subject = GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Complete Recipients Test
+                
             **VALIDATION**:
             - TO and CC recipients should see each other in headers
             - BCC recipients should NOT be visible to TO/CC recipients
@@ -704,12 +754,27 @@ jobs:
           # Sender parameters
           $EmailFrom = "${{ secrets.AUTHUSER }}"
           $EmailFromName = "GitHub Actions Integration Test"
+
+          # Server parameters
+          $SmtpServer = "${{ secrets.MAILSERVER }}"
+          $SmtpPort = 587
           
-          # Content parameters
+          # Carbon Copy parameters
+          $EmailCc = "${{ secrets.CC }}"
+          $CcName = "CC Integration Test Recipient"
+          
+          # Blind Carbon Copy parameters  
+          $EmailBcc = "${{ secrets.BCC }};${{ secrets.AUTHUSER }}"
+          $BccName = "BCC Test Recipient 1;BCC Test Recipient 2"
+
+          # Priority and Importance parameters
+          $EmailPriority = "Urgent"
+          $EmailImportance = "High"
+
           $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - ALL PARAMETERS TEST"
           $Body = "
             Integration Test - Email Module (ALL PARAMETERS TEST)
-          
+
             Test Environment:
             =================
             Linux: $Linux
@@ -718,10 +783,10 @@ jobs:
             PSEdition: $PSEdition
             Build Tag: ${{ needs.build.outputs.new_tag }}
             OS Matrix: ${{ matrix.os }}
-          
+
             This comprehensive test validates ALL available parameters:
             ========================================================
-            
+
             ✓ AuthUser: $AuthUser
             ✓ AuthPass: [SECURED]
             ✓ EmailTo: Multiple recipients with semicolon separation
@@ -739,7 +804,7 @@ jobs:
             ✓ EmailAttachment: Test attachment file
             ✓ EmailPriority: Urgent priority level
             ✓ EmailImportance: High importance level
-          
+
             Validation Checklist:
             ====================
             [ ] TO recipients received email with proper display names
@@ -752,50 +817,50 @@ jobs:
           
             This email tests the complete functionality of the EmailModule
             with every available parameter populated and functional.
+
+            EmailTo = ${{ secrets.TO }};${{ secrets.AUTHUSER }}
+            EmailToName = Primary Test Recipient;Secondary Test Recipient
+          
+            EmailFrom = ${{ secrets.AUTHUSER }}
+            EmailFromName = GitHub Actions Integration Test
+          
+            EmailCc = ${{ secrets.CC }}
+            CcName = CC Integration Test Recipient
+          
+            EmailBcc = ${{ secrets.BCC }};${{ secrets.AUTHUSER }}
+            BccName = BCC Test Recipient 1;BCC Test Recipient 2
+          
+            Subject = GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - ALL PARAMETERS TEST
+            EmailPriority = Urgent
+            EmailImportance = High
           "
-          
-          # Server parameters
-          $SmtpServer = "${{ secrets.MAILSERVER }}"
-          $SmtpPort = 587
-          
-          # Carbon Copy parameters
-          $EmailCc = "${{ secrets.AUTHUSER }}"
-          $CcName = "CC Integration Test Recipient"
-          
-          # Blind Carbon Copy parameters  
-          $EmailBcc = "${{ secrets.TO }};${{ secrets.AUTHUSER }}"
-          $BccName = "BCC Test Recipient 1;BCC Test Recipient 2"
-          
-          # Create a test attachment file
-          $EmailAttachment = "integration-test-attachment.txt"
-          $AttachmentContent = @"
-          GitHub Actions Integration Test Attachment
-          ==========================================
-          
-          Test Details:
-          - Build Tag: ${{ needs.build.outputs.new_tag }}
-          - OS: ${{ matrix.os }}
-          - PowerShell Edition: $PSEdition
-          - Test Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
-          
-          Environment:
-          - Linux: $Linux
-          - macOS: $MacOS
-          - Windows: $Windows
-          
-          This file validates the EmailAttachment parameter functionality.
-          If you can read this content, the attachment feature is working correctly.
-          
-          File created during automated integration testing.
+
+            # Create a test attachment file
+            $EmailAttachment = "integration-test-attachment.txt"
+            $AttachmentContent = @"
+            GitHub Actions Integration Test Attachment
+            ==========================================
+            
+            Test Details:
+            - Build Tag: ${{ needs.build.outputs.new_tag }}
+            - OS: ${{ matrix.os }}
+            - PowerShell Edition: $PSEdition
+            - Test Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
+            
+            Environment:
+            - Linux: $Linux
+            - macOS: $MacOS
+            - Windows: $Windows
+            
+            This file validates the EmailAttachment parameter functionality.
+            If you can read this content, the attachment feature is working correctly.
+            
+            File created during automated integration testing.
           "@
-          
+
           # Create the test attachment file
           $AttachmentContent | Out-File -FilePath $EmailAttachment -Encoding UTF8
-          
-          # Priority and Importance parameters
-          $EmailPriority = "Urgent"
-          $EmailImportance = "High"
-          
+
           # Execute the Send-Email command with ALL parameters
           Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
               -EmailTo $EmailTo -EmailToName $EmailToName `
@@ -830,6 +895,12 @@ jobs:
                 Integration Test - dotNET Framework Email Module
 
                 PSEdition: $PSEdition
+
+                To = ${{ secrets.TO }}
+                ToName = Brandon Navarro
+                From = ${{ secrets.AUTHUSER }}
+                FromName = Brandon Navarro
+                Subject = Github Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Integration Test
 
                 This is a GitHub Actions Automated Integration Test ${{ needs.build.outputs.new_tag }} Full Parameters
               "
