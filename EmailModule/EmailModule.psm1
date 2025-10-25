@@ -232,7 +232,7 @@ function Send-Email {
 
     Both MimeKit and MailKit must be available in the environment or included within the module's DLL.
 
-.EXAMPLE
+    .EXAMPLE
     # Basic email with username/password authentication
     
     Send-Email -AuthUser "sender@company.com" -AuthPass "password123" `
