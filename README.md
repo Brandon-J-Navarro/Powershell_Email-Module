@@ -50,6 +50,7 @@ Originally I wrote this in .NET 8 but in order to have it available and work on 
 - Minimum Powershell version: 'Windows PowerShell 5.1'
 - DotNet Framework Version: '.NET Framework 4.7.2'
 - Tested with Microsoft Exchange Sever 2019 CU 15 and mailcow: dockerized 2025-09c
+- Tested on Microsoft Windows 11 and Omarchy Linux 
 
 ## PSGallery [![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/EmailModule)](https://www.powershellgallery.com/packages/EmailModule/)&nbsp; [![PowerShell Gallery Downloads](https://img.shields.io/powershellgallery/dt/EmailModule?color=blue)](https://www.powershellgallery.com/packages/EmailModule/)
 
