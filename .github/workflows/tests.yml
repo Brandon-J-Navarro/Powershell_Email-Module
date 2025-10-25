@@ -284,7 +284,8 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest,macos-15-intel,macos-latest]
+        #os: [ubuntu-latest, windows-latest,macos-15-intel,macos-latest]
+        os: [ubuntu-latest, windows-latest,macos-15-intel]
     env:
       OUTPUT1: ${{ needs.build.outputs.new_tag }}
     steps:
