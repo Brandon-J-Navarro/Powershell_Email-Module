@@ -401,3 +401,4 @@ FodyWeavers.xsd
 *.sln.iml
 
 .archive/
+/EmailLibraryTestingFramework/EmailLibraryTestingFramework/appSetting.json
