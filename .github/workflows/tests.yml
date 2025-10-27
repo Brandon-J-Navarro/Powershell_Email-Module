@@ -12,17 +12,17 @@ on:
       - '!README.md'
       - '!.wiki/**'
 
-  pull_request:
-    branches: [ testing ]
-    types: [closed]
-    paths:
-      - 'EmailModule/**'
-      - 'EmailLibraryDesktop/**'
-      - 'EmailLibraryCore/**'
-      - 'tests/**'
-      - '!.github/workflows/**'
-      - '!README.md'
-      - '!.wiki/**'
+  # pull_request:
+  #   branches: [ testing ]
+  #   types: [closed]
+  #   paths:
+  #     - 'EmailModule/**'
+  #     - 'EmailLibraryDesktop/**'
+  #     - 'EmailLibraryCore/**'
+  #     - 'tests/**'
+  #     - '!.github/workflows/**'
+  #     - '!README.md'
+  #     - '!.wiki/**'
 
 
   workflow_dispatch:
@@ -282,7 +282,8 @@ jobs:
     strategy:
       matrix:
         #os: [ubuntu-latest, windows-latest,macos-15-intel,macos-latest]
-        os: [ubuntu-latest, windows-latest,macos-15-intel]
+        # os: [ubuntu-latest, windows-latest,macos-15-intel]
+        os: [ubuntu-latest, windows-latest]
     env:
       OUTPUT1: ${{ needs.build.outputs.new_tag }}
     steps:
