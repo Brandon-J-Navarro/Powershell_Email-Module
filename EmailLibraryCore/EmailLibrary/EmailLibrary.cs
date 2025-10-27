@@ -7,7 +7,7 @@ using System.Security;
 
 public class EmailCommands
 {
-    public static void SendEmail(
+    public static object SendEmail(
         string authUser, object authPass,
         string emailTo, string? toName,
         string emailFrom, string? fromName,
@@ -233,14 +233,15 @@ public class EmailCommands
 #if DEBUG
         Console.WriteLine("[DEBUG] Email sent successfully.");
         Console.WriteLine($"[DEBUG] {mailSent}");
-#else
-        Console.WriteLine($"[Response]: {mailSent}");
+//#else
+//        Console.WriteLine($"[Response]: {mailSent}");
 #endif
 
         smtpClient.Disconnect(true);
 #if DEBUG
         Console.WriteLine("[DEBUG] SMTP client disconnected.");
 #endif
+        return mailSent;
     }
 
     static private NetworkCredential CreateAuthCreds(string userName, object password)
