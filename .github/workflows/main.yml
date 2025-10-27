@@ -2,6 +2,7 @@ name: Build, Package, and Release
 
 on:
   pull_request:
+    branches: [ main ]
     types: [closed]
     paths:
       - 'EmailModule/**'
@@ -10,10 +11,6 @@ on:
       - '!.github/workflows/**'
       - '!README.md'
       - '!.wiki/**'
-    branches:
-      - 'main'
-      - '!testing'
-      - '!development'
 
   workflow_dispatch:
 

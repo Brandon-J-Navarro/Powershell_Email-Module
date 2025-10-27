@@ -2,6 +2,7 @@ name: Build and Test PowerShell Module
 
 on:
   push:
+    branches: [ 'testing' ]
     paths:
       - 'EmailModule/**'
       - 'EmailLibraryDesktop/**'
@@ -10,10 +11,9 @@ on:
       - '!.github/workflows/**'
       - '!README.md'
       - '!.wiki/**'
-    branches:
-      - 'testing'
 
   pull_request:
+    branches: [ testing ]
     types: [closed]
     paths:
       - 'EmailModule/**'
@@ -23,8 +23,7 @@ on:
       - '!.github/workflows/**'
       - '!README.md'
       - '!.wiki/**'
-    branches:
-      - 'testing'
+
 
   workflow_dispatch:
 
