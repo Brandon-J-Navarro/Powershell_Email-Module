@@ -232,6 +232,8 @@ public class EmailCommands
 #if DEBUG
         Console.WriteLine("[DEBUG] Email sent successfully.");
         Console.WriteLine($"[DEBUG] {mailSent}");
+#else
+        Console.WriteLine($"[Response]: {mailSent}");
 #endif
 
         smtpClient.Disconnect(true);
@@ -373,7 +375,7 @@ public class EmailCommands
                 {
 #if DEBUG
                     Console.WriteLine($"[DEBUG] The Amount of Name(s) and Eamil Address(es) do not match, using Email Address as the Name");
-                    Console.WriteLine($"[DEBUG] Added CC recipient(s). Name: {EmailRecipientCc[i]} Email: {EmailRecipientCc[i]}");
+                    Console.WriteLine($"[DEBUG] Added CC recipient(s). Name: {EmailRecipientCc[i]} Email: {EmailRecipientCc[i]}"); 
 #endif
                     mailMessage.To.Add(new MailboxAddress(EmailRecipientCc[i], EmailRecipientCc[i]));
                 }

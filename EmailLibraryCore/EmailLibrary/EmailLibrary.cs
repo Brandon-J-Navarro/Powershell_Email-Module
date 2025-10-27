@@ -233,6 +233,8 @@ public class EmailCommands
 #if DEBUG
         Console.WriteLine("[DEBUG] Email sent successfully.");
         Console.WriteLine($"[DEBUG] {mailSent}");
+#else
+        Console.WriteLine($"[Response]: {mailSent}");
 #endif
 
         smtpClient.Disconnect(true);
