@@ -4,6 +4,8 @@ using MailKit.Security;
 using System.Net;
 using System.Security;
 using System;
+using Microsoft.AspNetCore.StaticFiles;
+using System.IO;
 public class EmailCommands
 {
     public static object SendEmail(
@@ -119,40 +121,71 @@ public class EmailCommands
 #if DEBUG
             Console.WriteLine($"[DEBUG] Attachment found: {emailAttachment} (currently not attached in this version)");
 #endif
-            //    var body = new TextPart("plain")
-            //    {
-            //        Text = emailBody ?? string.Empty
-            //    };
-
-            //    // create an image attachment for the file located at path
-            //    const string DefaultContentType = "application/octet-stream";
-            //    var provider = new FileExtensionContentTypeProvider();
-            //    if (!provider.TryGetContentType(emailAttachment, out string contentType))
-            //    {
-            //        contentType = DefaultContentType;
-            //    }
-
-            //    var attachment = new MimePart(contentType)
-            //    {
-            //        Content = new MimeContent(File.OpenRead(emailAttachment), ContentEncoding.Default),
-            //        ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
-            //        ContentTransferEncoding = ContentEncoding.Base64,
-            //        FileName = Path.GetFileName(emailAttachment)
-            //    };
-
-            //    // now create the multipart/mixed container to hold the message text and the
-            //    // image attachment
-            //    var multipart = new Multipart("mixed");
-            //    multipart.Add(body);
-            //    multipart.Add(attachment);
-
-            //    // now set the multipart/mixed as the message body
-            //    mailMessage.Body = multipart;
-            //}
-            mailMessage.Body = new TextPart("plain")
+            var body = new TextPart("plain")
             {
                 Text = emailBody ?? string.Empty
             };
+
+            var multipart = new Multipart("mixed");
+            multipart.Add(body);
+#if DEBUG
+            Console.WriteLine("[DEBUG] Created multipart container and added email body.");
+#endif
+
+            if (!string.IsNullOrEmpty(emailAttachment) && File.Exists(emailAttachment))
+            {
+#if DEBUG
+                Console.WriteLine($"[DEBUG] Attachment file exists at path: {emailAttachment}");
+#endif
+                const string DefaultContentType = "application/octet-stream";
+                var provider = new FileExtensionContentTypeProvider();
+
+                if (!provider.TryGetContentType(emailAttachment, out string contentType))
+                {
+#if DEBUG
+                    Console.WriteLine($"[DEBUG] Could not determine MIME type for '{emailAttachment}'. Defaulting to '{DefaultContentType}'.");
+#endif
+                    contentType = DefaultContentType;
+                }
+                else
+                {
+#if DEBUG
+                    Console.WriteLine($"[DEBUG] Determined MIME type for '{emailAttachment}': {contentType}");
+#endif
+                }
+
+                var stream = File.OpenRead(emailAttachment);
+#if DEBUG
+                Console.WriteLine($"[DEBUG] Opened file stream for attachment: {emailAttachment}");
+#endif
+
+                var attachment = new MimePart(contentType)
+                {
+                    Content = new MimeContent(stream, ContentEncoding.Default),
+                    ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
+                    ContentTransferEncoding = ContentEncoding.Base64,
+                    FileName = Path.GetFileName(emailAttachment)
+                };
+#if DEBUG
+                Console.WriteLine($"[DEBUG] Created MimePart for attachment: {attachment.FileName}");
+#endif
+
+                multipart.Add(attachment);
+#if DEBUG
+                Console.WriteLine("[DEBUG] Added attachment to multipart message.");
+#endif
+            }
+            else
+            {
+#if DEBUG
+                Console.WriteLine($"[DEBUG] Attachment file not found at path: {emailAttachment}");
+#endif
+            }
+            mailMessage.Body = multipart;
+#if DEBUG
+            Console.WriteLine("[DEBUG] Set multipart message (body + attachments) as email body.");
+#endif
+
             if (!(string.IsNullOrEmpty(emailBody)))
             {
 #if DEBUG
