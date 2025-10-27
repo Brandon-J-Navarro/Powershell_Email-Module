@@ -1,9 +1,8 @@
 name: Build, Package, and Release
 
 on:
-  pull_request:
-    branches: [ main ]
-    types: [closed]
+  push:
+    branches: [ 'main' ]
     paths:
       - 'EmailModule/**'
       - 'EmailLibraryDesktop/**'
@@ -11,6 +10,17 @@ on:
       - '!.github/workflows/**'
       - '!README.md'
       - '!.wiki/**'
+
+  # pull_request:
+  #   branches: [ main ]
+  #   types: [closed]
+  #   paths:
+  #     - 'EmailModule/**'
+  #     - 'EmailLibraryDesktop/**'
+  #     - 'EmailLibraryCore/**'
+  #     - '!.github/workflows/**'
+  #     - '!README.md'
+  #     - '!.wiki/**'
 
   workflow_dispatch:
 
