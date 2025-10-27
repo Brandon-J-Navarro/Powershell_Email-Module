@@ -1,12 +1,15 @@
-﻿// EmailLibrary.cs dotNET Core 8.0
+﻿// EmailLibrary.cs
+using EmailLibrary;
 using MailKit.Security;
-using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Configuration;
 using MimeKit;
 using System.Net;
 using System.Security;
 
 public class EmailCommands
 {
+    private static readonly IConfiguration _configuration = Startup.BuildConfiguation();
+
     public static void SendEmail(
         string authUser, object authPass,
         string emailTo, string? toName,
@@ -428,5 +431,54 @@ public class EmailCommands
             }
         }
         return mailMessage;
+    }
+
+    static void Main(string[] args)
+    {
+#if DEBUG
+        Console.WriteLine("[DEBUG] Loading configuration values...");
+#endif
+        string AuthUser = _configuration["EmailParameters:AuthUser"];
+        object AuthPass = _configuration["EmailParameters:AuthPass"];
+        string EmailTo = _configuration["EmailParameters:EmailTo"];
+        string EmailToName = _configuration["EmailParameters:EmailToName"];
+        string EmailFrom = _configuration["EmailParameters:EmailFrom"];
+        string EmailFromName = _configuration["EmailParameters:EmailFromName"];
+        string Subject = _configuration["EmailParameters:Subject"];
+        string Body = _configuration["EmailParameters:Body"];
+        string SmtpServer = _configuration["EmailParameters:SmtpServer"];
+        string SmtpPort = _configuration["EmailParameters:SmtpPort"];
+        string EmailCc = _configuration["EmailParameters:EmailCc"];
+        string CcName = _configuration["EmailParameters:CcName"];
+        string EmailBcc = _configuration["EmailParameters:EmailBcc"];
+        string BccName = _configuration["EmailParameters:BccName"];
+        string EmailAttachment = _configuration["EmailParameters:EmailAttachment"];
+        string EmailPriority = _configuration["EmailParameters:EmailPriority"];
+        string EmailImportance = _configuration["EmailParameters:EmailImportance"];
+#if DEBUG
+        Console.WriteLine("[DEBUG] Configuration loaded. Beginning SendEmail call...");
+#endif
+        SendEmail(
+            AuthUser,
+            AuthPass,
+            EmailTo,
+            EmailToName,
+            EmailFrom,
+            EmailFromName,
+            Subject,
+            Body,
+            SmtpServer,
+            Convert.ToInt16(SmtpPort),
+            EmailCc,
+            CcName,
+            EmailBcc,
+            BccName,
+            EmailAttachment,
+            EmailPriority,
+            EmailImportance
+        );
+#if DEBUG
+        Console.WriteLine("[DEBUG] Email process completed.");
+#endif
     }
 }
