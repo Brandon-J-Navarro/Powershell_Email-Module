@@ -36,7 +36,7 @@ function Send-Email {
         # Should correspond to EmailTo parameter. If the number of names does not match the number of email addresses,
         # or if not provided, the email addresses will be used as display names.
         # Examples: "John Doe" or "John Doe;Jane Smith;Bob Wilson"
-        $EmailToName,
+        $EmailToName = $null,
 
         [Parameter(Mandatory = $true)]
         [string]
@@ -49,14 +49,14 @@ function Send-Email {
         [string]
         # Specifies the display name of the sender. If not provided, email address will be used.
         # Example: "Company Notifications" or "IT Department"
-        $EmailFromName,
+        $EmailFromName = $null,
 
         [Parameter(Mandatory = $false)]
         [AllowNull()]
         [string]
         # Specifies the subject line of the email.
         # Example: "System Alert" or "Weekly Report"
-        $Subject,
+        $Subject = $null,
 
         [Parameter(Mandatory = $false)]
         [AllowNull()]
@@ -64,7 +64,7 @@ function Send-Email {
         # Specifies the body content of the email message.
         # The message is sent as plain text.
         # Example: "This is a test message from the automation system."
-        $Body,
+        $Body = $null,
 
         [Parameter(Mandatory = $true)]
         [string]
@@ -84,7 +84,7 @@ function Send-Email {
         # Specifies additional recipients to include in the Carbon Copy (CC) field.
         # Multiple recipients can be separated by semicolons (;).
         # Examples: "manager@company.com" or "manager@company.com;supervisor@company.com"
-        $EmailCc = $null,
+        $EmailCc,
 
         [Parameter(Mandatory = $false)]
         [AllowNull()]
@@ -93,7 +93,7 @@ function Send-Email {
         # Should correspond to the EmailCc parameter. If the number of names does not match the number of email addresses,
         # or if not provided, the email addresses will be used as display names.
         # Examples: "Manager Name" or "Manager Name;Supervisor Name"
-        $CcName = $null,
+        $CcName,
 
         [Parameter(Mandatory = $false)]
         [AllowNull()]
@@ -101,7 +101,7 @@ function Send-Email {
         # Specifies additional recipients to include in the Blind Carbon Copy (BCC) field.
         # Multiple recipients can be separated by semicolons (;).
         # Examples: "audit@company.com" or "audit@company.com;backup@company.com"
-        $EmailBcc = $null,
+        $EmailBcc,
 
         [Parameter(Mandatory = $false)]
         [AllowNull()]
@@ -110,7 +110,7 @@ function Send-Email {
         # Should correspond to the EmailBcc parameter. If the number of names does not match the number of email addresses,
         # or if not provided, the email addresses will be used as display names.
         # Examples: "Audit Team" or "Audit Team;Backup Admin"
-        $BccName = $null,
+        $BccName,
 
         [Parameter(Mandatory = $false)]
         [AllowNull()]
@@ -118,46 +118,56 @@ function Send-Email {
         # Specifies the file path to an attachment to include with the email.
         # Only a single attachment is supported. File must exist and be accessible.
         # Examples: "C:\Reports\monthly_report.pdf" or "\\server\share\document.xlsx"
-        $EmailAttachment = $null,
+        $EmailAttachment,
 
         [Parameter(Mandatory = $false)]
         [AllowNull()]
         [ValidateSet("NonUrgent","Normal","Urgent",IgnoreCase = $true)]
-        # Specifies the priority level of the email message.
+        # Specifies the priority level of the email message. The default is Normal.
         # Valid values are "NonUrgent", "Normal", or "Urgent" (case-insensitive).
-        $EmailPriority = $null,
+        $EmailPriority = "Normal",
 
         [Parameter(Mandatory = $false)]
         [AllowNull()]
         [ValidateSet("Low","Normal","High",IgnoreCase = $true)]
-        # Specifies the importance level of the email message.
+        # Specifies the importance level of the email message. The default is Normal.
         # Valid values are "Low", "Normal", or "High" (case-insensitive).
-        $EmailImportance = $null
+        $EmailImportance = "Normal"
     )
 
     if($PSCmdlet.ParameterSetName -EQ 'PSCredential'){
-        $AuthUser = $Credential.UserName,
-        [System.Security.SecureString]$AuthPass = $Credential.Password
+        $AuthUser = $Credential.UserName
+        $AuthPass = $Credential.Password
+    }
+
+    if ($EmailPriority){
+        $cultureInfo = (Get-Culture).TextInfo
+        $EmailPriority = $cultureInfo.ToTitleCase($EmailPriority.ToLower())
+    }
+
+    if ($EmailImportance){
+        $cultureInfo = (Get-Culture).TextInfo
+        $EmailImportance = $cultureInfo.ToTitleCase($EmailImportance.ToLower())
     }
 
     [EmailCommands]::SendEmail(
-        $AuthUser,
-        $AuthPass,
-        $EmailTo,
-        $EmailToName,
-        $EmailFrom,
-        $EmailFromName,
-        $Subject,
-        $Body,
-        $SmtpServer,
-        $SmtpPort,
-        $EmailCc,
-        $CcName,
-        $EmailBcc,
-        $BccName,
-        $EmailAttachment,
-        $EmailPriority,
-        $EmailImportance
+        [string]$AuthUser,
+        [object]$AuthPass,
+        [string]$EmailTo,
+        [string]$EmailToName,
+        [string]$EmailFrom,
+        [string]$EmailFromName,
+        [string]$Subject,
+        [string]$Body,
+        [string]$SmtpServer,
+        [int]$SmtpPort,
+        [string]$EmailCc,
+        [string]$CcName,
+        [string]$EmailBcc,
+        [string]$BccName,
+        [string]$EmailAttachment,
+        [string]$EmailPriority,
+        [string]$EmailImportance
     )
 
     <#
