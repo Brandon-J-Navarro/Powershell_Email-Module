@@ -1,16 +1,3 @@
-<!-- - [About](#about)
-- [Installation](#installation)
-  - [PSGallery](#psgallery)
-  - [GitHub Release (ZIP)](#github-release-zip)
-  - [Build from Source](#build-from-source)
-- [Examples](#examples)
-  - [Basic Usage](#basic-usage-usernamepassword-authentication)
-  - [PSCredential Authentication](#using-pscredential-authentication)
-  - [Multiple Recipients](#multiple-recipients-with-cc-and-bcc)
-  - [Email with Attachments](#email-with-attachment-and-priority)
-  - [Using SecureString](#using-securestring-for-password)
-- [Release Notes](#release-notes) -->
-
 <div align="center">
 
 ```
