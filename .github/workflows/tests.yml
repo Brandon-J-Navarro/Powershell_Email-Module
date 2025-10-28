@@ -7,8 +7,7 @@ on:
       - 'EmailModule/**'
       - 'EmailLibraryDesktop/**'
       - 'EmailLibraryCore/**'
-      - 'tests/**'
-      - '!.github/workflows/**'
+      - '.github/workflows/**'
       - '!README.md'
       - '!.wiki/**'
 
@@ -280,6 +279,7 @@ jobs:
     needs: [build]
     continue-on-error: true
     strategy:
+      max-parallel: 1 
       matrix:
         #os: [ubuntu-latest, windows-latest,macos-15-intel,macos-latest]
         # os: [ubuntu-latest, windows-latest,macos-15-intel]
@@ -893,7 +893,9 @@ jobs:
     environment: Build and Test PowerShell Module
     runs-on: windows-latest
     name: Integration Test on Windows Desktop
-    needs: [build]
+    needs: 
+      - build
+      - integration-test-core
     continue-on-error: true
     env:
       OUTPUT1: ${{ needs.build.outputs.new_tag }}
