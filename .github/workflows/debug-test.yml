@@ -35,7 +35,7 @@ jobs:
       - name: Create release directories
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
-          $version = $version  -replace 'v', ''
+          $version = $version  -replace 'v1', '1'
           $version = $version  -replace "-development.*", ''
           New-Item -ItemType Directory -Path debug | Out-Null;
           New-Item -ItemType Directory -Path .\debug\EmailModule | Out-Null;
@@ -47,7 +47,7 @@ jobs:
       - name: Copy .NET Framework build output to lib Desktop directory
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
-          $version = $version  -replace 'v', ''
+          $version = $version  -replace 'v1', '1'
           $version = $version  -replace "-development.*", ''
           Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Debug\" -Recurse -Exclude "*.pdb" | ForEach-Object {
             Copy-Item $_ -Destination ".\debug\EmailModule\$version\lib\net472\"
@@ -72,7 +72,7 @@ jobs:
       - name: Copy .NET Core publish output to lib Core directory
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
-          $version = $version  -replace 'v', ''
+          $version = $version  -replace 'v1', '1'
           $version = $version  -replace "-development.*", ''
           Get-ChildItem -path ".\debugbuild\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
             Copy-Item $_ -Destination ".\debug\EmailModule\$version\lib\net8.0\"
@@ -155,7 +155,7 @@ jobs:
       - name: Copy powershell module and misc. files to release directory
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
-          $version = $version  -replace 'v', ''
+          $version = $version  -replace 'v1', '1'
           $version = $version  -replace "-development.*", ''
           Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\debug\EmailModule\$version\"
           Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\debug\EmailModule\$version\"
@@ -167,7 +167,7 @@ jobs:
       - name: Generate nuspec
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
-          $version = $version  -replace 'v', ''
+          $version = $version  -replace 'v1', '1'
           $version = $version  -replace "-development.*", ''
           @"
           <?xml version="1.0" encoding="utf-8"?>
@@ -220,14 +220,14 @@ jobs:
       - name: Build NuGet Package
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
-          $version = $version  -replace 'v', ''
+          $version = $version  -replace 'v1', '1'
           $version = $version  -replace "-development.*", ''
           nuget pack .\debug\EmailModule\$version\EmailModule.nuspec -Properties Configuration=Release
 
       - name: Publish NuGet Package
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
-          $version = $version  -replace 'v', ''
+          $version = $version  -replace 'v1', '1'
           $version = $version  -replace "-development.*", ''
           Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\debug\EmailModule\$version\"
           New-Item -ItemType Directory -Path 'artifact' | Out-Null;
