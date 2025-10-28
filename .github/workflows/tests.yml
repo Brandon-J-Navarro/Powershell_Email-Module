@@ -277,9 +277,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: Integration Test on ${{ matrix.os }}
     needs: [build]
-    continue-on-error: true
     strategy:
-      max-parallel: 1 
+      # max-parallel: 1
       matrix:
         #os: [ubuntu-latest, windows-latest,macos-15-intel,macos-latest]
         # os: [ubuntu-latest, windows-latest,macos-15-intel]
@@ -843,12 +842,6 @@ jobs:
               -EmailBcc $EmailBcc -BccName $BccName `
               -EmailPriority $EmailPriority -EmailImportance $EmailImportance `
               -EmailAttachment $EmailAttachment
-          
-          # Cleanup test file
-          if (Test-Path $EmailAttachment) {
-              Remove-Item $EmailAttachment -Force
-              Write-Host "Test attachment file cleaned up successfully"
-          }
 
       - name: PowerShell Desktop Original Full Parameters (UserPass Parameter Set)
         shell: pwsh
@@ -895,8 +888,7 @@ jobs:
     name: Integration Test on Windows Desktop
     needs: 
       - build
-      - integration-test-core
-    continue-on-error: true
+      # - integration-test-core
     env:
       OUTPUT1: ${{ needs.build.outputs.new_tag }}
     steps:
@@ -1407,12 +1399,6 @@ jobs:
               -EmailBcc $EmailBcc -BccName $BccName `
               -EmailPriority $EmailPriority -EmailImportance $EmailImportance `
               -EmailAttachment $EmailAttachment
-          
-          # Cleanup test file
-          if (Test-Path $EmailAttachment) {
-              Remove-Item $EmailAttachment -Force
-              Write-Host "Test attachment file cleaned up successfully"
-          }
 
       - name: PowerShell Desktop Original Full Parameters (UserPass Parameter Set)
         shell: powershell
