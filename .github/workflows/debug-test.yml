@@ -1,11 +1,10 @@
-name: Build and Test PowerShell Module
+name: test debug
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    environment: Build and Test PowerShell Module
     runs-on: windows-latest
     outputs:
       new_tag: ${{ steps.tag_version.outputs.new_tag }}
