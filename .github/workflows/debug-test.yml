@@ -1,5 +1,4 @@
 name: test debug
-
 on:
   workflow_dispatch:
 
@@ -50,7 +49,7 @@ jobs:
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $version = $version  -replace "-testing.*", ''
-          Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
+          Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Debug\" -Recurse -Exclude "*.pdb" | ForEach-Object {
             Copy-Item $_ -Destination ".\debug\EmailModule\$version\lib\net472\"
           }
 
