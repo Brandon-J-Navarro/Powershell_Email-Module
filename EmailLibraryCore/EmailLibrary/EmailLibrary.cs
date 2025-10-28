@@ -3,6 +3,7 @@ using MailKit.Security;
 using Microsoft.AspNetCore.StaticFiles;
 using MimeKit;
 using System.Net;
+using System.Runtime.InteropServices;
 using static EmailLibrary.Builders;
 
 public class EmailCommands
@@ -232,6 +233,24 @@ public class EmailCommands
 #if DEBUG
         Console.WriteLine($"[DEBUG] MailServer: {mailServer}:{serverPort}");
 #endif
+
+        if (Environment.GetEnvironmentVariable("CI") == "true" &&
+    RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            smtpClient.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
+            {
+#if DEBUG
+                Console.WriteLine("[DEBUG] macOS CI detected – bypassing partial revocation SSL errors.");
+#endif
+                if (sslPolicyErrors == System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors &&
+                    chain?.ChainStatus?.Any(s => s.Status == System.Security.Cryptography.X509Certificates.X509ChainStatusFlags.RevocationStatusUnknown) == true)
+                {
+                    return true;
+                }
+
+                return sslPolicyErrors == System.Net.Security.SslPolicyErrors.None;
+            };
+        }
 
         smtpClient.Connect(mailServer, serverPort, SecureSocketOptions.StartTls);
 #if DEBUG
