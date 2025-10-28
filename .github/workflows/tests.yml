@@ -58,27 +58,27 @@ jobs:
 
       - name: Build .NET Framework project
         run: |
-          msbuild .\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
+          msbuild .\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Debug /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
 
       - name: Create release directories
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $version = $version  -replace "-testing.*", ''
-          New-Item -ItemType Directory -Path release | Out-Null;
-          New-Item -ItemType Directory -Path .\release\EmailModule | Out-Null;
-          New-Item -ItemType Directory -Path .\release\EmailModule\$version | Out-Null;
-          New-Item -ItemType Directory -Path .\release\EmailModule\$version\lib | Out-Null;
-          New-Item -ItemType Directory -Path .\release\EmailModule\$version\lib\net8.0 | Out-Null;
-          New-Item -ItemType Directory -Path .\release\EmailModule\$version\lib\net472 | Out-Null;
+          New-Item -ItemType Directory -Path debug | Out-Null;
+          New-Item -ItemType Directory -Path .\debug\EmailModule | Out-Null;
+          New-Item -ItemType Directory -Path .\debug\EmailModule\$version | Out-Null;
+          New-Item -ItemType Directory -Path .\debug\EmailModule\$version\lib | Out-Null;
+          New-Item -ItemType Directory -Path .\debug\EmailModule\$version\lib\net8.0 | Out-Null;
+          New-Item -ItemType Directory -Path .\debug\EmailModule\$version\lib\net472 | Out-Null;
 
       - name: Copy .NET Framework build output to lib Desktop directory
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $version = $version  -replace "-testing.*", ''
-          Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
-            Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\net472\"
+          Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Debug\" -Recurse -Exclude "*.pdb" | ForEach-Object {
+            Copy-Item $_ -Destination ".\debug\EmailModule\$version\lib\net472\"
           }
 
       - name: Setup .NET Core SDK
@@ -90,20 +90,15 @@ jobs:
         run: dotnet restore .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
 
       - name: Build .NET Core project
-        run: dotnet build .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore
-
-      - name: Publish .NET Core project
-        run: dotnet publish .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
-        env:
-            PublishRelease: true
+        run: dotnet build .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Debug --no-restore --output debugbuild
 
       - name: Copy .NET Core publish output to lib Core directory
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $version = $version  -replace "-testing.*", ''
-          Get-ChildItem -path ".\publish\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
-            Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\net8.0\"
+          Get-ChildItem -path ".\debugbuild\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
+            Copy-Item $_ -Destination ".\debug\EmailModule\$version\lib\net8.0\"
           }
 
       - name: Generate Powershell Manifest
@@ -113,8 +108,8 @@ jobs:
           $version = $version  -replace "-testing.*", ''
 
           $files = @('.\EmailModule.psd1','.\EmailModule.psm1','.\EmailModule.Libraries.ps1',".\EmailModule.nuspec",".\EmailModule.$version.nupkg")
-          Get-ChildItem -Path ".\release\EmailModule\$version\" -Recurse -File | ForEach-Object { 
-              $files += $_.FullName.ToString().Replace("D:\a\Powershell_Email-Module\Powershell_Email-Module\release\EmailModule\$version",'.') 
+          Get-ChildItem -Path ".\debug\EmailModule\$version\" -Recurse -File | ForEach-Object { 
+              $files += $_.FullName.ToString().Replace("D:\a\Powershell_Email-Module\Powershell_Email-Module\debug\EmailModule\$version",'.') 
           }
 
           $moduleSettings = @{
@@ -185,12 +180,12 @@ jobs:
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $version = $version  -replace "-testing.*", ''
-          Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\EmailModule\$version\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\release\EmailModule\$version\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\EmailModule\$version\"
-          # Copy-Item -Path ".\Tests\" -Recurse -Destination ".\release\EmailModule\$version\"
-          Copy-Item -Path ".\README.md" -Destination ".\release\EmailModule\$version\"
-          Copy-Item -Path ".\LICENSE" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\debug\EmailModule\$version\"
+          Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\debug\EmailModule\$version\"
+          Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\debug\EmailModule\$version\"
+          # Copy-Item -Path ".\Tests\" -Recurse -Destination ".\debug\EmailModule\$version\"
+          Copy-Item -Path ".\README.md" -Destination ".\debug\EmailModule\$version\"
+          Copy-Item -Path ".\LICENSE" -Destination ".\debug\EmailModule\$version\"
 
       - name: Generate nuspec
         run: |
@@ -243,23 +238,23 @@ jobs:
               <file src=".\**" target="\" />
             </files>
           </package>
-          "@ | Out-File -FilePath ".\release\EmailModule\$version\EmailModule.nuspec"
+          "@ | Out-File -FilePath ".\debug\EmailModule\$version\EmailModule.nuspec"
 
       - name: Build NuGet Package
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $version = $version  -replace "-testing.*", ''
-          nuget pack .\release\EmailModule\$version\EmailModule.nuspec -Properties Configuration=Release
+          nuget pack .\debug\EmailModule\$version\EmailModule.nuspec -Properties Configuration=Release
 
       - name: Publish NuGet Package
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $version = $version  -replace "-testing.*", ''
-          Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\debug\EmailModule\$version\"
           New-Item -ItemType Directory -Path 'artifact' | Out-Null;
-          Copy-Item -Recurse -Force .\release\EmailModule\$version\* .\artifact\
+          Copy-Item -Recurse -Force .\debug\EmailModule\$version\* .\artifact\
           Get-ChildItem -path ".\artifact\" -Recurse -File | ForEach-Object {
             Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256 | FL | Out-File -FilePath ".\artifact\Hashes.txt" -Append
           }
@@ -278,7 +273,6 @@ jobs:
     name: Integration Test on ${{ matrix.os }}
     needs: [build]
     strategy:
-      # max-parallel: 1
       matrix:
         #os: [ubuntu-latest, windows-latest,macos-15-intel,macos-latest]
         # os: [ubuntu-latest, windows-latest,macos-15-intel]
