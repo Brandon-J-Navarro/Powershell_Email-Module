@@ -1,4 +1,4 @@
-name: test debug
+name: Build, Package, and Release
 
 on:
   pull_request:
