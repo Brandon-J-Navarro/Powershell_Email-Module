@@ -81,7 +81,7 @@ jobs:
       - name: Generate Powershell Manifest
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
-          $version = $version  -replace 'v', ''
+          $version = $version  -replace 'v1', '1'
           $version = $version  -replace "-development.*", ''
 
           $files = @('.\EmailModule.psd1','.\EmailModule.psm1','.\EmailModule.Libraries.ps1',".\EmailModule.nuspec",".\EmailModule.$version.nupkg")
