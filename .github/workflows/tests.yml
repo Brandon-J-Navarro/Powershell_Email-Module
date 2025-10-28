@@ -90,14 +90,14 @@ jobs:
         run: dotnet restore .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
 
       - name: Build .NET Core project
-        run: dotnet build .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Debug --no-restore --output debugbuild
+        run: dotnet build .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Debug --no-restore
 
       - name: Copy .NET Core publish output to lib Core directory
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $version = $version  -replace "-testing.*", ''
-          Get-ChildItem -path ".\debugbuild\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
+          Get-ChildItem -path ".\EmailLibraryCore\EmailLibrary\bin\Debug\net8.0\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
             Copy-Item $_ -Destination ".\debug\EmailModule\$version\lib\net8.0\"
           }
 
