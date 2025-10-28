@@ -756,6 +756,7 @@ jobs:
           $CcName = "CC Integration Test Recipient"
           $EmailBcc = "${{ secrets.BCC }};${{ secrets.AUTHUSER }}"
           $BccName = "BCC Test Recipient 1;BCC Test Recipient 2"
+          $EmailAttachment = "integration-test-attachment.txt"
           $EmailPriority = "Urgent"
           $EmailImportance = "High"
           $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - ALL PARAMETERS TEST"
@@ -774,41 +775,40 @@ jobs:
             This comprehensive test validates ALL available parameters:
             ========================================================
 
-            ✓ AuthUser: ${{ secrets.AUTHUSER }}
-            ✓ AuthPass: [SECURED]
-            ✓ EmailTo: ${{ secrets.TO }};${{ secrets.AUTHUSER }}
-            ✓ EmailToName: $EmailToName
-            ✓ EmailFrom: ${{ secrets.AUTHUSER }}
-            ✓ EmailFromName: $EmailFromName
-            ✓ Subject: $Subject
-            ✓ Body: This detailed message body
-            ✓ SmtpServer: ${{ secrets.MAILSERVER }}
-            ✓ SmtpPort: $SmtpPort (STARTTLS)
-            ✓ EmailCc: ${{ secrets.CC }}
-            ✓ CcName: $CcName
-            ✓ EmailBcc: ${{ secrets.BCC }};${{ secrets.AUTHUSER }}
-            ✓ BccName: $BccName
-            ✓ EmailAttachment: Test attachment file
-            ✓ EmailPriority: $EmailPriority
-            ✓ EmailImportance: $EmailImportance
+            - AuthUser: ${{ secrets.AUTHUSER }}
+            - AuthPass: -SECURED-
+            - EmailTo: ${{ secrets.TO }};${{ secrets.AUTHUSER }}
+            - EmailToName: $EmailToName
+            - EmailFrom: ${{ secrets.AUTHUSER }}
+            - EmailFromName: $EmailFromName
+            - Subject: $Subject
+            - Body: This detailed message body
+            - SmtpServer: ${{ secrets.MAILSERVER }}
+            - SmtpPort: $SmtpPort (STARTTLS)
+            - EmailCc: ${{ secrets.CC }}
+            - CcName: $CcName
+            - EmailBcc: ${{ secrets.BCC }};${{ secrets.AUTHUSER }}
+            - BccName: $BccName
+            - EmailAttachment: $EmailAttachment
+            - EmailPriority: $EmailPriority
+            - EmailImportance: $EmailImportance
 
 
             Validation Checklist:
             ====================
-            [ ] TO recipients received email with proper display names
-            [ ] CC recipients visible in headers to TO recipients
-            [ ] BCC recipients received email but NOT visible in headers
-            [ ] Email shows high priority/importance flags
-            [ ] Test attachment file is present and accessible
-            [ ] All display names rendered correctly
-            [ ] Email formatting preserved
+            - TO recipients received email with proper display names
+            - CC recipients visible in headers to TO recipients
+            - BCC recipients received email but NOT visible in headers
+            - Email shows high priority/importance flags
+            - Test attachment file is present and accessible
+            - All display names rendered correctly
+            - Email formatting preserved
           
             This email tests the complete functionality of the EmailModule
             with every available parameter populated and functional.
           "
 
           # Create a test attachment file
-          $EmailAttachment = "integration-test-attachment.txt"
           $AttachmentContent = @"
             GitHub Actions Integration Test Attachment
             ==========================================
@@ -1319,6 +1319,7 @@ jobs:
           $CcName = "CC Integration Test Recipient"
           $EmailBcc = "${{ secrets.BCC }};${{ secrets.AUTHUSER }}"
           $BccName = "BCC Test Recipient 1;BCC Test Recipient 2"
+          $EmailAttachment = "integration-test-attachment.txt"
           $EmailPriority = "Urgent"
           $EmailImportance = "High"
           $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - ALL PARAMETERS TEST"
@@ -1336,41 +1337,40 @@ jobs:
             This comprehensive test validates ALL available parameters:
             ========================================================
 
-            ✓ AuthUser: ${{ secrets.AUTHUSER }}
-            ✓ AuthPass: [SECURED]
-            ✓ EmailTo: ${{ secrets.TO }};${{ secrets.AUTHUSER }}
-            ✓ EmailToName: $EmailToName
-            ✓ EmailFrom: ${{ secrets.AUTHUSER }}
-            ✓ EmailFromName: $EmailFromName
-            ✓ Subject: $Subject
-            ✓ Body: This detailed message body
-            ✓ SmtpServer: ${{ secrets.MAILSERVER }}
-            ✓ SmtpPort: $SmtpPort (STARTTLS)
-            ✓ EmailCc: ${{ secrets.CC }}
-            ✓ CcName: $CcName
-            ✓ EmailBcc: ${{ secrets.BCC }};${{ secrets.AUTHUSER }}
-            ✓ BccName: $BccName
-            ✓ EmailAttachment: Test attachment file
-            ✓ EmailPriority: $EmailPriority
-            ✓ EmailImportance: $EmailImportance
+            - AuthUser: ${{ secrets.AUTHUSER }}
+            - AuthPass: -SECURED-
+            - EmailTo: ${{ secrets.TO }};${{ secrets.AUTHUSER }}
+            - EmailToName: $EmailToName
+            - EmailFrom: ${{ secrets.AUTHUSER }}
+            - EmailFromName: $EmailFromName
+            - Subject: $Subject
+            - Body: This detailed message body
+            - SmtpServer: ${{ secrets.MAILSERVER }}
+            - SmtpPort: $SmtpPort (STARTTLS)
+            - EmailCc: ${{ secrets.CC }}
+            - CcName: $CcName
+            - EmailBcc: ${{ secrets.BCC }};${{ secrets.AUTHUSER }}
+            - BccName: $BccName
+            - EmailAttachment: $EmailAttachment
+            - EmailPriority: $EmailPriority
+            - EmailImportance: $EmailImportance
 
 
             Validation Checklist:
             ====================
-            [ ] TO recipients received email with proper display names
-            [ ] CC recipients visible in headers to TO recipients
-            [ ] BCC recipients received email but NOT visible in headers
-            [ ] Email shows high priority/importance flags
-            [ ] Test attachment file is present and accessible
-            [ ] All display names rendered correctly
-            [ ] Email formatting preserved
+            - TO recipients received email with proper display names
+            - CC recipients visible in headers to TO recipients
+            - BCC recipients received email but NOT visible in headers
+            - Email shows high priority/importance flags
+            - Test attachment file is present and accessible
+            - All display names rendered correctly
+            - Email formatting preserved
           
             This email tests the complete functionality of the EmailModule
             with every available parameter populated and functional.
           "
 
           # Create a test attachment file
-          $EmailAttachment = "integration-test-attachment.txt"
           $AttachmentContent = @"
             GitHub Actions Integration Test Attachment
             ==========================================
