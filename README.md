@@ -1,16 +1,3 @@
-<!-- - [About](#about)
-- [Installation](#installation)
-  - [PSGallery](#psgallery)
-  - [GitHub Release (ZIP)](#github-release-zip)
-  - [Build from Source](#build-from-source)
-- [Examples](#examples)
-  - [Basic Usage](#basic-usage-usernamepassword-authentication)
-  - [PSCredential Authentication](#using-pscredential-authentication)
-  - [Multiple Recipients](#multiple-recipients-with-cc-and-bcc)
-  - [Email with Attachments](#email-with-attachment-and-priority)
-  - [Using SecureString](#using-securestring-for-password)
-- [Release Notes](#release-notes) -->
-
 <div align="center">
 
 ```
@@ -35,13 +22,18 @@ Powershell Module to send Email using <a href="https://github.com/jstedfast/Mail
 
 ![Static Badge](https://img.shields.io/badge/Linux-Passing-gree?logo=linux&logoColor=white)&nbsp; 
 ![Windows](https://custom-icon-badges.demolab.com/badge/Windows-Passing-gree?logo=windows11&logoColor=white)&nbsp; 
-![macOS](https://img.shields.io/badge/macOS-Failing-red?logo=apple&logoColor=white)
+![macOS](https://img.shields.io/badge/macOS-passing-gree?logo=apple&logoColor=white)
 
+<!-- ### Tested on
+| Image | Label |
+| -------------|--------------|
+| Ubuntu 24.04 | `ubuntu-latest` |
+| macOS 15 | `macos-15-intel` |
+| macOS 15 Arm64 | `macos-latest` |
+| Windows Server 2025 | `windows-latest` | -->
 </div>
 
 ### [Release Notes](#release-notes-1)
-
-> Note: MacOS Failed GitHub Actions Automated Test and is currently not officially supported
 
 ## About
 Originally I wrote this in .NET 8 but in order to have it available and work on a wider range of windows machines ( Servers, VMs, Desktops, etc. ) that did not have Powershell Core installed, I recompiled it in .NET Framework 4.7.2, allowing it to be ran with Windows Powershell (Desktop) and Powershell Core. I ended up packaging them both into the same module on import it will look at the $PSEdition that is being ran an import the appropriate libraries.
@@ -51,6 +43,7 @@ Originally I wrote this in .NET 8 but in order to have it available and work on 
 - DotNet Framework Version: '.NET Framework 4.7.2'
 - Tested with Microsoft Exchange Sever 2019 CU 15 and mailcow: dockerized 2025-09c
 - Tested on Microsoft Windows 11 and Omarchy Linux 
+- GitHub Actions integration tests ran on Ubuntu 24.04 (`ubuntu-latest`), macOS 15 (`macos-15-intel`), macOS 15 Arm64 (`macos-latest`), Windows Server 2025 (`windows-latest`)
 
 ## PSGallery [![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/EmailModule)](https://www.powershellgallery.com/packages/EmailModule/)&nbsp; [![PowerShell Gallery Downloads](https://img.shields.io/powershellgallery/dt/EmailModule?color=blue)](https://www.powershellgallery.com/packages/EmailModule/)
 
