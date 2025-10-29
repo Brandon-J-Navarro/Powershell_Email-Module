@@ -273,10 +273,10 @@ jobs:
     name: Integration Test on ${{ matrix.os }}
     needs: [build]
     strategy:
+      # https://github.com/actions/runner-images
       matrix:
         os: [ubuntu-latest, windows-latest,macos-15-intel,macos-latest]
-        # os: [ubuntu-latest, windows-latest,macos-15-intel]
-        # os: [ubuntu-latest, windows-latest]
+        # os: [ubuntu-latest, windows-latest,macos-15-intel,macos-latest,macos-26] macos-26 is in beta
     env:
       OUTPUT1: ${{ needs.build.outputs.new_tag }}
     steps:
