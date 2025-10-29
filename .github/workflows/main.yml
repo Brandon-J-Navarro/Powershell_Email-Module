@@ -4,12 +4,11 @@ on:
   push:
     branches: [ 'main' ]
     paths:
-      - 'EmailModule/**'
-      - 'EmailLibraryDesktop/**'
-      - 'EmailLibraryCore/**'
-      - '!.github/workflows/**'
+      - 'src/**'
+      - '!test/**'
+      - '!.github/**'
       - '!README.md'
-      - '!.wiki/**'
+      - '!wiki/**'
 
   # pull_request:
   #   branches: [ main ]
@@ -50,11 +49,11 @@ jobs:
           nuget-version: 'latest'
 
       - name: Restore NuGet packages for .NET Framework Build
-        run: nuget restore .\EmailLibraryDesktop\EmailLibrary.sln
+        run: nuget restore .\src\EmailLibraryDesktop\EmailLibrary.sln
 
       - name: Build .NET Framework project
         run: |
-          msbuild .\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
+          msbuild .\src\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
 
       - name: Create release directories
         run: |
@@ -71,7 +70,7 @@ jobs:
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
+          Get-ChildItem -path ".\src\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
             Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\net472\"
           }
 
@@ -81,13 +80,10 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Install dependencies .NET Core Build
-        run: dotnet restore .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
-
-      - name: Build .NET Core project
-        run: dotnet build .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore
+        run: dotnet restore .\src\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
 
       - name: Publish .NET Core project
-        run: dotnet publish .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
+        run: dotnet publish .\src\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
         env:
             PublishRelease: true
 
@@ -110,7 +106,7 @@ jobs:
           }
 
           $moduleSettings = @{
-            Path = '.\EmailModule\EmailModule.psd1'
+            Path = '.\src\EmailModule\EmailModule.psd1'
 
             # Script module or binary module file associated with this manifest.
             RootModule = 'EmailModule.psm1'
@@ -176,9 +172,9 @@ jobs:
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\EmailModule\$version\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\release\EmailModule\$version\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\src\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\src\EmailModule\EmailModule.psd1" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\src\EmailModule\EmailModule.psm1" -Destination ".\release\EmailModule\$version\"
           Copy-Item -Path ".\README.md" -Destination ".\release\EmailModule\$version\"
           Copy-Item -Path ".\LICENSE" -Destination ".\release\EmailModule\$version\"
 

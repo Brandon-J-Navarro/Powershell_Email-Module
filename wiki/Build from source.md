@@ -20,12 +20,12 @@ Set-Location .\Powershell_Email-Module\
 
 ## Restore NuGet packages for .NET Framework Build
 ```
-nuget restore .\EmailLibraryDesktop\EmailLibrary.sln
+nuget restore .\src\EmailLibraryDesktop\EmailLibrary.sln
 ```
 
 ## Build .NET Framework project
 ```
-msbuild .\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
+msbuild .\src\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
 ```
 
 ## Create release directories
@@ -39,24 +39,19 @@ New-Item -ItemType Directory -Path ".\release\EmailModule\lib\net472" | Out-Null
 
 ## Copy .NET Framework build output to lib Desktop directory
 ```powershell
-Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
+Get-ChildItem -path ".\src\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
     Copy-Item $_ -Destination ".\release\EmailModule\lib\net472\"
 }
 ```
 
 ## Install dependencies .NET Core Build
 ```
-dotnet restore .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
-```
-
-## Build .NET Core project
-```
-dotnet build .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore
+dotnet restore .\src\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
 ```
 
 ## Publish .NET Core project
 ```
-dotnet publish .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
+dotnet publish .\src\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
 ```
 
 ## Copy .NET Core publish output to lib Core directory
@@ -68,8 +63,8 @@ Get-ChildItem -path ".\publish\" -Exclude "*.pdb" | Where-Object Attributes -ne 
 
 ## Copy powershell module to release directory
 ```powershell
-Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\EmailModule\"
-Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\EmailModule\"
+Copy-Item -Path ".\src\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\EmailModule\"
+Copy-Item -Path ".\src\EmailModule\EmailModule.psm1" -Destination ".\release\EmailModule\"
 ```
 
 ### `Files within the .\release\EmailModule\ directory is the Email Module, copy the EmailModule folder where it is accessible to $env:PSModulePath`

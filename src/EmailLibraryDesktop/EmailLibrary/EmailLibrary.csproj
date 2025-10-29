@@ -153,10 +153,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\LICENSE" Pack="true" PackagePath="" />
+    <None Include="..\..\..\LICENSE" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

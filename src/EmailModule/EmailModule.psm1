@@ -135,19 +135,41 @@ function Send-Email {
         $EmailImportance = "Normal"
     )
 
-    if($PSCmdlet.ParameterSetName -EQ 'PSCredential'){
+    if ($PSCmdlet.ParameterSetName -EQ 'PSCredential') {
         $AuthUser = $Credential.UserName
         $AuthPass = $Credential.Password
     }
 
-    if ($EmailPriority){
+    if ($EmailPriority) {
         $cultureInfo = (Get-Culture).TextInfo
         $EmailPriority = $cultureInfo.ToTitleCase($EmailPriority.ToLower())
     }
 
-    if ($EmailImportance){
+    if ($EmailImportance) {
         $cultureInfo = (Get-Culture).TextInfo
         $EmailImportance = $cultureInfo.ToTitleCase($EmailImportance.ToLower())
+    }
+
+
+    if ($AuthUser.ToLower() -ne $EmailFrom.ToLower()) {
+        Write-Warning "The authenticated user ($AuthUser) and the sending email address ($EmailFrom) do not match."
+        Write-Warning "Please verify that the authenticated user has 'Send on behalf of' or 'Send As' permissions for the specified email address."
+    }
+
+    $EmailFromDomain = ($EmailFrom.Split('@'))[1]
+    if ( ! ( $SmtpServer.ToLower().Contains($EmailFromDomain.ToLower()) ) ) {
+        Write-Warning "Email From domain ($EmailFromDomain) does not match the SMTP Server domain ($SmtpServer)."
+        Write-Warning "This can lead to Sender Policy Framework (SPF) failures, DomainKeys Identified Mail (DKIM) failures, and Domain-based Message Authentication, Reporting, and Conformance (DMARC) rejections, causing your email to be marked as spam, denied by the recipient, or fail to send even though the SMTP connection succeeded."
+        Write-Warning "Please verify that the sending domain is authorized to send through the specified SMTP server without being flagged or rejected."
+        # $No = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'No'
+        # $Yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Yes'
+        # $Options = [System.Management.Automation.Host.ChoiceDescription[]]($No, $Yes)
+        # $choice = $host.ui.PromptForChoice("Do you wish to continue?", "", $Options, 0)
+        # if ($choice -eq 0) {              # $AuthUser = 'user@company.com'
+        #     Write-Host "Exiting..."       # $EmailFrom = 'user@business.com'
+        #     Start-Sleep -Seconds 1        # $SmtpServer = 'mail.corporation.com'
+        #     return $null
+        # }
     }
 
     [EmailCommands]::SendEmail(
