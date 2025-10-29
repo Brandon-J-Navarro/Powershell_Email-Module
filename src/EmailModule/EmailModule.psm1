@@ -153,16 +153,28 @@ function Send-Email {
     # $AuthUser = 'user@company.com'
     # $EmailFrom = 'user@business.com'
     # $SmtpServer = 'mail.corporation.com'
-    # $AuthUserDomain = ($AuthUser.Split('@'))[1]
-    # $EmailFromDomain = ($EmailFrom.Split('@'))[1]
 
-    # if ($AuthUserDomain.ToLower() -ne $EmailFromDomain.ToLower()) {
-    #     Write-Host "Authentication user domain ($AuthUser) and Email From domain ($EmailFrom) do not match"
-    # }
+    if ($AuthUser.ToLower() -ne $EmailFrom.ToLower()) {
+        Write-Warning "Authentication user ($AuthUser) and Sending Email ($EmailFrom) do not match"
+        Write-Warning "Please verify that authentication user has 'Sent on behalf of' permissions on the sending email address"
+    }
 
-    # if (!($SmtpServer.ToLower()).Contains($AuthUserDomain.ToLower() -or $SmtpServer.ToLower()).Contains($EmailFromDomain.ToLower())) {
-    #     Write-Host "do not match"
-    # }
+    $AuthUserDomain = ($AuthUser.Split('@'))[1]
+    $EmailFromDomain = ($EmailFrom.Split('@'))[1]
+    if ( ! ($SmtpServer.ToLower().Contains($AuthUserDomain.ToLower()) -and $SmtpServer.ToLower().Contains($EmailFromDomain.ToLower()) ) ) {
+        Write-Warning "Authentication user domain ($AuthUser) and/or Email From domain ($EmailFrom) do not match the SMTP Server domain ($SmtpServer)."
+        Write-Warning "This can lead to Sender Policy Framework (SPF) failures, Domain Key Identified Mail (DKIM) failures, and Domain-based Message Authentication, Reporting, and Conformance (DMARC) Rejections causing your email being marked as SPAM, denied by the recipient or failing to send even though the SMTP Server connection succeeded."
+        # $No = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'No'
+        # $Yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Yes'
+        # $Options = [System.Management.Automation.Host.ChoiceDescription[]]($No, $Yes)
+        # $choice = $host.ui.PromptForChoice("Do you wish to continue?", "", $Options, 0)
+        
+        # if ($choice -eq 0) {
+        #     Write-Host "Exiting..."
+        #     Start-Sleep -Seconds 1
+        #     return $null
+        # }
+    }
 
     [EmailCommands]::SendEmail(
         [string]$AuthUser,

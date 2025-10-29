@@ -1,9 +1,10 @@
-﻿// EmailLibrary.cs dotNET Core 8.0
-using MailKit.Security;
-using Microsoft.AspNetCore.StaticFiles;
+﻿// EmailCommands.cs .dotNET Framework 4.7.2
 using MimeKit;
+using MailKit.Security;
 using System.Net;
-using System.Runtime.InteropServices;
+using System;
+using Microsoft.AspNetCore.StaticFiles;
+using System.IO;
 using static EmailLibrary.Builders;
 
 public class EmailCommands
@@ -33,19 +34,19 @@ public class EmailCommands
         Console.WriteLine("[DEBUG] Creating Mail Message...");
 #endif
 
-        mailMessage = BuildMailMessageFrom(mailMessage, emailFrom, fromName);
+        mailMessage = BuildMailMessage(mailMessage, emailFrom, fromName, "FROM");
 #if DEBUG
         Console.WriteLine("[DEBUG] Successfully added FROM.");
 #endif
 
-        mailMessage = BuildMailMessageTo(mailMessage, emailTo, toName);
+        mailMessage = BuildMailMessage(mailMessage, emailTo, toName, "TO");
 #if DEBUG
         Console.WriteLine("[DEBUG] Successfully added TO recipients.");
 #endif
 
         if (!(string.IsNullOrEmpty(emailCc)))
         {
-            mailMessage = BuildMailMessageCc(mailMessage, emailCc, ccName);
+            mailMessage = BuildMailMessage(mailMessage, emailCc, ccName, "CC");
 #if DEBUG
             Console.WriteLine("[DEBUG] Successfully added CC recipients.");
 #endif
@@ -59,7 +60,7 @@ public class EmailCommands
 
         if (!(string.IsNullOrEmpty(emailBcc)))
         {
-            mailMessage = BuildMailMessageBcc(mailMessage, emailBcc, bccName);
+            mailMessage = BuildMailMessage(mailMessage, emailBcc, bccName, "BCC");
 #if DEBUG
             Console.WriteLine("[DEBUG] Successfully added BCC recipients.");
 #endif
@@ -225,7 +226,7 @@ public class EmailCommands
         Console.WriteLine($"[DEBUG] {mailMessage}");
 #endif
 
-        using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
+        var smtpClient = new MailKit.Net.Smtp.SmtpClient();
 #if DEBUG
         Console.WriteLine("[DEBUG] Connecting to SMTP server...");
 #endif
@@ -234,24 +235,6 @@ public class EmailCommands
         Console.WriteLine($"[DEBUG] MailServer: {mailServer}:{serverPort}");
 #endif
 
-        if (Environment.GetEnvironmentVariable("CI") == "true" &&
-    RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            smtpClient.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
-            {
-#if DEBUG
-                Console.WriteLine("[DEBUG] macOS CI detected – bypassing partial revocation SSL errors.");
-#endif
-                if (sslPolicyErrors == System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors &&
-                    chain?.ChainStatus?.Any(s => s.Status == System.Security.Cryptography.X509Certificates.X509ChainStatusFlags.RevocationStatusUnknown) == true)
-                {
-                    return true;
-                }
-
-                return sslPolicyErrors == System.Net.Security.SslPolicyErrors.None;
-            };
-        }
-
         smtpClient.Connect(mailServer, serverPort, SecureSocketOptions.StartTls);
 #if DEBUG
         Console.WriteLine("[DEBUG] Connected to SMTP server.");
@@ -259,7 +242,6 @@ public class EmailCommands
         Console.WriteLine($"[DEBUG] Is Encrypted: {smtpClient.IsEncrypted}");
         Console.WriteLine($"[DEBUG] Is Secure: {smtpClient.IsSecure}");
         Console.WriteLine($"[DEBUG] Ssl Cipher Algorithm: {smtpClient.SslCipherAlgorithm}");
-        Console.WriteLine($"[DEBUG] Ssl Cipher Suite: {smtpClient.SslCipherSuite}");
         Console.WriteLine($"[DEBUG] Ssl Hash Algorithm: {smtpClient.SslHashAlgorithm}");
         Console.WriteLine($"[DEBUG] Ssl Protocol: {smtpClient.SslProtocol}");
 #endif
@@ -280,6 +262,12 @@ public class EmailCommands
 #if DEBUG
         Console.WriteLine("[DEBUG] SMTP client disconnected.");
 #endif
+
+        smtpClient.Dispose();
+#if DEBUG
+        Console.WriteLine("[DEBUG] SMTP client disposed.");
+#endif
+
         return mailSent;
     }
 }
