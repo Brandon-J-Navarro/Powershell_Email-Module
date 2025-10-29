@@ -24,7 +24,7 @@ Powershell Module to send Email using <a href="https://github.com/jstedfast/Mail
 ![Windows](https://custom-icon-badges.demolab.com/badge/Windows-Passing-gree?logo=windows11&logoColor=white)&nbsp; 
 ![macOS](https://img.shields.io/badge/macOS-passing-gree?logo=apple&logoColor=white)
 
-#### [Change Log](CHANGELOG)
+#### [Change Log](CHANGELOG.md)
 <!-- ### Tested on
 | Image | Label |
 | -------------|--------------|
