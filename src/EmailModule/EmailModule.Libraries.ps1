@@ -9,17 +9,29 @@ if ($PSEdition -eq 'Core') {
         }
     }
 } else {
+    $exclude = @(
+        'System.Formats.Asn1.dll',
+        'Microsoft.Bcl.AsyncInterfaces.dll',
+        'Microsoft.Extensions.DependencyInjection.Abstractions.dll',
+        'Microsoft.Extensions.Hosting.Abstractions.dll',
+        'Microsoft.Extensions.Logging.Abstractions.dll',
+        'Microsoft.Extensions.Primitives.dll',
+        'System.Diagnostics.DiagnosticSource.dll',
+        'System.Text.Encodings.Web.dll',
+        'Microsoft.Extensions.WebEncoders.dll'
+    )
     Get-ChildItem -Path (Join-Path $PSScriptRoot 'lib/net472') -Filter *.dll |
-    Where-Object Extension -eq '.dll' |
-    Where-Object Name -ne 'System.Formats.Asn1.dll' |
+    Where-Object  { $_.Name -notin $exclude } |
     ForEach-Object {
+        $Name = $_.FullName
         try {
             Add-Type -Path $_.FullName -ErrorAction Stop
         } catch {
-            Write-Warning "Could not load assembly: $($_.FullName)"
+            Write-Warning "Could not load assembly: $Name. $_"
         }
     }
 }
+
 
 function Get-Banner {
     Write-Host -ForegroundColor DarkGreen "    ____           _ __  __  ___        __     __    "

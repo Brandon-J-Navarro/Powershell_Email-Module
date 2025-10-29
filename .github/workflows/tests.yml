@@ -76,7 +76,18 @@ jobs:
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $version = $version  -replace "-testing.*", ''
-          Get-ChildItem -path ".\src\EmailLibraryDesktop\EmailLibrary\bin\Debug\" -Recurse -Exclude "*.pdb" | ForEach-Object {
+          $exclude = @(
+            'System.Formats.Asn1.dll',
+            'Microsoft.Bcl.AsyncInterfaces.dll',
+            'Microsoft.Extensions.DependencyInjection.Abstractions.dll',
+            'Microsoft.Extensions.Hosting.Abstractions.dll',
+            'Microsoft.Extensions.Logging.Abstractions.dll',
+            'Microsoft.Extensions.Primitives.dll',
+            'System.Diagnostics.DiagnosticSource.dll',
+            'System.Text.Encodings.Web.dll',
+            'Microsoft.Extensions.WebEncoders.dll'
+          )
+          Get-ChildItem -path ".\src\EmailLibraryDesktop\EmailLibrary\bin\Debug\" -Recurse -Exclude "*.pdb" | Where-Object { $_.Name -notin $exclude } | ForEach-Object {
             Copy-Item $_ -Destination ".\debug\EmailModule\$version\lib\net472\"
           }
 
