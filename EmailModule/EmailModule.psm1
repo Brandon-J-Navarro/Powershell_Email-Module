@@ -135,20 +135,34 @@ function Send-Email {
         $EmailImportance = "Normal"
     )
 
-    if($PSCmdlet.ParameterSetName -EQ 'PSCredential'){
+    if ($PSCmdlet.ParameterSetName -EQ 'PSCredential') {
         $AuthUser = $Credential.UserName
         $AuthPass = $Credential.Password
     }
 
-    if ($EmailPriority){
+    if ($EmailPriority) {
         $cultureInfo = (Get-Culture).TextInfo
         $EmailPriority = $cultureInfo.ToTitleCase($EmailPriority.ToLower())
     }
 
-    if ($EmailImportance){
+    if ($EmailImportance) {
         $cultureInfo = (Get-Culture).TextInfo
         $EmailImportance = $cultureInfo.ToTitleCase($EmailImportance.ToLower())
     }
+
+    # $AuthUser = 'user@company.com'
+    # $EmailFrom = 'user@business.com'
+    # $SmtpServer = 'mail.corporation.com'
+    # $AuthUserDomain = ($AuthUser.Split('@'))[1]
+    # $EmailFromDomain = ($EmailFrom.Split('@'))[1]
+
+    # if ($AuthUserDomain.ToLower() -ne $EmailFromDomain.ToLower()) {
+    #     Write-Host "Authentication user domain ($AuthUser) and Email From domain ($EmailFrom) do not match"
+    # }
+
+    # if (!($SmtpServer.ToLower()).Contains($AuthUserDomain.ToLower() -or $SmtpServer.ToLower()).Contains($EmailFromDomain.ToLower())) {
+    #     Write-Host "do not match"
+    # }
 
     [EmailCommands]::SendEmail(
         [string]$AuthUser,
