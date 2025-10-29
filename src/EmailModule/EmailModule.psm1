@@ -150,28 +150,24 @@ function Send-Email {
         $EmailImportance = $cultureInfo.ToTitleCase($EmailImportance.ToLower())
     }
 
-    # $AuthUser = 'user@company.com'
-    # $EmailFrom = 'user@business.com'
-    # $SmtpServer = 'mail.corporation.com'
 
     if ($AuthUser.ToLower() -ne $EmailFrom.ToLower()) {
-        Write-Warning "Authentication user ($AuthUser) and Sending Email ($EmailFrom) do not match"
-        Write-Warning "Please verify that authentication user has 'Sent on behalf of' permissions on the sending email address"
+        Write-Warning "The authenticated user ($AuthUser) and the sending email address ($EmailFrom) do not match."
+        Write-Warning "Please verify that the authenticated user has 'Send on behalf of' or 'Send As' permissions for the specified email address."
     }
 
-    $AuthUserDomain = ($AuthUser.Split('@'))[1]
     $EmailFromDomain = ($EmailFrom.Split('@'))[1]
-    if ( ! ($SmtpServer.ToLower().Contains($AuthUserDomain.ToLower()) -and $SmtpServer.ToLower().Contains($EmailFromDomain.ToLower()) ) ) {
-        Write-Warning "Authentication user domain ($AuthUser) and/or Email From domain ($EmailFrom) do not match the SMTP Server domain ($SmtpServer)."
-        Write-Warning "This can lead to Sender Policy Framework (SPF) failures, Domain Key Identified Mail (DKIM) failures, and Domain-based Message Authentication, Reporting, and Conformance (DMARC) Rejections causing your email being marked as SPAM, denied by the recipient or failing to send even though the SMTP Server connection succeeded."
+    if ( ! ( $SmtpServer.ToLower().Contains($EmailFromDomain.ToLower()) ) ) {
+        Write-Warning "Email From domain ($EmailFromDomain) does not match the SMTP Server domain ($SmtpServer)."
+        Write-Warning "This can lead to Sender Policy Framework (SPF) failures, DomainKeys Identified Mail (DKIM) failures, and Domain-based Message Authentication, Reporting, and Conformance (DMARC) rejections, causing your email to be marked as spam, denied by the recipient, or fail to send even though the SMTP connection succeeded."
+        Write-Warning "Please verify that the sending domain is authorized to send through the specified SMTP server without being flagged or rejected."
         # $No = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'No'
         # $Yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Yes'
         # $Options = [System.Management.Automation.Host.ChoiceDescription[]]($No, $Yes)
         # $choice = $host.ui.PromptForChoice("Do you wish to continue?", "", $Options, 0)
-        
-        # if ($choice -eq 0) {
-        #     Write-Host "Exiting..."
-        #     Start-Sleep -Seconds 1
+        # if ($choice -eq 0) {              # $AuthUser = 'user@company.com'
+        #     Write-Host "Exiting..."       # $EmailFrom = 'user@business.com'
+        #     Start-Sleep -Seconds 1        # $SmtpServer = 'mail.corporation.com'
         #     return $null
         # }
     }
