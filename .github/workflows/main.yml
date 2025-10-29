@@ -4,12 +4,11 @@ on:
   push:
     branches: [ 'main' ]
     paths:
-      - 'EmailModule/**'
-      - 'EmailLibraryDesktop/**'
-      - 'EmailLibraryCore/**'
-      - '!.github/workflows/**'
+      - 'src/**'
+      - '!test/**'
+      - '!.github/**'
       - '!README.md'
-      - '!.wiki/**'
+      - '!wiki/**'
 
   # pull_request:
   #   branches: [ main ]
