@@ -54,11 +54,11 @@ jobs:
           nuget-version: 'latest'
 
       - name: Restore NuGet packages for .NET Framework Build
-        run: nuget restore .\EmailLibraryDesktop\EmailLibrary.sln
+        run: nuget restore .\src\EmailLibraryDesktop\EmailLibrary.sln
 
       - name: Build .NET Framework project
         run: |
-          msbuild .\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Debug /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
+          msbuild .\src\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Debug /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
 
       - name: Create release directories
         run: |
@@ -77,7 +77,7 @@ jobs:
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $version = $version  -replace "-testing.*", ''
-          Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Debug\" -Recurse -Exclude "*.pdb" | ForEach-Object {
+          Get-ChildItem -path ".\src\EmailLibraryDesktop\EmailLibrary\bin\Debug\" -Recurse -Exclude "*.pdb" | ForEach-Object {
             Copy-Item $_ -Destination ".\debug\EmailModule\$version\lib\net472\"
           }
 
@@ -87,17 +87,17 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Install dependencies .NET Core Build
-        run: dotnet restore .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
+        run: dotnet restore .\src\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
 
       - name: Build .NET Core project
-        run: dotnet build .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Debug --no-restore
+        run: dotnet build .\src\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Debug --no-restore
 
       - name: Copy .NET Core publish output to lib Core directory
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $version = $version  -replace "-testing.*", ''
-          Get-ChildItem -path ".\EmailLibraryCore\EmailLibrary\bin\Debug\net8.0\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
+          Get-ChildItem -path ".\src\EmailLibraryCore\EmailLibrary\bin\Debug\net8.0\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
             Copy-Item $_ -Destination ".\debug\EmailModule\$version\lib\net8.0\"
           }
 
@@ -113,7 +113,7 @@ jobs:
           }
 
           $moduleSettings = @{
-            Path = '.\EmailModule\EmailModule.psd1'
+            Path = '.\src\EmailModule\EmailModule.psd1'
 
             # Script module or binary module file associated with this manifest.
             RootModule = 'EmailModule.psm1'
@@ -180,9 +180,9 @@ jobs:
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           $version = $version  -replace "-testing.*", ''
-          Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\debug\EmailModule\$version\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\debug\EmailModule\$version\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\debug\EmailModule\$version\"
+          Copy-Item -Path ".\src\EmailModule\EmailModule.Libraries.ps1" -Destination ".\debug\EmailModule\$version\"
+          Copy-Item -Path ".\src\EmailModule\EmailModule.psd1" -Destination ".\debug\EmailModule\$version\"
+          Copy-Item -Path ".\src\EmailModule\EmailModule.psm1" -Destination ".\debug\EmailModule\$version\"
           # Copy-Item -Path ".\Tests\" -Recurse -Destination ".\debug\EmailModule\$version\"
           Copy-Item -Path ".\README.md" -Destination ".\debug\EmailModule\$version\"
           Copy-Item -Path ".\LICENSE" -Destination ".\debug\EmailModule\$version\"
