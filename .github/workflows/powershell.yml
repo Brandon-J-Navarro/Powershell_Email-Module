@@ -54,6 +54,7 @@ jobs:
         run: |
           Install-Module -Name ConvertToSARIF -Force -Scope CurrentUser
           Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+          Import-Module ConvertToSARIF
           $results = Invoke-ScriptAnalyzer -Path . -Recurse 
           if ($results -and ($results | Where-Object { $_.Severity -eq 'Error' })) {
             Write-Error "ScriptAnalyzer found Error issues; failing CI."
