@@ -71,6 +71,19 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Setup MSBuild .NET Framework Build
+      uses: microsoft/setup-msbuild@v2.0.0
+
+    - name: Setup NuGet .NET Framework Build
+      uses: nuget/setup-nuget@v2
+      with:
+        nuget-version: 'latest'
+
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v5.0.0
+      with:
+        dotnet-version: "8.0.x"
+
     # Add any setup steps before running the `github/codeql-action/init` action.
     # This includes steps like installing compilers or runtimes (`actions/setup-node`
     # or others). This is typically only required for manual builds.
