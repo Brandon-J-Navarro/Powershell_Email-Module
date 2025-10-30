@@ -3,90 +3,91 @@
 When contributing to this repository, please first discuss the change you wish to make via issue,
 email, or any other method with the owners of this repository before making a change. 
 
-Please note we have a code of conduct, please follow it in all your interactions with the project.
+Please note we have a [code of conduct](CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
 
 ## Pull Request Process
 
-1. Ensure any install or build dependencies are removed before the end of the layer when doing a 
-   build.
-2. Update the README.md with details of changes to the interface, this includes new environment 
-   variables, exposed ports, useful file locations and container parameters.
-3. Increase the version numbers in any examples files and the README.md to the new version that this
-   Pull Request would represent. The versioning scheme we use is [SemVer](http://semver.org/).
-4. You may merge the Pull Request in once you have the sign-off of two other developers, or if you 
-   do not have permission to do that, you may request the second reviewer to merge it for you.
+We follow a two-stage pull request flow that ensures changes are built, integration-tested, and
+published in a controlled and repeatable way. Follow the steps below when contributing.
 
-## Code of Conduct
+1) Branching and naming
+   - Create a short-lived feature branch off `testing` for each logical change. Keep branches
+     focused (one change per branch) and use descriptive names, for example:
+       - `feat/<short-description>`
+       - `fix/<short-description>`
+       - `docs/<short-description>`
 
-### Our Pledge
+2) Stage 1 — PR into `testing` (required)
+   - Open a pull request from your feature branch into the `testing` branch. This is the required
+     gate that triggers the repository CI (`.github/workflows/tests.yml`) which runs:
+       - .NET Framework and .NET Core builds
+       - Integration tests across the OS matrix
+       - Artifact creation for the module
+   - Keep this PR up-to-date with `testing` (rebase or merge as required) until checks pass.
 
-In the interest of fostering an open and welcoming environment, we as
-contributors and maintainers pledge to making participation in our project and
-our community a harassment-free experience for everyone, regardless of age, body
-size, disability, ethnicity, gender identity and expression, level of experience,
-nationality, personal appearance, race, religion, or sexual identity and
-orientation.
+3) Stage 1 requirements (before merging into `testing`)
+   - Provide a clear PR description explaining what changed and why.
+   - Run local smoke builds for `EmailLibraryCore` and `EmailLibraryDesktop` when possible.
+   - Do not include secrets or credentials in commits or PRs.
+   - Update `README.md` and `CHANGELOG.md` for user-visible or breaking changes.
+   - Assign reviewers and link relevant issues.
 
-### Our Standards
+4) Stage 2 — PR into `main` (release)
+   - Once the PR into `testing` has passed all required checks, open a PR from `testing` 
+     into `main` to promote the change to release.
+   - Merging into `main` triggers the release workflow which packages and publishes artifacts
+     (for example NuGet packages, zip GitHub release artifacts and PSGallery Publish).
+     Only promote changes to `main` after `testing` has succeeded.
 
-Examples of behavior that contributes to creating a positive environment
-include:
+5) Merge policy
+   - Required checks must be green before merging (the CI jobs defined in `tests.yml`).
+   - Require at least one reviewer approval.
+   - Use a consistent merge strategy: squash-and-merge or rebase-and-merge. Resolve conflicts by
+     rebasing your branch on the target branch and pushing the updated branch.
 
-* Using welcoming and inclusive language
-* Being respectful of differing viewpoints and experiences
-* Gracefully accepting constructive criticism
-* Focusing on what is best for the community
-* Showing empathy towards other community members
+6) Public API / assembly version changes
+   - If the PR modifies public C# APIs or assembly versioning:
+       - Call out the change in the PR description and `CHANGELOG.md`.
+       - Add notes about backwards compatibility and consumer impact.
+       - Ensure integration tests cover the changed surface area.
 
-Examples of unacceptable behavior by participants include:
+7) PR description checklist (copy this into your PR body)
+   - Title: short summary + issue number (if applicable)
+   - Description: what changed and why
+   - Checklist:
+     - [ ] Built locally: `EmailLibraryCore` and `EmailLibraryDesktop`
+     - [ ] Integration tests run locally (if applicable)
+     - [ ] PR target is `testing`
+     - [ ] `CHANGELOG.md` updated (if applicable)
+     - [ ] No secrets in this PR
+     - [ ] Reviewers assigned
 
-* The use of sexualized language or imagery and unwelcome sexual attention or
-advances
-* Trolling, insulting/derogatory comments, and personal or political attacks
-* Public or private harassment
-* Publishing others' private information, such as a physical or electronic
-  address, without explicit permission
-* Other conduct which could reasonably be considered inappropriate in a
-  professional setting
+8) Automation and tags
+   - The CI may create tags or artifacts for successful `testing` builds; do not manually publish
+     packages from feature branches. Publishing and releases are performed from `main` as part of
+     the CI release workflow.
 
-### Our Responsibilities
+If you want, we can also add a repository-level Pull Request template so PRs are pre-populated with
+the checklist and guidance. See the `.github/PULL_REQUEST_TEMPLATE.md` file for an example.
 
-Project maintainers are responsible for clarifying the standards of acceptable
-behavior and are expected to take appropriate and fair corrective action in
-response to any instances of unacceptable behavior.
+9) CI / Workflow changes and tests
+   - If your change affects the build, test matrix, or release behavior, update the relevant
+     workflow files in `.github/workflows/` (for example `tests.yml` and any release workflow that
+     runs on `main`). Include a clear description in your PR of why the workflow change is needed.
+   - If you change any build steps (commands, outputs, artifact locations, publish paths, or
+     build configuration), update the repository's "Build from source" documentation so users
+     can reproduce the build locally. The primary guide is at `docs/Build from source.md` (so
+     the wiki page can be updated and changes maintained).
+   - Add or update automated tests for new features or behavior in `tests.yml` (under the
+     integration test jobs). Prefer adding discrete, independent steps named
+     `Integration Test - <Feature>` so failures are easy to diagnose.
+   - When modifying CI/workflows include the following in your PR:
+       - The changed workflow file(s).
+       - A description of the new test(s) and any required repository secrets.
+       - Notes for maintainers on how to run the test(s) locally if they require special setup.
+   - CI changes should be reviewed carefully; consider requesting an additional approval from a
+     maintainer before merging workflow changes.
 
-Project maintainers have the right and responsibility to remove, edit, or
-reject comments, commits, code, wiki edits, issues, and other contributions
-that are not aligned to this Code of Conduct, or to ban temporarily or
-permanently any contributor for other behaviors that they deem inappropriate,
-threatening, offensive, or harmful.
+See the wiki page `docs/CI-and-Adding-Integration-Tests.md` for sample snippets and guidance when
+adding or modifying integration tests and CI workflows.
 
-### Scope
-
-This Code of Conduct applies both within project spaces and in public spaces
-when an individual is representing the project or its community. Examples of
-representing a project or community include using an official project e-mail
-address, posting via an official social media account, or acting as an appointed
-representative at an online or offline event. Representation of a project may be
-further defined and clarified by project maintainers.
-
-### Enforcement
-
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported by contacting the project team at [INSERT EMAIL ADDRESS]. All
-complaints will be reviewed and investigated and will result in a response that
-is deemed necessary and appropriate to the circumstances. The project team is
-obligated to maintain confidentiality with regard to the reporter of an incident.
-Further details of specific enforcement policies may be posted separately.
-
-Project maintainers who do not follow or enforce the Code of Conduct in good
-faith may face temporary or permanent repercussions as determined by other
-members of the project's leadership.
-
-### Attribution
-
-This Code of Conduct is adapted from the [Contributor Covenant][homepage], version 1.4,
-available at [http://contributor-covenant.org/version/1/4][version]
-
-[homepage]: http://contributor-covenant.org
-[version]: http://contributor-covenant.org/version/1/4/
