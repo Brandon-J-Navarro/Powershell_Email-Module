@@ -1,5 +1,5 @@
-. $PSScriptRoot\EmailModule.Libraries.ps1
-
+﻿. $PSScriptRoot\EmailModule.Libraries.ps1
+$IsInteractive = -not ([Environment]::GetEnvironmentVariable("CI")) -and $null -ne $host.UI.RawUI
 function Send-Email {
     [CmdletBinding(HelpUri = 'https://github.com/Brandon-J-Navarro/Powershell_Email-Module')]
     param (
@@ -161,15 +161,17 @@ function Send-Email {
         Write-Warning "Email From domain ($EmailFromDomain) does not match the SMTP Server domain ($SmtpServer)."
         Write-Warning "This can lead to Sender Policy Framework (SPF) failures, DomainKeys Identified Mail (DKIM) failures, and Domain-based Message Authentication, Reporting, and Conformance (DMARC) rejections, causing your email to be marked as spam, denied by the recipient, or fail to send even though the SMTP connection succeeded."
         Write-Warning "Please verify that the sending domain is authorized to send through the specified SMTP server without being flagged or rejected."
-        # $No = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'No'
-        # $Yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Yes'
-        # $Options = [System.Management.Automation.Host.ChoiceDescription[]]($No, $Yes)
-        # $choice = $host.ui.PromptForChoice("Do you wish to continue?", "", $Options, 0)
-        # if ($choice -eq 0) {              # $AuthUser = 'user@company.com'
-        #     Write-Host "Exiting..."       # $EmailFrom = 'user@business.com'
-        #     Start-Sleep -Seconds 1        # $SmtpServer = 'mail.corporation.com'
-        #     return $null
-        # }
+        if ($IsInteractive) {
+            $No = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'No'
+            $Yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Yes'
+            $Options = [System.Management.Automation.Host.ChoiceDescription[]]($No, $Yes)
+            $choice = $host.ui.PromptForChoice("Do you wish to continue?", "", $Options, 0)
+            if ($choice -eq 0) {              # $AuthUser = 'user@company.com'
+                Write-Output "Exiting..."       # $EmailFrom = 'user@business.com'
+                Start-Sleep -Seconds 1        # $SmtpServer = 'mail.corporation.com'
+                return $null
+            }
+        }
     }
 
     [EmailCommands]::SendEmail(
@@ -266,7 +268,7 @@ function Send-Email {
 
     .EXAMPLE
     # Basic email with username/password authentication
-    
+
     Send-Email -AuthUser "sender@company.com" -AuthPass "password123" `
             -EmailTo "recipient@company.com" -EmailFrom "sender@company.com" `
             -Subject "Test Email" -Body "This is a test message." `
@@ -274,7 +276,7 @@ function Send-Email {
 
     .EXAMPLE
     # Email with display names for sender and recipient
-    
+
     Send-Email -AuthUser "noreply@company.com" -AuthPass "securepassword" `
             -EmailTo "john.doe@company.com" -EmailToName "John Doe" `
             -EmailFrom "noreply@company.com" -EmailFromName "IT Department" `
@@ -284,7 +286,7 @@ function Send-Email {
 
     .EXAMPLE
     # Multiple recipients with semicolon separation
-    
+
     Send-Email -AuthUser "alerts@company.com" -AuthPass "alertpass" `
             -EmailTo "admin1@company.com;admin2@company.com;admin3@company.com" `
             -EmailToName "Admin One;Admin Two;Admin Three" `
@@ -294,7 +296,7 @@ function Send-Email {
 
     .EXAMPLE
     # Email with CC and BCC recipients
-    
+
     Send-Email -AuthUser "reports@company.com" -AuthPass "reportpass" `
             -EmailTo "manager@company.com" -EmailToName "Department Manager" `
             -EmailCc "supervisor@company.com" -CcName "Supervisor" `
@@ -306,7 +308,7 @@ function Send-Email {
 
     .EXAMPLE
     # Using PSCredential for authentication
-    
+
     $cred = Get-Credential -UserName "service@company.com"
     Send-Email -Credential $cred `
             -EmailTo "support@company.com" `
@@ -316,7 +318,7 @@ function Send-Email {
 
     .EXAMPLE
     # Using SecureString for password
-    
+
     $securePass = ConvertTo-SecureString "mypassword" -AsPlainText -Force
     Send-Email -AuthUser "automation@company.com" -AuthPass $securePass `
             -EmailTo "admin@company.com" `
@@ -326,7 +328,7 @@ function Send-Email {
 
     .EXAMPLE
     # Email with priority and importance settings
-    
+
     Send-Email -AuthUser "critical@company.com" -AuthPass "criticalpass" `
             -EmailTo "oncall@company.com" `
             -EmailFrom "critical@company.com" `
@@ -336,7 +338,7 @@ function Send-Email {
 
     .EXAMPLE
     # Using variables for reusable configuration
-    
+
     $mailConfig = @{
         AuthUser = "notifications@company.com"
         AuthPass = "notifypass"
@@ -345,7 +347,7 @@ function Send-Email {
         SmtpServer = "smtp.company.com"
         SmtpPort = 587
     }
-    
+
     Send-Email @mailConfig `
             -EmailTo "team@company.com" `
             -Subject "Weekly Update" `
@@ -354,7 +356,7 @@ function Send-Email {
 
     .EXAMPLE
     # Office 365/Outlook.com configuration
-    
+
     Send-Email -AuthUser "user@outlook.com" -AuthPass "apppassword" `
             -EmailTo "recipient@domain.com" `
             -EmailFrom "user@outlook.com" `
@@ -364,7 +366,7 @@ function Send-Email {
 
     .EXAMPLE
     # Gmail configuration (requires app password)
-    
+
     Send-Email -AuthUser "user@gmail.com" -AuthPass "apppassword" `
             -EmailTo "recipient@domain.com" `
             -EmailFrom "user@gmail.com" `
@@ -374,22 +376,21 @@ function Send-Email {
 
     .EXAMPLE
     # Error handling with try-catch
-    
+
     try {
         Send-Email -AuthUser "sender@company.com" -AuthPass "password" `
                 -EmailTo "recipient@company.com" `
                 -EmailFrom "sender@company.com" `
                 -Subject "Test Email" -Body "Test message" `
                 -SmtpServer "smtp.company.com"
-        Write-Host "Email sent successfully!" -ForegroundColor Green
-    }
+        Write-Output "Email sent successfully!"
     catch {
         Write-Error "Failed to send email: $($_.Exception.Message)"
     }
 
     .EXAMPLE
     # Mismatched names example (names will be stripped, emails used as display names)
-    
+
     # This will work - emails will be used as display names since count doesn't match
     Send-Email -AuthUser "sender@company.com" -AuthPass "password" `
             -EmailTo "user1@company.com;user2@company.com;user3@company.com" `
@@ -417,7 +418,6 @@ Export-ModuleMember Send-Email
 
 
 # Show banner after module is imported (optional)
-if (-not (Test-Path variable:global:EmailModule_BannerShown)) {
-    $global:EmailModule_BannerShown = $true
+if ($IsInteractive) {
     Get-Banner
 }
