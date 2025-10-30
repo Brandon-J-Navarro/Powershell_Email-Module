@@ -23,15 +23,6 @@ Powershell Module to send Email using <a href="https://github.com/jstedfast/Mail
 ![Static Badge](https://img.shields.io/badge/Linux-Passing-gree?logo=linux&logoColor=white)&nbsp; 
 ![Windows](https://custom-icon-badges.demolab.com/badge/Windows-Passing-gree?logo=windows11&logoColor=white)&nbsp; 
 ![macOS](https://img.shields.io/badge/macOS-passing-gree?logo=apple&logoColor=white)
-
-#### [Change Log](CHANGELOG.md)
-<!-- ### Tested on
-| Image | Label |
-| -------------|--------------|
-| Ubuntu 24.04 | `ubuntu-latest` |
-| macOS 15 | `macos-15-intel` |
-| macOS 15 Arm64 | `macos-latest` |
-| Windows Server 2025 | `windows-latest` | -->
 </div>
 
 ## About
@@ -43,6 +34,10 @@ Originally I wrote this in .NET 8 but in order to have it available and work on 
 - Tested with Microsoft Exchange Sever 2019 CU 15 and mailcow: dockerized 2025-09c
 - Tested on Microsoft Windows 11, WSL Ubuntu 22.04 and Omarchy Linux 
 - GitHub Actions integration tests ran on Ubuntu 24.04 (`ubuntu-latest`), macOS 15 (`macos-15-intel`), macOS 15 Arm64 (`macos-latest`), Windows Server 2025 (`windows-latest`)
+
+## Change Log
+- See [CHANGELOG.md](CHANGELOG.md)
+<!-- - See [CHANGELOG.md](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/CHANGELOG.md) -->
 
 ## PSGallery [![PowerShell Gallery Version](https://img.shields.io/powershellgallery/v/EmailModule)](https://www.powershellgallery.com/packages/EmailModule/)&nbsp; [![PowerShell Gallery Downloads](https://img.shields.io/powershellgallery/dt/EmailModule?color=blue)](https://www.powershellgallery.com/packages/EmailModule/)
 
