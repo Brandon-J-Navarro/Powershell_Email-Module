@@ -5,11 +5,13 @@ on:
     branches: [ 'main' ]
     paths:
       - 'src/**'
-      - '!test/**'
       - '!.github/**'
+      - '!.docs/**'
+      - '!tests/**'
       - '!README.md'
-      - '!wiki/**'
-
+      - '!CHANGELOG.md'
+      - '!CODE_OF_CONDUCT.md'
+      - '!CONTRIBUTING.md'
   # pull_request:
   #   branches: [ main ]
   #   types: [closed]
