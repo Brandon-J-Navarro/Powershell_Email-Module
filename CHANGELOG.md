@@ -28,9 +28,19 @@
         - lib\Core → lib\net8.0
         - lib\Desktop → lib\net472
     - Added License and Readme Property and Item Groups to csproj files
+    - Added Warning messages for Authentication User and Sending Email mismatch
+    - Added Warning messages for sending email domain and smtp server domain mismatch
+    - Added / Validated support for MacOS
+    - Added status return after email is sent (EX: 2.0.0 OK)
+    - Added Debug messages for debug build
+    - Combined and Moved mime message builder methods to separate class
+    - Added check for CI environment variable and MacOS and if it returns true it will bypass the OCSP/CRL checks for github actions integration tests
+
+    *** These are non-breaking changes. Any scripts or automation using pervious releases are still supported. All new parameters and features are options and not required. ***
 
 - Release: 1.0.5
     - EmailToName, and EmailFromName are NULLABLE
 
 - Release: 1.0.4
-    - All Parameters are required
+    - All Parameters are required 
+    - First production release
