@@ -277,6 +277,28 @@ jobs:
           if-no-files-found: error
 
   # Integration Tests Core
+  # NOTE for contributors:
+  # - If you add a new feature that needs integration testing, add an explicit step under
+  #   this job with a descriptive 'name: Integration Test - <Feature>' so CI output is easy to
+  #   interpret. Keep steps idempotent and avoid leaking secrets in logs.
+  # - If you need to change the OS matrix, test data, or artifact names, update the 'build'
+  #   job and the matrix above and document the change in your PR.
+  # Example (commented) integration test step to add below the existing steps:
+  #
+  #      - name: Integration Test - My New Feature
+  #        shell: pwsh
+  #        run: |
+  #          Import-Module .\EmailModule\EmailModule.psm1
+  #          # Prepare inputs and secrets (refer to PR description for required secrets)
+  #          $AuthUser = "${{ secrets.AUTHUSER }}"
+  #          $AuthPass = "${{ secrets.AUTHPASS }}"
+  #          $To = "${{ secrets.TO }}"
+  #          $MailServer = "${{ secrets.MAILSERVER }}"
+  #          # Call the cmdlet with the new parameters to validate behavior
+  #          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass -EmailTo $To -EmailFrom $AuthUser -SmtpServer $MailServer
+  #
+  # - If your new test requires new repository secrets, list them in the PR and ask a maintainer
+  #   to add them to the repository settings. Prefer using placeholder values in example code.
   integration-test-core:
     environment: Build and Test PowerShell Module
     runs-on: ${{ matrix.os }}
