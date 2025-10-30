@@ -18,9 +18,7 @@ Powershell Module to send Email using <a href="https://github.com/jstedfast/Mail
 [![GitHub Tag](https://img.shields.io/github/v/tag/Brandon-J-Navarro/Powershell_Email-Module)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/tags)
 
 [![Build, Package, and Release](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/main.yml)&nbsp; 
-[![Build and Test PowerShell Module](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/tests.yml/badge.svg?branch=testing)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/tests.yml)&nbsp; 
-[![PSScriptAnalyzer](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/powershell.yml/badge.svg)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/powershell.yml)&nbsp; 
-[![CodeQL](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/github-code-scanning/codeql)
+[![Build and Test PowerShell Module](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/tests.yml/badge.svg?branch=testing)](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/actions/workflows/tests.yml)
 
 ![Static Badge](https://img.shields.io/badge/Linux-Passing-gree?logo=linux&logoColor=white)&nbsp; 
 ![Windows](https://custom-icon-badges.demolab.com/badge/Windows-Passing-gree?logo=windows11&logoColor=white)&nbsp; 
