@@ -31,9 +31,30 @@ Originally I wrote this in .NET 8 but in order to have it available and work on 
 - Compatible PSEditions: Windows PowerShell', 'PowerShell Core'
 - Minimum Powershell version: 'Windows PowerShell 5.1'
 - DotNet Framework Version: '.NET Framework 4.7.2'
+- DotNet Core Version: '.Net 8.0'
 - Tested with Microsoft Exchange Sever 2019 CU 15 and mailcow: dockerized 2025-09c
 - Tested on Microsoft Windows 11, WSL Ubuntu 22.04 and Omarchy Linux 
-- GitHub Actions integration tests ran on Ubuntu 24.04 (`ubuntu-latest`), macOS 15 (`macos-15-intel`), macOS 15 Arm64 (`macos-latest`), Windows Server 2025 (`windows-latest`)
+- GitHub Actions integration tests ran on Ubuntu 24.04 (`ubuntu-latest`), macOS 15 (`macos-15-intel`), macOS 15 Arm64 (`macos-latest`), macOS 26 Arm64 beta (`macos-26`), Windows Server 2025 (`windows-latest`)
+
+#### SMTP Server Connection DEBUG Log
+```powershell
+...
+[DEBUG] Connecting to SMTP server...
+[DEBUG] MailServer: ***:587
+[DEBUG] Connected to SMTP server.
+[DEBUG] Is Connected: True
+[DEBUG] Is Encrypted: True
+[DEBUG] Is Secure: True
+[DEBUG] Ssl Cipher Algorithm: Aes256
+[DEBUG] Ssl Cipher Suite: TLS_AES_256_GCM_SHA384
+[DEBUG] Ssl Hash Algorithm: Sha384
+[DEBUG] Ssl Protocol: Tls13
+[DEBUG] Authenticated successfully.
+[DEBUG] Is Authenticated: True
+[DEBUG] Email sent successfully.
+[DEBUG] 2.0.0 Ok: queued as 75BD6489C9B
+[DEBUG] SMTP client disconnected.
+```
 
 ## Change Log
 - See [CHANGELOG.md](CHANGELOG.md)
