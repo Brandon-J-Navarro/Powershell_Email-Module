@@ -8,7 +8,8 @@ publish new releases.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| main (1.0.6 - in Dev) | :white_check_mark: |
+| development (1.0.6) | :x: |
+| main (1.0.5) | :white_check_mark: |
 | latest release (1.0.5) | :white_check_mark: |
 | previous release (1.0.4) | :white_check_mark: |
 
