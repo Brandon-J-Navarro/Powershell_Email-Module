@@ -51,12 +51,14 @@ jobs:
       - name: Run analyzer and fail on Errors
         shell: pwsh
         run: |
+          Install-Module -Name ConvertToSARIF -Force -Scope CurrentUser
           Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
-          $results = Invoke-ScriptAnalyzer -Path . -Recurse
+          $results = Invoke-ScriptAnalyzer -Path . -Recurse 
           if ($results -and ($results | Where-Object { $_.Severity -eq 'Error' })) {
             Write-Error "ScriptAnalyzer found Error issues; failing CI."
             exit 1
           }
+          $results | ConvertTo-SARIF -FilePath results.sarif
 
       # Upload the SARIF file generated in the previous step
       - name: Upload SARIF results file
