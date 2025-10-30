@@ -872,44 +872,6 @@ jobs:
               -EmailPriority $EmailPriority -EmailImportance $EmailImportance `
               -EmailAttachment $EmailAttachment
 
-      - name: PowerShell Desktop Original Full Parameters (UserPass Parameter Set)
-        shell: pwsh
-        run: |
-          if ($IsWindows){
-            powershell -command {
-              Import-Module .\EmailModule\EmailModule.psm1
-              $AuthUser = "${{ secrets.AUTHUSER }}"
-              $AuthPass = "${{ secrets.AUTHPASS }}"
-              $To = "${{ secrets.TO }}"
-              $ToName = "Brandon Navarro"
-              $From = "${{ secrets.AUTHUSER }}"
-              $FromName = "Brandon Navarro"
-              $Subject = "Github Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Integration Test"
-              $Body = "
-                Integration Test - dotNET Framework Email Module
-
-                PSEdition: $PSEdition
-
-                To = ${{ secrets.TO }}
-                ToName = $ToName
-                From = ${{ secrets.AUTHUSER }}
-                FromName = $FromName
-                Subject = $Subject
-
-                This is a GitHub Actions Automated Integration Test ${{ needs.build.outputs.new_tag }} Full Parameters
-              "
-              $MailServer = "${{ secrets.MAILSERVER }}"
-              $ServerPort = "587"
-              Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
-                  -EmailTo $To -EmailToName $ToName `
-                  -EmailFrom $From -EmailFromName $FromName `
-                  -Subject $Subject -Body $Body `
-                  -SmtpServer $MailServer -SmtpPort $ServerPort
-            }
-          } else {
-            write-host "Not windows"
-          }
-
   # Integration Tests Core
   integration-test-desktop:
     environment: Build and Test PowerShell Module
