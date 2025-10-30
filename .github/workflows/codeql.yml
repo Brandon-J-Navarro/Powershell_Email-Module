@@ -12,9 +12,7 @@
 name: "CodeQL Advanced"
 
 on:
-  # push:
-  #   branches: [ "main" ]
-  pull_request:
+  push:
     branches: [ "testing" ]
     paths:
       - 'src/EmailLibraryDesktop/**'
@@ -26,6 +24,9 @@ on:
       - '!README.md'
       - '!CHANGELOG.md'
       - '!CODE_OF_CONDUCT.md'
+  workflow_dispatch:
+  # pull_request:
+  #   branches: [ "testing" ]
   # schedule:
   #   - cron: '40 7 * * 0'
 
@@ -57,7 +58,7 @@ jobs:
         - language: actions
           build-mode: none
         - language: csharp
-          build-mode: autobuild 
+          build-mode: manual 
         # CodeQL supports the following values keywords for 'language': 'actions', 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'rust', 'swift'
         # Use `c-cpp` to analyze code written in C, C++ or both
         # Use 'java-kotlin' to analyze code written in Java, Kotlin or both
@@ -98,14 +99,20 @@ jobs:
     # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
     - name: Run manual build steps
       if: matrix.build-mode == 'manual'
-      shell: bash
+      shell: pwsh
       run: |
-        echo 'If you are using a "manual" build mode for one or more of the' \
-          'languages you are analyzing, replace this with the commands to build' \
-          'your code, for example:'
-        echo '  make bootstrap'
-        echo '  make release'
-        exit 1
+        nuget restore .\src\EmailLibraryDesktop\EmailLibrary.sln
+        msbuild .\src\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Debug /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
+
+        dotnet restore .\src\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
+        dotnet build .\src\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Debug --no-restore
+
+        # echo 'If you are using a "manual" build mode for one or more of the' \
+        #   'languages you are analyzing, replace this with the commands to build' \
+        #   'your code, for example:'
+        # echo '  make bootstrap'
+        # echo '  make release'
+        # exit 1
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4
