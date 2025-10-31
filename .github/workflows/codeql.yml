@@ -115,3 +115,12 @@ jobs:
       uses: github/codeql-action/analyze@v4
       with:
         category: "/language:${{matrix.language}}"
+
+
+  deployment-status:
+    needs: [ analyze ]
+    runs-on: ubuntu-latest
+    environment: Build and Test PowerShell Module
+    steps:
+      - name: Deployment Completed
+        run: echo "Production deployment completed successfully"
