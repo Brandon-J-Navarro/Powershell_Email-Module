@@ -161,17 +161,17 @@ function Send-Email {
         Write-Warning "Email From domain ($EmailFromDomain) does not match the SMTP Server domain ($SmtpServer)."
         Write-Warning "This can lead to Sender Policy Framework (SPF) failures, DomainKeys Identified Mail (DKIM) failures, and Domain-based Message Authentication, Reporting, and Conformance (DMARC) rejections, causing your email to be marked as spam, denied by the recipient, or fail to send even though the SMTP connection succeeded."
         Write-Warning "Please verify that the sending domain is authorized to send through the specified SMTP server without being flagged or rejected."
-        if ($IsInteractive) {
-            $No = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'No'
-            $Yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Yes'
-            $Options = [System.Management.Automation.Host.ChoiceDescription[]]($No, $Yes)
-            $choice = $host.ui.PromptForChoice("Do you wish to continue?", "", $Options, 0)
-            if ($choice -eq 0) {              # $AuthUser = 'user@company.com'
-                Write-Output "Exiting..."       # $EmailFrom = 'user@business.com'
-                Start-Sleep -Seconds 1        # $SmtpServer = 'mail.corporation.com'
-                return $null
-            }
-        }
+        # if ($IsInteractive) {
+        #     $No = New-Object System.Management.Automation.Host.ChoiceDescription '&No', 'No'
+        #     $Yes = New-Object System.Management.Automation.Host.ChoiceDescription '&Yes', 'Yes'
+        #     $Options = [System.Management.Automation.Host.ChoiceDescription[]]($No, $Yes)
+        #     $choice = $host.ui.PromptForChoice("Do you wish to continue?", "", $Options, 0)
+        #     if ($choice -eq 0) {              # $AuthUser = 'user@company.com'
+        #         Write-Output "Exiting..."     # $EmailFrom = 'user@business.com'
+        #         Start-Sleep -Seconds 1        # $SmtpServer = 'mail.corporation.com'
+        #         return $null
+        #     }
+        # }
     }
 
     [EmailCommands]::SendEmail(
