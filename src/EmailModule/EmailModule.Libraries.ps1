@@ -18,7 +18,11 @@ if ($PSEdition -eq 'Core') {
         'Microsoft.Extensions.Primitives.dll',
         'System.Diagnostics.DiagnosticSource.dll',
         'System.Text.Encodings.Web.dll',
-        'Microsoft.Extensions.WebEncoders.dll'
+        'Microsoft.Extensions.WebEncoders.dll',
+        'Microsoft.AspNetCore.Http.Abstractions.dll',
+        'Microsoft.AspNetCore.Http.Features.dll',
+        'Microsoft.Extensions.FileProviders.Abstractions.dll',
+        'Microsoft.Net.Http.Headers.dll'
     )
     Get-ChildItem -Path (Join-Path $PSScriptRoot 'lib/net472') -Filter *.dll |
     Where-Object  { $_.Name -notin $exclude } |
