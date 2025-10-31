@@ -16,17 +16,9 @@ on:
       - '!CONTRIBUTING.md'
 
   workflow_dispatch:
-  # pull_request:
-  #   branches: [ testing ]
-  #   types: [closed]
-  #   paths:
-  #     - 'EmailModule/**'
-  #     - 'EmailLibraryDesktop/**'
-  #     - 'EmailLibraryCore/**'
-  #     - 'tests/**'
-  #     - '!.github/workflows/**'
-  #     - '!README.md'
-  #     - '!.wiki/**'
+
+  pull_request:
+    branches: [ main ]
 
 permissions:
   contents: write
