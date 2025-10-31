@@ -12,34 +12,29 @@ name: PSScriptAnalyzer
 on:
   workflow_dispatch:
   push:
-    branches: [ "working" ]
+    branches: [ "testing" ]
     paths:
-      - 'EmailModule/**'
-      - 'Tests/**'
-      - '!EmailLibraryDesktop/**'
-      - '!EmailLibraryCore/**'
-      - '!.github/workflows/**'
+      - 'src/EmailModule/**'
+      - '!.github/**'
+      - '!src/EmailLibraryDesktop/**'
+      - '!src/EmailLibraryCore/**'
+      - '!docs/**'
+      - '!tests/**'
       - '!README.md'
-      - '!.wiki/**'
-  pull_request:
-    types: [closed]
-    branches: [ "main" ]
-    paths:
-    - 'EmailModule/**'
-    - 'Tests/**'
-    - '!EmailLibraryDesktop/**'
-    - '!EmailLibraryCore/**'
-    - '!.github/workflows/**'
-    - '!README.md'
-    - '!.wiki/**'
-  # schedule:
-  #   - cron: '21 19 * * 1'
+      - '!CHANGELOG.md'
+      - '!CODE_OF_CONDUCT.md'
+      - '!SECURITY.md'
+      - '!LICENSE'
+      - '!CONTRIBUTING.md'
 
-permissions:
-  contents: read
+  workflow_dispatch:
+
+  # pull_request:
+  #   branches: [ main ]
 
 jobs:
   build:
+    environment: PSScriptAnalyzer
     permissions:
       contents: read # for actions/checkout to fetch code
       security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
@@ -49,16 +44,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run PSScriptAnalyzer
-        uses: microsoft/psscriptanalyzer-action@6b2948b1944407914a58661c49941824d149734f
-        with:
-          # Check https://github.com/microsoft/action-psscriptanalyzer for more info about the options.
-          # The below set up runs PSScriptAnalyzer to your entire repository and runs some basic security rules.
-          path: .\
-          recurse: true
-          # Include your own basic security rules. Removing this option will run all the rules
-          includeRule: '"PSAvoidGlobalAliases", "PSAvoidUsingConvertToSecureStringWithPlainText"'
-          output: results.sarif
+      - name: Run analyzer and fail on Errors
+        shell: pwsh
+        run: |
+          Install-Module -Name ConvertToSARIF -Force -Scope CurrentUser
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+          Import-Module ConvertToSARIF
+          $results = Invoke-ScriptAnalyzer -Path . -Recurse 
+          if ($results -and ($results | Where-Object { $_.Severity -eq 'Error' })) {
+            Write-Error "ScriptAnalyzer found Error issues; failing CI."
+            exit 1
+          }
+          $results | ConvertTo-SARIF -FilePath results.sarif
 
       # Upload the SARIF file generated in the previous step
       - name: Upload SARIF results file

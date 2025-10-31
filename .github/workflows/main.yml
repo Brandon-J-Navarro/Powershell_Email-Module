@@ -1,17 +1,31 @@
 name: Build, Package, and Release
 
 on:
-  pull_request:
-    types: [closed]
+  push:
+    branches: [ 'main' ]
     paths:
-      - 'EmailModule/**'
-      - 'EmailLibraryDesktop/**'
-      - 'EmailLibraryCore/**'
-      - '!.github/workflows/**'
+      - 'src/**'
+      - '!.github/**'
+      - '!docs/**'
+      - '!tests/**'
       - '!README.md'
-      - '!.wiki/**'
-    branches: [ main ]
+      - '!CHANGELOG.md'
+      - '!CODE_OF_CONDUCT.md'
+      - '!SECURITY.md'
+      - '!LICENSE'
+      - '!CONTRIBUTING.md'
+
   workflow_dispatch:
+  # pull_request:
+  #   branches: [ main ]
+  #   types: [closed]
+  #   paths:
+  #     - 'EmailModule/**'
+  #     - 'EmailLibraryDesktop/**'
+  #     - 'EmailLibraryCore/**'
+  #     - '!.github/workflows/**'
+  #     - '!README.md'
+  #     - '!.wiki/**'
 
 permissions:
   contents: write
@@ -39,29 +53,40 @@ jobs:
           nuget-version: 'latest'
 
       - name: Restore NuGet packages for .NET Framework Build
-        run: nuget restore .\EmailLibraryDesktop\EmailLibrary.sln
+        run: nuget restore .\src\EmailLibraryDesktop\EmailLibrary.sln
 
       - name: Build .NET Framework project
         run: |
-          msbuild .\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
+          msbuild .\src\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
 
       - name: Create release directories
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          mkdir release
-          mkdir .\release\EmailModule
-          mkdir .\release\EmailModule\$version
-          mkdir .\release\EmailModule\$version\lib
-          mkdir .\release\EmailModule\$version\lib\Core
-          mkdir .\release\EmailModule\$version\lib\Desktop
+          New-Item -ItemType Directory -Path release | Out-Null;
+          New-Item -ItemType Directory -Path .\release\EmailModule | Out-Null;
+          New-Item -ItemType Directory -Path .\release\EmailModule\$version | Out-Null;
+          New-Item -ItemType Directory -Path .\release\EmailModule\$version\lib | Out-Null;
+          New-Item -ItemType Directory -Path .\release\EmailModule\$version\lib\net8.0 | Out-Null;
+          New-Item -ItemType Directory -Path .\release\EmailModule\$version\lib\net472 | Out-Null;
 
       - name: Copy .NET Framework build output to lib Desktop directory
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
-            Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\Desktop\"
+          $exclude = @(
+            'System.Formats.Asn1.dll',
+            'Microsoft.Bcl.AsyncInterfaces.dll',
+            'Microsoft.Extensions.DependencyInjection.Abstractions.dll',
+            'Microsoft.Extensions.Hosting.Abstractions.dll',
+            'Microsoft.Extensions.Logging.Abstractions.dll',
+            'Microsoft.Extensions.Primitives.dll',
+            'System.Diagnostics.DiagnosticSource.dll',
+            'System.Text.Encodings.Web.dll',
+            'Microsoft.Extensions.WebEncoders.dll'
+          )
+          Get-ChildItem -path ".\src\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | Where-Object { $_.Name -notin $exclude } | ForEach-Object {
+            Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\net472\"
           }
 
       - name: Setup .NET Core SDK
@@ -70,13 +95,10 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Install dependencies .NET Core Build
-        run: dotnet restore .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
-
-      - name: Build .NET Core project
-        run: dotnet build .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore
+        run: dotnet restore .\src\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
 
       - name: Publish .NET Core project
-        run: dotnet publish .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
+        run: dotnet publish .\src\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
         env:
             PublishRelease: true
 
@@ -85,7 +107,7 @@ jobs:
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
           Get-ChildItem -path ".\publish\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
-            Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\Core\"
+            Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\net8.0\"
           }
 
       - name: Generate Powershell Manifest
@@ -99,7 +121,7 @@ jobs:
           }
 
           $moduleSettings = @{
-            Path = '.\EmailModule\EmailModule.psd1'
+            Path = '.\src\EmailModule\EmailModule.psd1'
 
             # Script module or binary module file associated with this manifest.
             RootModule = 'EmailModule.psm1'
@@ -157,16 +179,19 @@ jobs:
             LicenseUri  = 'https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/LICENSE'
             ProjectUri  = 'https://github.com/Brandon-J-Navarro/Powershell_Email-Module'
             IconUri     = 'https://github.com/Brandon-J-Navarro/'
+            ReleaseNotes = 'Visit GitHub repo for release note / change log'
           }
           New-ModuleManifest @moduleSettings
 
-      - name: Copy powershell module to release directory
+      - name: Copy powershell module and misc. files to release directory
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\EmailModule\$version\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\release\EmailModule\$version\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\src\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\src\EmailModule\EmailModule.psd1" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\src\EmailModule\EmailModule.psm1" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\README.md" -Destination ".\release\EmailModule\$version\"
+          Copy-Item -Path ".\LICENSE" -Destination ".\release\EmailModule\$version\"
 
       - name: Generate nuspec
         run: |
@@ -182,16 +207,40 @@ jobs:
               <authors>Brandon Navarro</authors>
               <owners>Brandon Navarro</owners>
               <requireLicenseAcceptance>false</requireLicenseAcceptance>
-              <licenseUrl>https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/LICENSE</licenseUrl>
+              <license type="file">LICENSE</license>
               <projectUrl>https://github.com/Brandon-J-Navarro/Powershell_Email-Module</projectUrl>
+              <repository type="git" url="https://github.com/Brandon-J-Navarro/Powershell_Email-Module.git" branch="main"/>
               <description>Powershell Module to send Email using MailKit, MimeKit and STARTTLS</description>
               <summary>A brief summary of your module.</summary>
-              <releaseNotes>Initial release with feature X and bug fix Y.</releaseNotes>
+              <releaseNotes>Visit GitHub repo for release note / change log</releaseNotes>
+              <readme>README.md</readme>
               <copyright>(c) Brandon Navarro. All rights reserved.</copyright>
               <tags>Desktop Core Email StartTLS</tags>
+              <dependencies>
+                <group targetFramework=".NETFramework4.7.2">
+                  <dependency id="BouncyCastle.Cryptography" version="2.0.0.0" />
+                  <dependency id="EmailLibrary" version="1.0.0.0" />
+                  <dependency id="MailKit" version="4.14.0.0" />
+                  <dependency id="MimeKit" version="4.14.0.0" />
+                  <dependency id="System.Buffers" version="4.0.4.0" />
+                  <dependency id="System.Formats.Asn1" version="8.0.0.1" />
+                  <dependency id="System.Memory" version="4.0.2.0" />
+                  <dependency id="System.Numerics.Vectors" version="4.1.5.0" />
+                  <dependency id="System.Runtime.CompilerServices.Unsafe" version="6.0.1.0" />
+                  <dependency id="System.Threading.Tasks.Extensions" version="4.2.1.0" />
+                  <dependency id="System.ValueTuple" version="4.0.3.0" />
+                </group>
+                <group targetFramework="net8.0">
+                  <dependency id="BouncyCastle.Cryptography" version="2.0.0.0" />
+                  <dependency id="EmailLibrary" version="1.0.0.0" />
+                  <dependency id="MailKit" version="4.14.1" />
+                  <dependency id="MimeKit" version="4.14.0" />
+                  <dependency id="System.Security.Cryptography.Pkcs" version="8.0.0.0" />
+                </group>
+              </dependencies>
             </metadata>
             <files>
-              <file src=".\*" target="modules\EmailModule" />
+              <file src=".\**" target="\" />
             </files>
           </package>
           "@ | Out-File -FilePath ".\release\EmailModule\$version\EmailModule.nuspec"
@@ -200,7 +249,7 @@ jobs:
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          nuget pack .\release\EmailModule\$version\EmailModule.nuspec
+          nuget pack .\release\EmailModule\$version\EmailModule.nuspec -Properties Configuration=Release
 
       - name: Publish NuGet Package
         run: |

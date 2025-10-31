@@ -2,16 +2,23 @@ name: Build and Test PowerShell Module
 
 on:
   push:
+    branches: [ 'testing' ]
     paths:
-      - 'EmailModule/**'
-      - 'EmailLibraryDesktop/**'
-      - 'EmailLibraryCore/**'
-      - 'tests/**'
-      - '.github/workflows/**'
+      - 'src/**'
+      - '!.github/**'
+      - '!docs/**'
+      - '!tests/**'
       - '!README.md'
-      - '!.wiki/**'
-    branches: [ working ]
+      - '!CHANGELOG.md'
+      - '!CODE_OF_CONDUCT.md'
+      - '!SECURITY.md'
+      - '!LICENSE'
+      - '!CONTRIBUTING.md'
+
   workflow_dispatch:
+
+  # pull_request:
+  #   branches: [ main ]
 
 permissions:
   contents: write
@@ -41,31 +48,42 @@ jobs:
           nuget-version: 'latest'
 
       - name: Restore NuGet packages for .NET Framework Build
-        run: nuget restore .\EmailLibraryDesktop\EmailLibrary.sln
+        run: nuget restore .\src\EmailLibraryDesktop\EmailLibrary.sln
 
       - name: Build .NET Framework project
         run: |
-          msbuild .\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Release /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
+          msbuild .\src\EmailLibraryDesktop\EmailLibrary.sln /p:Configuration=Debug /p:Platform="Any CPU" /p:TargetFrameworkVersion="v4.7.2"
 
       - name: Create release directories
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
-          mkdir release
-          mkdir .\release\EmailModule
-          mkdir .\release\EmailModule\$version
-          mkdir .\release\EmailModule\$version\lib
-          mkdir .\release\EmailModule\$version\lib\Core
-          mkdir .\release\EmailModule\$version\lib\Desktop
+          $version = $version  -replace "-testing.*", ''
+          New-Item -ItemType Directory -Path debug | Out-Null;
+          New-Item -ItemType Directory -Path .\debug\EmailModule | Out-Null;
+          New-Item -ItemType Directory -Path .\debug\EmailModule\$version | Out-Null;
+          New-Item -ItemType Directory -Path .\debug\EmailModule\$version\lib | Out-Null;
+          New-Item -ItemType Directory -Path .\debug\EmailModule\$version\lib\net8.0 | Out-Null;
+          New-Item -ItemType Directory -Path .\debug\EmailModule\$version\lib\net472 | Out-Null;
 
       - name: Copy .NET Framework build output to lib Desktop directory
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
-          Get-ChildItem -path ".\EmailLibraryDesktop\EmailLibrary\bin\Release\" -Recurse -Exclude "*.pdb" | ForEach-Object {
-            Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\Desktop\"
+          $version = $version  -replace "-testing.*", ''
+          $exclude = @(
+            'System.Formats.Asn1.dll',
+            'Microsoft.Bcl.AsyncInterfaces.dll',
+            'Microsoft.Extensions.DependencyInjection.Abstractions.dll',
+            'Microsoft.Extensions.Hosting.Abstractions.dll',
+            'Microsoft.Extensions.Logging.Abstractions.dll',
+            'Microsoft.Extensions.Primitives.dll',
+            'System.Diagnostics.DiagnosticSource.dll',
+            'System.Text.Encodings.Web.dll',
+            'Microsoft.Extensions.WebEncoders.dll'
+          )
+          Get-ChildItem -path ".\src\EmailLibraryDesktop\EmailLibrary\bin\Debug\" -Recurse -Exclude "*.pdb" | Where-Object { $_.Name -notin $exclude } | ForEach-Object {
+            Copy-Item $_ -Destination ".\debug\EmailModule\$version\lib\net472\"
           }
 
       - name: Setup .NET Core SDK
@@ -74,38 +92,33 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Install dependencies .NET Core Build
-        run: dotnet restore .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
+        run: dotnet restore .\src\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj
 
       - name: Build .NET Core project
-        run: dotnet build .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore
-
-      - name: Publish .NET Core project
-        run: dotnet publish .\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Release --no-restore --output publish
-        env:
-            PublishRelease: true
+        run: dotnet build .\src\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj --configuration Debug --no-restore
 
       - name: Copy .NET Core publish output to lib Core directory
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
-          Get-ChildItem -path ".\publish\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
-            Copy-Item $_ -Destination ".\release\EmailModule\$version\lib\Core\"
+          $version = $version  -replace "-testing.*", ''
+          Get-ChildItem -path ".\src\EmailLibraryCore\EmailLibrary\bin\Debug\net8.0\" -Exclude "*.pdb" | Where-Object Attributes -ne Directory | ForEach-Object {
+            Copy-Item $_ -Destination ".\debug\EmailModule\$version\lib\net8.0\"
           }
 
       - name: Generate Powershell Manifest
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
+          $version = $version  -replace "-testing.*", ''
 
           $files = @('.\EmailModule.psd1','.\EmailModule.psm1','.\EmailModule.Libraries.ps1',".\EmailModule.nuspec",".\EmailModule.$version.nupkg")
-          Get-ChildItem -Path ".\release\EmailModule\$version\" -Recurse -File | ForEach-Object { 
-              $files += $_.FullName.ToString().Replace("D:\a\Powershell_Email-Module\Powershell_Email-Module\release\EmailModule\$version",'.') 
+          Get-ChildItem -Path ".\debug\EmailModule\$version\" -Recurse -File | ForEach-Object { 
+              $files += $_.FullName.ToString().Replace("D:\a\Powershell_Email-Module\Powershell_Email-Module\debug\EmailModule\$version",'.') 
           }
 
           $moduleSettings = @{
-            Path = '.\EmailModule\EmailModule.psd1'
+            Path = '.\src\EmailModule\EmailModule.psd1'
 
             # Script module or binary module file associated with this manifest.
             RootModule = 'EmailModule.psm1'
@@ -163,24 +176,27 @@ jobs:
             LicenseUri  = 'https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/LICENSE'
             ProjectUri  = 'https://github.com/Brandon-J-Navarro/Powershell_Email-Module'
             IconUri     = 'https://github.com/Brandon-J-Navarro/'
+            ReleaseNotes = 'Visit GitHub repo for release note / change log'
           }
           New-ModuleManifest @moduleSettings
 
-      - name: Copy powershell module to release directory
+      - name: Copy powershell module and misc. files to release directory
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
-          Copy-Item -Path ".\EmailModule\EmailModule.Libraries.ps1" -Destination ".\release\EmailModule\$version\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psd1" -Destination ".\release\EmailModule\$version\"
-          Copy-Item -Path ".\EmailModule\EmailModule.psm1" -Destination ".\release\EmailModule\$version\"
-          Copy-Item -Path ".\Tests\" -Recurse -Destination ".\release\EmailModule\$version\"
+          $version = $version  -replace "-testing.*", ''
+          Copy-Item -Path ".\src\EmailModule\EmailModule.Libraries.ps1" -Destination ".\debug\EmailModule\$version\"
+          Copy-Item -Path ".\src\EmailModule\EmailModule.psd1" -Destination ".\debug\EmailModule\$version\"
+          Copy-Item -Path ".\src\EmailModule\EmailModule.psm1" -Destination ".\debug\EmailModule\$version\"
+          # Copy-Item -Path ".\Tests\" -Recurse -Destination ".\debug\EmailModule\$version\"
+          Copy-Item -Path ".\README.md" -Destination ".\debug\EmailModule\$version\"
+          Copy-Item -Path ".\LICENSE" -Destination ".\debug\EmailModule\$version\"
 
       - name: Generate nuspec
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
+          $version = $version  -replace "-testing.*", ''
           @"
           <?xml version="1.0" encoding="utf-8"?>
           <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
@@ -191,35 +207,59 @@ jobs:
               <authors>Brandon Navarro</authors>
               <owners>Brandon Navarro</owners>
               <requireLicenseAcceptance>false</requireLicenseAcceptance>
-              <licenseUrl>https://github.com/Brandon-J-Navarro/Powershell_Email-Module/blob/main/LICENSE</licenseUrl>
+              <license type="file">LICENSE</license>
               <projectUrl>https://github.com/Brandon-J-Navarro/Powershell_Email-Module</projectUrl>
+              <repository type="git" url="https://github.com/Brandon-J-Navarro/Powershell_Email-Module.git" branch="main"/>
               <description>Powershell Module to send Email using MailKit, MimeKit and STARTTLS</description>
               <summary>A brief summary of your module.</summary>
-              <releaseNotes>Initial release with feature X and bug fix Y.</releaseNotes>
+              <releaseNotes>Visit GitHub repo for release note / change log</releaseNotes>
+              <readme>README.md</readme>
               <copyright>(c) Brandon Navarro. All rights reserved.</copyright>
               <tags>Desktop Core Email StartTLS</tags>
+              <dependencies>
+                <group targetFramework=".NETFramework4.7.2">
+                  <dependency id="BouncyCastle.Cryptography" version="2.0.0.0" />
+                  <dependency id="EmailLibrary" version="1.0.0.0" />
+                  <dependency id="MailKit" version="4.14.0.0" />
+                  <dependency id="MimeKit" version="4.14.0.0" />
+                  <dependency id="System.Buffers" version="4.0.4.0" />
+                  <dependency id="System.Formats.Asn1" version="8.0.0.1" />
+                  <dependency id="System.Memory" version="4.0.2.0" />
+                  <dependency id="System.Numerics.Vectors" version="4.1.5.0" />
+                  <dependency id="System.Runtime.CompilerServices.Unsafe" version="6.0.1.0" />
+                  <dependency id="System.Threading.Tasks.Extensions" version="4.2.1.0" />
+                  <dependency id="System.ValueTuple" version="4.0.3.0" />
+                </group>
+                <group targetFramework="net8.0">
+                  <dependency id="BouncyCastle.Cryptography" version="2.0.0.0" />
+                  <dependency id="EmailLibrary" version="1.0.0.0" />
+                  <dependency id="MailKit" version="4.14.1" />
+                  <dependency id="MimeKit" version="4.14.0" />
+                  <dependency id="System.Security.Cryptography.Pkcs" version="8.0.0.0" />
+                </group>
+              </dependencies>
             </metadata>
             <files>
-              <file src=".\*" target="modules\EmailModule" />
+              <file src=".\**" target="\" />
             </files>
           </package>
-          "@ | Out-File -FilePath ".\release\EmailModule\$version\EmailModule.nuspec"
+          "@ | Out-File -FilePath ".\debug\EmailModule\$version\EmailModule.nuspec"
 
       - name: Build NuGet Package
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
-          nuget pack .\release\EmailModule\$version\EmailModule.nuspec
+          $version = $version  -replace "-testing.*", ''
+          nuget pack .\debug\EmailModule\$version\EmailModule.nuspec -Properties Configuration=Release
 
       - name: Publish NuGet Package
         run: |
           $version = '${{ steps.tag_version.outputs.new_tag }}'
           $version = $version  -replace 'v', ''
-          $version = $version  -replace "-working.*", ''
-          Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\release\EmailModule\$version\"
+          $version = $version  -replace "-testing.*", ''
+          Copy-Item -Path ".\EmailModule.$version.nupkg" -Destination ".\debug\EmailModule\$version\"
           New-Item -ItemType Directory -Path 'artifact' | Out-Null;
-          Copy-Item -Recurse -Force .\release\EmailModule\$version\* .\artifact\
+          Copy-Item -Recurse -Force .\debug\EmailModule\$version\* .\artifact\
           Get-ChildItem -path ".\artifact\" -Recurse -File | ForEach-Object {
             Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256 | FL | Out-File -FilePath ".\artifact\Hashes.txt" -Append
           }
@@ -231,236 +271,39 @@ jobs:
           path: artifact/
           if-no-files-found: error
 
-  # # NEW: Pester Unit Tests Job
-  # pester-tests-core:
-  #   environment: Build and Test PowerShell Module
-  #   runs-on: ${{ matrix.os }}
-  #   name: Pester Tests on ${{ matrix.os }}
-  #   needs: build
-  #   if: always()
-  #   strategy:
-  #     matrix:
-  #       os: [ubuntu-latest, windows-latest]
-  #       include:
-  #         - os: windows-latest
-  #           shell: pwsh
-  #         - os: ubuntu-latest
-  #           shell: pwsh
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Download build artifact
-  #       uses: actions/download-artifact@v5.0.0
-  #       with:
-  #         name: EmailModule
-  #         path: EmailModule
-
-  #     - name: Install Pester
-  #       shell: pwsh
-  #       run: |
-  #         if (Get-Module -ListAvailable -Name Pester) {
-  #           Write-Host "Pester is already installed"
-  #           Get-Module -ListAvailable -Name Pester | Select-Object Name, Version
-  #         } else {
-  #           Write-Host "Installing Pester..."
-  #           Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
-  #         }
-
-  #         # Ensure we have the latest version
-  #         Import-Module Pester -Force
-  #         $PesterVersion = (Get-Module Pester).Version
-  #         Write-Host "Pester version: $PesterVersion"
-
-  #     - name: Run Pester Tests
-  #       shell: pwsh
-  #       run: |
-  #         # Copy module files to current directory for testing
-  #         Copy-Item -Path ".\EmailModule\*" -Destination ".\" -Recurse -Force
-
-  #         # Define test files to run
-  #         $TestFiles = Get-ChildItem -Path '.\Tests' -Filter '*.Tests.ps1' -Recurse | ForEach-Object { $_.FullName }
-
-  #         # Check which test files exist
-  #         $ExistingTestFiles = @()
-  #         foreach ($TestFile in $TestFiles) {
-  #           if (Test-Path $TestFile) {
-  #             $ExistingTestFiles += $TestFile
-  #             Write-Host "✅ Found test file: $TestFile" -ForegroundColor Green
-  #           } else {
-  #             Write-Host "⚠️  Test file not found: $TestFile" -ForegroundColor Yellow
-  #           }
-  #         }
-
-  #         if ($ExistingTestFiles.Count -eq 0) {
-  #           Write-Host "❌ No test files found!" -ForegroundColor Red
-  #           exit 1
-  #         }
-
-  #         # Set up the test configuration
-  #         $PesterConfig = @{
-  #           Run = @{
-  #             Path = $ExistingTestFiles
-  #             PassThru = $true
-  #           }
-  #           Output = @{
-  #             Verbosity = 'Detailed'
-  #           }
-  #           TestResult = @{
-  #             Enabled = $true
-  #             OutputFormat = 'NUnitXml'
-  #             OutputPath = 'TestResults.xml'
-  #           }
-  #           CodeCoverage = @{
-  #             Enabled = $true
-  #             Path = @('.\EmailModule.psm1', '.\EmailModule.Libraries.ps1')
-  #             OutputFormat = 'JaCoCo'
-  #             OutputPath = 'coverage.xml'
-  #           }
-  #         }
-
-  #         # Run the tests
-  #         Write-Host "Running Pester tests..." -ForegroundColor Cyan
-  #         Write-Host "Test files: $($ExistingTestFiles -join ', ')" -ForegroundColor White
-
-  #         $Results = Invoke-Pester -Configuration $PesterConfig
-
-  #         # Output test summary
-  #         Write-Host "📊 Test Results Summary:" -ForegroundColor Green
-  #         Write-Host "════════════════════════" -ForegroundColor Green
-  #         Write-Host "Total Tests: $($Results.TotalCount)" -ForegroundColor White
-  #         Write-Host "Passed: $($Results.PassedCount)" -ForegroundColor Green
-  #         Write-Host "Failed: $($Results.FailedCount)" -ForegroundColor Red
-  #         Write-Host "Skipped: $($Results.SkippedCount)" -ForegroundColor Yellow
-  #         Write-Host "Duration: $($Results.Duration)" -ForegroundColor White
-
-  #         # Show failed tests details if any
-  #         if ($Results.FailedCount -gt 0) {
-  #           Write-Host "❌ Failed Tests:" -ForegroundColor Red
-  #           Write-Host "═══════════════" -ForegroundColor Red
-  #           foreach ($FailedTest in $Results.Failed) {
-  #             Write-Host "  • $($FailedTest.ExpandedPath)" -ForegroundColor Red
-  #             Write-Host "    $($FailedTest.ErrorRecord.Exception.Message)" -ForegroundColor DarkRed
-  #           }
-  #           Write-Host "❌ Some tests failed!" -ForegroundColor Red
-  #           exit 1
-  #         } else {
-  #           Write-Host "✅ All tests passed!" -ForegroundColor Green
-  #         }
-
-  #     - name: Upload Pester Test Results
-  #       uses: actions/upload-artifact@v4.6.2
-  #       if: always()
-  #       with:
-  #         name: pester-test-results-${{ matrix.os }}
-  #         path: |
-  #           TestResults.xml
-  #           coverage.xml
-
-  # # NEW: Windows Desktop PowerShell Pester Tests
-  # pester-tests-desktop:
-  #   environment: Build and Test PowerShell Module
-  #   runs-on: windows-latest
-  #   name: Pester Tests on Windows PowerShell Desktop
-  #   needs: build
-  #   if: always()
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Download build artifact
-  #       uses: actions/download-artifact@v5.0.0
-  #       with:
-  #         name: EmailModule
-  #         path: EmailModule
-
-  #     - name: Install Pester (Desktop)
-  #       shell: powershell
-  #       run: |
-  #         if (Get-Module -ListAvailable -Name Pester) {
-  #           Write-Host "Pester is already installed"
-  #           Get-Module -ListAvailable -Name Pester | Select-Object Name, Version
-  #         } else {
-  #           Write-Host "Installing Pester..."
-  #           Install-Module -Name Pester -Force -Scope CurrentUser -SkipPublisherCheck
-  #         }
-
-  #         Import-Module Pester -Force
-  #         $PesterVersion = (Get-Module Pester).Version
-  #         Write-Host "Pester version: $PesterVersion"
-  #         Write-Host "PowerShell Edition: $PSEdition"
-
-  #     - name: Run Pester Tests (Desktop)
-  #       shell: powershell
-  #       run: |
-  #         # Copy module files to current directory for testing
-  #         Copy-Item -Path ".\EmailModule\*" -Destination ".\" -Recurse -Force
-
-  #         # Define test files to run
-  #         $TestFiles = Get-ChildItem -Path '.\Tests' -Filter '*.Tests.ps1' -Recurse | ForEach-Object { $_.FullName }
-
-  #         # Check which test files exist
-  #         $ExistingTestFiles = @()
-  #         foreach ($TestFile in $TestFiles) {
-  #           if (Test-Path $TestFile) {
-  #             $ExistingTestFiles += $TestFile
-  #             Write-Host "Found test file: $TestFile" -ForegroundColor Green
-  #           } else {
-  #             Write-Host "Test file not found: $TestFile" -ForegroundColor Yellow
-  #           }
-  #         }
-
-  #         if ($ExistingTestFiles.Count -eq 0) {
-  #           Write-Host "No test files found!" -ForegroundColor Red
-  #           exit 1
-  #         }
-
-  #         # Run the tests (using older Pester syntax for compatibility with Desktop)
-  #         Write-Host "Running Pester tests on PowerShell Desktop..." -ForegroundColor Cyan
-  #         Write-Host "Test files: $($ExistingTestFiles -join ', ')" -ForegroundColor White
-
-  #         $Results = Invoke-Pester -Path $ExistingTestFiles -OutputFormat NUnitXml -OutputFile 'TestResults-Desktop.xml' -PassThru -Verbose
-
-  #         # Output test summary
-  #         Write-Host "Test Results Summary (Desktop):" -ForegroundColor Green
-  #         Write-Host "════════════════════════════════" -ForegroundColor Green
-  #         Write-Host "Total Tests: $($Results.TotalCount)" -ForegroundColor White
-  #         Write-Host "Passed: $($Results.PassedCount)" -ForegroundColor Green
-  #         Write-Host "Failed: $($Results.FailedCount)" -ForegroundColor Red
-  #         Write-Host "Skipped: $($Results.SkippedCount)" -ForegroundColor Yellow
-  #         Write-Host "PowerShell Edition: $PSEdition" -ForegroundColor Cyan
-
-  #         # Show failed tests details if any
-  #         if ($Results.FailedCount -gt 0) {
-  #           Write-Host "Failed Tests:" -ForegroundColor Red
-  #           Write-Host "═══════════════" -ForegroundColor Red
-  #           foreach ($FailedTest in $Results.TestResult | Where-Object {$_.Result -eq "Failed"}) {
-  #             Write-Host "  • $($FailedTest.Name)" -ForegroundColor Red
-  #             Write-Host "    $($FailedTest.FailureMessage)" -ForegroundColor DarkRed
-  #           }
-  #           Write-Host "Some tests failed!" -ForegroundColor Red
-  #           exit 1
-  #         } else {
-  #           Write-Host "All tests passed!" -ForegroundColor Green
-  #         }
-
-  #     - name: Upload Pester Test Results (Desktop)
-  #       uses: actions/upload-artifact@v4.6.2
-  #       if: always()
-  #       with:
-  #         name: pester-test-results-desktop
-  #         path: TestResults-Desktop.xml
-
-  # Modified: Integration Tests (your existing test jobs)
+  # Integration Tests Core
+  # NOTE for contributors:
+  # - If you add a new feature that needs integration testing, add an explicit step under
+  #   this job with a descriptive 'name: Integration Test - <Feature>' so CI output is easy to
+  #   interpret. Keep steps idempotent and avoid leaking secrets in logs.
+  # - If you need to change the OS matrix, test data, or artifact names, update the 'build'
+  #   job and the matrix above and document the change in your PR.
+  # Example (commented) integration test step to add below the existing steps:
+  #
+  #      - name: Integration Test - My New Feature
+  #        shell: pwsh
+  #        run: |
+  #          Import-Module .\EmailModule\EmailModule.psm1
+  #          # Prepare inputs and secrets (refer to PR description for required secrets)
+  #          $AuthUser = "${{ secrets.AUTHUSER }}"
+  #          $AuthPass = "${{ secrets.AUTHPASS }}"
+  #          $To = "${{ secrets.TO }}"
+  #          $MailServer = "${{ secrets.MAILSERVER }}"
+  #          # Call the cmdlet with the new parameters to validate behavior
+  #          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass -EmailTo $To -EmailFrom $AuthUser -SmtpServer $MailServer
+  #
+  # - If your new test requires new repository secrets, list them in the PR and ask a maintainer
+  #   to add them to the repository settings. Prefer using placeholder values in example code.
   integration-test-core:
     environment: Build and Test PowerShell Module
     runs-on: ${{ matrix.os }}
     name: Integration Test on ${{ matrix.os }}
-    needs: [build] #, pester-tests-core]  # Now depends on Pester tests passing
-    # if: always()
+    needs: [build]
     strategy:
+      # https://github.com/actions/runner-images
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        # os: [ubuntu-latest, windows-latest,macos-15-intel,macos-latest]
+        os: [ubuntu-latest, windows-latest,macos-15-intel,macos-latest,macos-26] #macos-26 is in beta
     env:
       OUTPUT1: ${{ needs.build.outputs.new_tag }}
     steps:
@@ -475,7 +318,7 @@ jobs:
         run: |
           Test-ModuleManifest -Path '.\EmailModule\EmailModule.psd1'
 
-      - name: Integration Test Module
+      - name: Integration Test - Original Full Parameters (UserPass Parameter Set)
         shell: pwsh
         run: |
           $Linux = $IsLinux
@@ -485,20 +328,25 @@ jobs:
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
-          $ToName = "Brandon Navarro"
+          $ToName = "Integration Test Recipient"
           $From = "${{ secrets.AUTHUSER }}"
-          $FromName = "Brandon Navarro"
-          $Subject = "Github Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Integration Test"
+          $FromName = "GitHub Actions Bot"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Original Full Parameters Test"
           $Body = "
-            Integration Test - Email Module
+            Integration Test - Email Module (Original Full Parameters)
 
             Linux: $Linux
             MacOS: $MacOS
             Windows: $Windows
             PSEdition: $PSEdition
 
-            This is a GitHub Actions Automated Integration Test ${{ needs.build.outputs.new_tag }}
-            Unit tests have passed ✅
+            To = ${{ secrets.TO }}
+            ToName = $ToName
+            From = ${{ secrets.AUTHUSER }}
+            FromName = $FromName
+            Subject = $Subject
+
+            This is a GitHub Actions Automated Integration Test ${{ needs.build.outputs.new_tag }} with all parameters.
           "
           $MailServer = "${{ secrets.MAILSERVER }}"
           $ServerPort = "587"
@@ -508,12 +356,522 @@ jobs:
               -Subject $Subject -Body $Body `
               -SmtpServer $MailServer -SmtpPort $ServerPort
 
+      - name: Integration Test - PSCredential Parameter Set
+        shell: pwsh
+        run: |
+          $Linux = $IsLinux
+          $MacOS = $IsMacOS
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $Username = "${{ secrets.AUTHUSER }}"
+          $Password = "${{ secrets.AUTHPASS }}" | ConvertTo-SecureString -AsPlainText -Force
+          $Credential = New-Object System.Management.Automation.PSCredential($Username, $Password)
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - PSCredential Test"
+          $Body = "
+            Integration Test - Email Module (PSCredential Authentication)
+
+            Linux: $Linux
+            MacOS: $MacOS
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }}
+            From = ${{ secrets.AUTHUSER }}
+            Subject = $Subject
+
+            This test uses PSCredential for authentication.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -Credential $Credential `
+              -EmailTo $To -EmailFrom $From `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - SecureString Password
+        shell: pwsh
+        run: |
+          $Linux = $IsLinux
+          $MacOS = $IsMacOS
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $SecurePass = "${{ secrets.AUTHPASS }}" | ConvertTo-SecureString -AsPlainText -Force
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - SecureString Test"
+          $Body = "
+            Integration Test - Email Module (SecureString Password)
+
+            Linux: $Linux
+            MacOS: $MacOS
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }}
+            From = ${{ secrets.AUTHUSER }}
+            Subject = $Subject
+
+            This test uses SecureString for password authentication.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $SecurePass `
+              -EmailTo $To -EmailFrom $From `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - Multiple Recipients (To/CC)
+        shell: pwsh
+        run: |
+          $Linux = $IsLinux
+          $MacOS = $IsMacOS
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }};${{ secrets.BCC }}"
+          $ToName = "Primary Recipient;Secondary Recipient"
+          $Cc = "${{ secrets.CC }}"
+          $CcName = "CC Recipient"
+          $From = "${{ secrets.AUTHUSER }}"
+          $FromName = "Multi-Recipient Test"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Multiple Recipients Test"
+          $Body = "
+            Integration Test - Email Module (Multiple Recipients)
+
+            Linux: $Linux
+            MacOS: $MacOS
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }};${{ secrets.BCC }}
+            ToName = $ToName
+            Cc = ${{ secrets.CC }}
+            CcName = $CcName
+            From = ${{ secrets.AUTHUSER }}
+            FromName = $FromName
+            Subject = $Subject
+
+            This test validates multiple To and CC recipients with display names.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailToName $ToName `
+              -EmailCc $Cc -CcName $CcName `
+              -EmailFrom $From -EmailFromName $FromName `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - Priority and Importance
+        shell: pwsh
+        run: |
+          $Linux = $IsLinux
+          $MacOS = $IsMacOS
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $EmailPriority = "Urgent"
+          $EmailImportance = "High"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Priority Test"
+          $Body = "
+            Integration Test - Email Module (Priority and Importance)
+
+            Linux: $Linux
+            MacOS: $MacOS
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }}
+            From = ${{ secrets.AUTHUSER }}
+            Subject = $Subject
+            EmailPriority = $EmailPriority 
+            EmailImportance = $EmailImportance
+
+            This test validates email priority (Urgent) and importance (High) settings.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailFrom $From `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer `
+              -EmailPriority $EmailPriority -EmailImportance $EmailImportance
+
+      - name: Integration Test - Minimal Parameters (Subject Only)
+        shell: pwsh
+        run: |
+          $Linux = $IsLinux
+          $MacOS = $IsMacOS
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Minimal Test (Subject Only)"
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailFrom $From -Subject $Subject `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - Minimal Parameters (Body Only)
+        shell: pwsh
+        run: |
+          $Linux = $IsLinux
+          $MacOS = $IsMacOS
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $Body = "
+            Integration Test - Email Module (Body Only - No Subject)
+
+            Linux: $Linux
+            MacOS: $MacOS
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }}
+            From = ${{ secrets.AUTHUSER }}
+
+            This test validates emails with body content but no subject line.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailFrom $From -Body $Body `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - Name Mismatch Fallback
+        shell: pwsh
+        run: |
+          $Linux = $IsLinux
+          $MacOS = $IsMacOS
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }};${{ secrets.CC }};${{ secrets.BCC }}"
+          $ToName = "Recipient One;Recipient Two"
+          $From = "${{ secrets.AUTHUSER }}"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Name Mismatch Test"
+          $Body = "
+            Integration Test - Email Module (Name Mismatch Fallback)
+
+            Linux: $Linux
+            MacOS: $MacOS
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }};${{ secrets.CC }};${{ secrets.BCC }}
+            ToName = $ToName
+            From = ${{ secrets.AUTHUSER }}
+            Subject = $Subject
+
+            This test validates fallback behavior when recipient name count doesn't match email count.
+            Should use email addresses as display names when counts don't match.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailToName $ToName `
+              -EmailFrom $From -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - Case Insensitive Priority/Importance
+        shell: pwsh
+        run: |
+          $Linux = $IsLinux
+          $MacOS = $IsMacOS
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $EmailPriority = "urgent"
+          $EmailImportance = "low"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Case Insensitive Test"
+          $Body = "
+            Integration Test - Email Module (Case Insensitive Validation)
+
+            Linux: $Linux
+            MacOS: $MacOS
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }}
+            From = ${{ secrets.AUTHUSER }}
+            Subject = $Subject
+            EmailPriority = $EmailPriority
+            EmailImportance = $EmailImportance
+
+            This test validates case-insensitive priority and importance parameters.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailFrom $From `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer `
+              -EmailPriority $EmailPriority -EmailImportance $EmailImportance
+
+      - name: Integration Test - BCC Recipients
+        shell: pwsh
+        run: |
+          $Linux = $IsLinux
+          $MacOS = $IsMacOS
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $ToName = "Primary Recipient"
+          $Bcc = "${{ secrets.BCC }}"
+          $BccName = "BCC Test Recipient"
+          $From = "${{ secrets.AUTHUSER }}"
+          $FromName = "BCC Test Sender"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - BCC Test"
+          $Body = "
+            Integration Test - Email Module (BCC Recipients)
+
+            Linux: $Linux
+            MacOS: $MacOS
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }}
+            ToName = $ToName
+            Bcc = ${{ secrets.BCC }}
+            BccName = $BccName
+            From = ${{ secrets.AUTHUSER }}
+            FromName = $FromName
+            Subject = $Subject
+
+            This test validates BCC functionality. The BCC recipient should receive this email
+            but not be visible to the TO recipient. BCC sent to: ${{ secrets.BCC }}
+
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailToName $ToName `
+              -EmailBcc $Bcc -BccName $BccName `
+              -EmailFrom $From -EmailFromName $FromName `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - Multiple BCC Recipients
+        shell: pwsh
+        run: |
+          $Linux = $IsLinux
+          $MacOS = $IsMacOS
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $ToName = "Primary Recipient"
+          $Bcc = "${{ secrets.BCC }};${{ secrets.CC }}"
+          $BccName = "BCC Recipient 1;BCC Recipient 2"
+          $From = "${{ secrets.AUTHUSER }}"
+          $FromName = "Multiple BCC Test"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Multiple BCC Test"
+          $Body = "
+            Integration Test - Email Module (Multiple BCC Recipients)
+
+            Linux: $Linux
+            MacOS: $MacOS
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            This test validates multiple BCC functionality with semicolon separation.
+
+            To = ${{ secrets.TO }}
+            ToName = $ToName
+            Bcc = ${{ secrets.BCC }};${{ secrets.CC }}
+            BccName = $BccName
+            From = ${{ secrets.AUTHUSER }}
+            FromName = $FromName
+            Subject = $Subject
+
+            **VALIDATION**: All BCC recipients should receive this email but not see each other
+            in the recipient headers. Only the TO recipient should be visible.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailToName $ToName `
+              -EmailBcc $Bcc -BccName $BccName `
+              -EmailFrom $From -EmailFromName $FromName `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - Complete Recipients (TO/CC/BCC)
+        shell: pwsh
+        run: |
+          $Linux = $IsLinux
+          $MacOS = $IsMacOS
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $ToName = "Primary Recipient"
+          $Cc = "${{ secrets.CC }}"
+          $CcName = "CC Recipient"
+          $Bcc = "${{ secrets.BCC }};${{ secrets.AUTHUSER }}"
+          $BccName = "BCC Recipient 1;BCC Recipient 2"
+          $From = "${{ secrets.AUTHUSER }}"
+          $FromName = "Complete Test Sender"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - Complete Recipients Test"
+          $Body = "
+            Integration Test - Email Module (Complete Recipients: TO/CC/BCC)
+
+            Linux: $Linux
+            MacOS: $MacOS
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }}
+            ToName = $ToName
+            Cc = ${{ secrets.CC }}
+            CcName = $CcName
+            Bcc = ${{ secrets.BCC }};${{ secrets.AUTHUSER }}
+            BccName = $BccName
+            From = ${{ secrets.AUTHUSER }}
+            FromName = $FromName
+            Subject = $Subject
+
+            **VALIDATION**:
+            - TO and CC recipients should see each other in headers
+            - BCC recipients should NOT be visible to TO/CC recipients
+            - All recipients should receive the email
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailToName $ToName `
+              -EmailCc $Cc -CcName $CcName `
+              -EmailBcc $Bcc -BccName $BccName `
+              -EmailFrom $From -EmailFromName $FromName `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - All Parameters (Complete Feature Test)
+        shell: pwsh
+        run: |
+          $Linux = $IsLinux
+          $MacOS = $IsMacOS
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $EmailTo = "${{ secrets.TO }};${{ secrets.AUTHUSER }}"
+          $EmailToName = "Primary Test Recipient;Secondary Test Recipient"
+          $EmailFrom = "${{ secrets.AUTHUSER }}"
+          $EmailFromName = "GitHub Actions Integration Test"
+          $SmtpServer = "${{ secrets.MAILSERVER }}"
+          $SmtpPort = 587
+          $EmailCc = "${{ secrets.CC }}"
+          $CcName = "CC Integration Test Recipient"
+          $EmailBcc = "${{ secrets.BCC }};${{ secrets.AUTHUSER }}"
+          $BccName = "BCC Test Recipient 1;BCC Test Recipient 2"
+          $EmailAttachment = "integration-test-attachment.txt"
+          $EmailPriority = "Urgent"
+          $EmailImportance = "High"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} ${{ matrix.os }} PSEdition: $PSEdition - ALL PARAMETERS TEST"
+          $Body = "
+            Integration Test - Email Module (ALL PARAMETERS TEST)
+
+            Test Environment:
+            =================
+            Linux: $Linux
+            MacOS: $MacOS  
+            Windows: $Windows
+            PSEdition: $PSEdition
+            Build Tag: ${{ needs.build.outputs.new_tag }}
+            OS Matrix: ${{ matrix.os }}
+
+            This comprehensive test validates ALL available parameters:
+            ========================================================
+
+            - AuthUser: ${{ secrets.AUTHUSER }}
+            - AuthPass: -SECURED-
+            - EmailTo: ${{ secrets.TO }};${{ secrets.AUTHUSER }}
+            - EmailToName: $EmailToName
+            - EmailFrom: ${{ secrets.AUTHUSER }}
+            - EmailFromName: $EmailFromName
+            - Subject: $Subject
+            - Body: This detailed message body
+            - SmtpServer: ${{ secrets.MAILSERVER }}
+            - SmtpPort: $SmtpPort (STARTTLS)
+            - EmailCc: ${{ secrets.CC }}
+            - CcName: $CcName
+            - EmailBcc: ${{ secrets.BCC }};${{ secrets.AUTHUSER }}
+            - BccName: $BccName
+            - EmailAttachment: $EmailAttachment
+            - EmailPriority: $EmailPriority
+            - EmailImportance: $EmailImportance
+
+
+            Validation Checklist:
+            ====================
+            - TO recipients received email with proper display names
+            - CC recipients visible in headers to TO recipients
+            - BCC recipients received email but NOT visible in headers
+            - Email shows high priority/importance flags
+            - Test attachment file is present and accessible
+            - All display names rendered correctly
+            - Email formatting preserved
+          
+            This email tests the complete functionality of the EmailModule
+            with every available parameter populated and functional.
+          "
+
+          # Create a test attachment file
+          $AttachmentContent = @"
+            GitHub Actions Integration Test Attachment
+            ==========================================
+            
+            Test Details:
+            - Build Tag: ${{ needs.build.outputs.new_tag }}
+            - OS: ${{ matrix.os }}
+            - PowerShell Edition: $PSEdition
+            - Test Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
+            
+            Environment:
+            - Linux: $Linux
+            - macOS: $MacOS
+            - Windows: $Windows
+            
+            This file validates the EmailAttachment parameter functionality.
+            If you can read this content, the attachment feature is working correctly.
+            
+            File created during automated integration testing.
+          "@
+
+          # Create the test attachment file
+          $AttachmentContent | Out-File -FilePath $EmailAttachment -Encoding UTF8
+
+          # Execute the Send-Email command with ALL parameters
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $EmailTo -EmailToName $EmailToName `
+              -EmailFrom $EmailFrom -EmailFromName $EmailFromName `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $SmtpServer -SmtpPort $SmtpPort `
+              -EmailCc $EmailCc -CcName $CcName `
+              -EmailBcc $EmailBcc -BccName $BccName `
+              -EmailPriority $EmailPriority -EmailImportance $EmailImportance `
+              -EmailAttachment $EmailAttachment
+
+  # Integration Tests Desktop
   integration-test-desktop:
     environment: Build and Test PowerShell Module
     runs-on: windows-latest
     name: Integration Test on Windows Desktop
-    needs: [build] #, pester-tests-desktop]  # Now depends on Desktop Pester tests passing
-    # if: always()
+    needs: 
+      - build
+      # - integration-test-core
     env:
       OUTPUT1: ${{ needs.build.outputs.new_tag }}
     steps:
@@ -523,24 +881,36 @@ jobs:
           name: EmailModule
           path: EmailModule
 
-      - name: Integration Test Module with PowerShell Desktop
+      - name: Verify module manifest
         shell: powershell
         run: |
+          Test-ModuleManifest -Path '.\EmailModule\EmailModule.psd1'
+
+      - name: Integration Test - Original Full Parameters (UserPass Parameter Set)
+        shell: powershell
+        run: |
+          $Windows = $IsWindows
           Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
-          $ToName = "Brandon Navarro"
+          $ToName = "Integration Test Recipient"
           $From = "${{ secrets.AUTHUSER }}"
-          $FromName = "Brandon Navarro"
-          $Subject = "Github Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - Integration Test"
+          $FromName = "GitHub Actions Bot"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - Original Full Parameters Test"
           $Body = "
-            Integration Test - dotNET Framework Email Module
+            Integration Test - Email Module (Original Full Parameters)
 
+            Windows: $Windows
             PSEdition: $PSEdition
 
-            This is a GitHub Actions Automated Integration Test ${{ needs.build.outputs.new_tag }}
-            Unit tests have passed ✅
+            To = ${{ secrets.TO }}
+            ToName = $ToName
+            From = ${{ secrets.AUTHUSER }}
+            FromName = $FromName
+            Subject = $Subject
+
+            This is a GitHub Actions Automated Integration Test ${{ needs.build.outputs.new_tag }} with all parameters.
           "
           $MailServer = "${{ secrets.MAILSERVER }}"
           $ServerPort = "587"
@@ -550,46 +920,512 @@ jobs:
               -Subject $Subject -Body $Body `
               -SmtpServer $MailServer -SmtpPort $ServerPort
 
-  # # NEW: Test Report Summary
-  # test-summary:
-  #   runs-on: ubuntu-latest
-  #   name: Test Summary
-  #   needs: [pester-tests-core, pester-tests-desktop, integration-test-core, integration-test-desktop]
-  #   if: always()
-  #   steps:
-  #     - name: Download all test results
-  #       uses: actions/download-artifact@v5.0.0
-  #       with:
-  #         pattern: pester-test-results-*
-  #         merge-multiple: true
+      - name: Integration Test - PSCredential Parameter Set
+        shell: powershell
+        run: |
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $Username = "${{ secrets.AUTHUSER }}"
+          $Password = "${{ secrets.AUTHPASS }}" | ConvertTo-SecureString -AsPlainText -Force
+          $Credential = New-Object System.Management.Automation.PSCredential($Username, $Password)
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - PSCredential Test"
+          $Body = "
+            Integration Test - Email Module (PSCredential Authentication)
 
-  #     - name: Generate Test Summary
-  #       run: |
-  #         echo "# 📊 Test Results Summary" >> $GITHUB_STEP_SUMMARY
-  #         echo "" >> $GITHUB_STEP_SUMMARY
-  #         echo "## Unit Tests (Pester)" >> $GITHUB_STEP_SUMMARY
-  #         echo "" >> $GITHUB_STEP_SUMMARY
+            Windows: $Windows
+            PSEdition: $PSEdition
 
-  #         echo "### Test Files Executed:" >> $GITHUB_STEP_SUMMARY
-  #         for file in Tests/*.Tests.ps1; do
-  #           echo "- 📋 $file" >> $GITHUB_STEP_SUMMARY
-  #         done
-  #         echo "" >> $GITHUB_STEP_SUMMARY
+            To = ${{ secrets.TO }}
+            From = ${{ secrets.AUTHUSER }}
+            Subject = $Subject
 
-  #         if [ -f "TestResults.xml" ]; then
-  #           echo "✅ PowerShell Core tests completed" >> $GITHUB_STEP_SUMMARY
-  #         fi
+            This test uses PSCredential for authentication.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -Credential $Credential `
+              -EmailTo $To -EmailFrom $From `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer
 
-  #         if [ -f "TestResults-Desktop.xml" ]; then
-  #           echo "✅ PowerShell Desktop tests completed" >> $GITHUB_STEP_SUMMARY
-  #         fi
+      - name: Integration Test - SecureString Password
+        shell: powershell
+        run: |
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $SecurePass = "${{ secrets.AUTHPASS }}" | ConvertTo-SecureString -AsPlainText -Force
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - SecureString Test"
+          $Body = "
+            Integration Test - Email Module (SecureString Password)
 
-  #         if [ -f "coverage.xml" ]; then
-  #           echo "📊 Code coverage report generated" >> $GITHUB_STEP_SUMMARY
-  #         fi
+            Windows: $Windows
+            PSEdition: $PSEdition
 
-  #         echo "" >> $GITHUB_STEP_SUMMARY
-  #         echo "## Integration Tests" >> $GITHUB_STEP_SUMMARY
-  #         echo "✅ Cross-platform integration tests completed" >> $GITHUB_STEP_SUMMARY
-  #         echo "✅ Email sending functionality verified" >> $GITHUB_STEP_SUMMARY
-  #         echo "✅ Real SMTP server integration tested" >> $GITHUB_STEP_SUMMARY
+            To = ${{ secrets.TO }}
+            From = ${{ secrets.AUTHUSER }}
+            Subject = $Subject
+
+            This test uses SecureString for password authentication.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $SecurePass `
+              -EmailTo $To -EmailFrom $From `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - Multiple Recipients (To/CC)
+        shell: powershell
+        run: |
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }};${{ secrets.BCC }}"
+          $ToName = "Primary Recipient;Secondary Recipient"
+          $Cc = "${{ secrets.CC }}"
+          $CcName = "CC Recipient"
+          $From = "${{ secrets.AUTHUSER }}"
+          $FromName = "Multi-Recipient Test"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - Multiple Recipients Test"
+          $Body = "
+            Integration Test - Email Module (Multiple Recipients)
+
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }};${{ secrets.BCC }}
+            ToName = $ToName
+            Cc = ${{ secrets.CC }}
+            CcName = $CcName
+            From = ${{ secrets.AUTHUSER }}
+            FromName = $FromName
+            Subject = $Subject
+
+            This test validates multiple To and CC recipients with display names.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailToName $ToName `
+              -EmailCc $Cc -CcName $CcName `
+              -EmailFrom $From -EmailFromName $FromName `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - Priority and Importance
+        shell: powershell
+        run: |
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $EmailPriority = "Urgent"
+          $EmailImportance = "High"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - Priority Test"
+          $Body = "
+            Integration Test - Email Module (Priority and Importance)
+
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }}
+            From = ${{ secrets.AUTHUSER }}
+            Subject = $Subject
+            EmailPriority = $EmailPriority 
+            EmailImportance = $EmailImportance
+
+            This test validates email priority (Urgent) and importance (High) settings.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailFrom $From `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer `
+              -EmailPriority $EmailPriority -EmailImportance $EmailImportance
+
+      - name: Integration Test - Minimal Parameters (Subject Only)
+        shell: powershell
+        run: |
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - Minimal Test (Subject Only)"
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailFrom $From -Subject $Subject `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - Minimal Parameters (Body Only)
+        shell: powershell
+        run: |
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $Body = "
+            Integration Test - Email Module (Body Only - No Subject)
+
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }}
+            From = ${{ secrets.AUTHUSER }}
+
+            This test validates emails with body content but no subject line.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailFrom $From -Body $Body `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - Name Mismatch Fallback
+        shell: powershell
+        run: |
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }};${{ secrets.CC }};${{ secrets.BCC }}"
+          $ToName = "Recipient One;Recipient Two"
+          $From = "${{ secrets.AUTHUSER }}"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - Name Mismatch Test"
+          $Body = "
+            Integration Test - Email Module (Name Mismatch Fallback)
+
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }};${{ secrets.CC }};${{ secrets.BCC }}
+            ToName = $ToName
+            From = ${{ secrets.AUTHUSER }}
+            Subject = $Subject
+
+            This test validates fallback behavior when recipient name count doesn't match email count.
+            Should use email addresses as display names when counts don't match.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailToName $ToName `
+              -EmailFrom $From -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - Case Insensitive Priority/Importance
+        shell: powershell
+        run: |
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $From = "${{ secrets.AUTHUSER }}"
+          $EmailPriority = "urgent"
+          $EmailImportance = "low"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - Case Insensitive Test"
+          $Body = "
+            Integration Test - Email Module (Case Insensitive Validation)
+
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }}
+            From = ${{ secrets.AUTHUSER }}
+            Subject = $Subject
+            EmailPriority = $EmailPriority
+            EmailImportance = $EmailImportance
+
+            This test validates case-insensitive priority and importance parameters.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailFrom $From `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer `
+              -EmailPriority $EmailPriority -EmailImportance $EmailImportance
+
+      - name: Integration Test - BCC Recipients
+        shell: powershell
+        run: |
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $ToName = "Primary Recipient"
+          $Bcc = "${{ secrets.BCC }}"
+          $BccName = "BCC Test Recipient"
+          $From = "${{ secrets.AUTHUSER }}"
+          $FromName = "BCC Test Sender"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - BCC Test"
+          $Body = "
+            Integration Test - Email Module (BCC Recipients)
+
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }}
+            ToName = $ToName
+            Bcc = ${{ secrets.BCC }}
+            BccName = $BccName
+            From = ${{ secrets.AUTHUSER }}
+            FromName = $FromName
+            Subject = $Subject
+
+            This test validates BCC functionality. The BCC recipient should receive this email
+            but not be visible to the TO recipient. BCC sent to: ${{ secrets.BCC }}
+
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailToName $ToName `
+              -EmailBcc $Bcc -BccName $BccName `
+              -EmailFrom $From -EmailFromName $FromName `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - Multiple BCC Recipients
+        shell: powershell
+        run: |
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $ToName = "Primary Recipient"
+          $Bcc = "${{ secrets.BCC }};${{ secrets.CC }}"
+          $BccName = "BCC Recipient 1;BCC Recipient 2"
+          $From = "${{ secrets.AUTHUSER }}"
+          $FromName = "Multiple BCC Test"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - Multiple BCC Test"
+          $Body = "
+            Integration Test - Email Module (Multiple BCC Recipients)
+
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            This test validates multiple BCC functionality with semicolon separation.
+
+            To = ${{ secrets.TO }}
+            ToName = $ToName
+            Bcc = ${{ secrets.BCC }};${{ secrets.CC }}
+            BccName = $BccName
+            From = ${{ secrets.AUTHUSER }}
+            FromName = $FromName
+            Subject = $Subject
+
+            **VALIDATION**: All BCC recipients should receive this email but not see each other
+            in the recipient headers. Only the TO recipient should be visible.
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailToName $ToName `
+              -EmailBcc $Bcc -BccName $BccName `
+              -EmailFrom $From -EmailFromName $FromName `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - Complete Recipients (TO/CC/BCC)
+        shell: powershell
+        run: |
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $To = "${{ secrets.TO }}"
+          $ToName = "Primary Recipient"
+          $Cc = "${{ secrets.CC }}"
+          $CcName = "CC Recipient"
+          $Bcc = "${{ secrets.BCC }};${{ secrets.AUTHUSER }}"
+          $BccName = "BCC Recipient 1;BCC Recipient 2"
+          $From = "${{ secrets.AUTHUSER }}"
+          $FromName = "Complete Test Sender"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - Complete Recipients Test"
+          $Body = "
+            Integration Test - Email Module (Complete Recipients: TO/CC/BCC)
+
+            Windows: $Windows
+            PSEdition: $PSEdition
+
+            To = ${{ secrets.TO }}
+            ToName = $ToName
+            Cc = ${{ secrets.CC }}
+            CcName = $CcName
+            Bcc = ${{ secrets.BCC }};${{ secrets.AUTHUSER }}
+            BccName = $BccName
+            From = ${{ secrets.AUTHUSER }}
+            FromName = $FromName
+            Subject = $Subject
+
+            **VALIDATION**:
+            - TO and CC recipients should see each other in headers
+            - BCC recipients should NOT be visible to TO/CC recipients
+            - All recipients should receive the email
+          "
+          $MailServer = "${{ secrets.MAILSERVER }}"
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $To -EmailToName $ToName `
+              -EmailCc $Cc -CcName $CcName `
+              -EmailBcc $Bcc -BccName $BccName `
+              -EmailFrom $From -EmailFromName $FromName `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $MailServer
+
+      - name: Integration Test - All Parameters (Complete Feature Test)
+        shell: powershell
+        run: |
+          $Windows = $IsWindows
+          Import-Module .\EmailModule\EmailModule.psm1
+          $AuthUser = "${{ secrets.AUTHUSER }}"
+          $AuthPass = "${{ secrets.AUTHPASS }}"
+          $EmailTo = "${{ secrets.TO }};${{ secrets.AUTHUSER }}"
+          $EmailToName = "Primary Test Recipient;Secondary Test Recipient"
+          $EmailFrom = "${{ secrets.AUTHUSER }}"
+          $EmailFromName = "GitHub Actions Integration Test"
+          $SmtpServer = "${{ secrets.MAILSERVER }}"
+          $SmtpPort = 587
+          $EmailCc = "${{ secrets.CC }}"
+          $CcName = "CC Integration Test Recipient"
+          $EmailBcc = "${{ secrets.BCC }};${{ secrets.AUTHUSER }}"
+          $BccName = "BCC Test Recipient 1;BCC Test Recipient 2"
+          $EmailAttachment = "integration-test-attachment.txt"
+          $EmailPriority = "Urgent"
+          $EmailImportance = "High"
+          $Subject = "GitHub Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - ALL PARAMETERS TEST"
+          $Body = "
+            Integration Test - Email Module (ALL PARAMETERS TEST)
+
+            Test Environment:
+            =================
+
+            Windows: $Windows
+            PSEdition: $PSEdition
+            Build Tag: ${{ needs.build.outputs.new_tag }}
+            OS Matrix: windows-latest
+
+            This comprehensive test validates ALL available parameters:
+            ========================================================
+
+            - AuthUser: ${{ secrets.AUTHUSER }}
+            - AuthPass: -SECURED-
+            - EmailTo: ${{ secrets.TO }};${{ secrets.AUTHUSER }}
+            - EmailToName: $EmailToName
+            - EmailFrom: ${{ secrets.AUTHUSER }}
+            - EmailFromName: $EmailFromName
+            - Subject: $Subject
+            - Body: This detailed message body
+            - SmtpServer: ${{ secrets.MAILSERVER }}
+            - SmtpPort: $SmtpPort (STARTTLS)
+            - EmailCc: ${{ secrets.CC }}
+            - CcName: $CcName
+            - EmailBcc: ${{ secrets.BCC }};${{ secrets.AUTHUSER }}
+            - BccName: $BccName
+            - EmailAttachment: $EmailAttachment
+            - EmailPriority: $EmailPriority
+            - EmailImportance: $EmailImportance
+
+
+            Validation Checklist:
+            ====================
+            - TO recipients received email with proper display names
+            - CC recipients visible in headers to TO recipients
+            - BCC recipients received email but NOT visible in headers
+            - Email shows high priority/importance flags
+            - Test attachment file is present and accessible
+            - All display names rendered correctly
+            - Email formatting preserved
+          
+            This email tests the complete functionality of the EmailModule
+            with every available parameter populated and functional.
+          "
+
+          # Create a test attachment file
+          $AttachmentContent = @"
+            GitHub Actions Integration Test Attachment
+            ==========================================
+            
+            Test Details:
+            - Build Tag: ${{ needs.build.outputs.new_tag }}
+            - OS: windows-latest
+            - PowerShell Edition: $PSEdition
+            - Test Timestamp: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss UTC')
+            
+            Environment:
+            - Linux: $Linux
+            - macOS: $MacOS
+            - Windows: $Windows
+            
+            This file validates the EmailAttachment parameter functionality.
+            If you can read this content, the attachment feature is working correctly.
+            
+            File created during automated integration testing.
+          "@
+
+          # Create the test attachment file
+          $AttachmentContent | Out-File -FilePath $EmailAttachment -Encoding UTF8
+
+          # Execute the Send-Email command with ALL parameters
+          Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+              -EmailTo $EmailTo -EmailToName $EmailToName `
+              -EmailFrom $EmailFrom -EmailFromName $EmailFromName `
+              -Subject $Subject -Body $Body `
+              -SmtpServer $SmtpServer -SmtpPort $SmtpPort `
+              -EmailCc $EmailCc -CcName $CcName `
+              -EmailBcc $EmailBcc -BccName $BccName `
+              -EmailPriority $EmailPriority -EmailImportance $EmailImportance `
+              -EmailAttachment $EmailAttachment
+
+      - name: PowerShell Desktop Original Full Parameters (UserPass Parameter Set)
+        shell: powershell
+        run: |
+          if ($IsWindows){
+            powershell -command {
+              Import-Module .\EmailModule\EmailModule.psm1
+              $AuthUser = "${{ secrets.AUTHUSER }}"
+              $AuthPass = "${{ secrets.AUTHPASS }}"
+              $To = "${{ secrets.TO }}"
+              $ToName = "Brandon Navarro"
+              $From = "${{ secrets.AUTHUSER }}"
+              $FromName = "Brandon Navarro"
+              $Subject = "Github Actions ${{ needs.build.outputs.new_tag }} windows-latest PSEdition: $PSEdition - Integration Test"
+              $Body = "
+                Integration Test - dotNET Framework Email Module
+
+                PSEdition: $PSEdition
+
+                To = ${{ secrets.TO }}
+                ToName = $ToName
+                From = ${{ secrets.AUTHUSER }}
+                FromName = $FromName
+                Subject = $Subject
+
+                This is a GitHub Actions Automated Integration Test ${{ needs.build.outputs.new_tag }} Full Parameters
+              "
+              $MailServer = "${{ secrets.MAILSERVER }}"
+              $ServerPort = "587"
+              Send-Email -AuthUser $AuthUser -AuthPass $AuthPass `
+                  -EmailTo $To -EmailToName $ToName `
+                  -EmailFrom $From -EmailFromName $FromName `
+                  -Subject $Subject -Body $Body `
+                  -SmtpServer $MailServer -SmtpPort $ServerPort
+            }
+          } else {
+            write-host "Not windows"
+          }
+
+
+  deployment-status:
+    needs: [ build, integration-test-core, integration-test-desktop ]
+    runs-on: ubuntu-latest
+    environment: Build and Test PowerShell Module
+    steps:
+      - name: Deployment Completed
+        run: echo "Production deployment completed successfully"
