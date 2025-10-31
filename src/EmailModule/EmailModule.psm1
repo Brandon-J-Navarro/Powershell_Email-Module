@@ -1,5 +1,5 @@
 ﻿. $PSScriptRoot\EmailModule.Libraries.ps1
-$IsInteractive = -not ([Environment]::GetEnvironmentVariable("CI")) -and $null -ne $host.UI.RawUI
+# $IsInteractive = -not ([Environment]::GetEnvironmentVariable("CI")) -and $null -ne $host.UI.RawUI
 function Send-Email {
     [CmdletBinding(HelpUri = 'https://github.com/Brandon-J-Navarro/Powershell_Email-Module')]
     param (
@@ -418,6 +418,6 @@ Export-ModuleMember Send-Email
 
 
 # Show banner after module is imported (optional)
-if ($IsInteractive) {
-    Get-Banner
-}
+# if ($IsInteractive) {
+Get-Banner
+# }
