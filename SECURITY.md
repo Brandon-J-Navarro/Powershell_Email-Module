@@ -8,10 +8,9 @@ publish new releases.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| development (1.0.6) | :x: |
-| main (1.0.5) | :white_check_mark: |
-| latest release (1.0.5) | :white_check_mark: |
-| previous release (1.0.4) | :white_check_mark: |
+| main (1.0.6) | :white_check_mark: |
+| release (1.0.5) | :white_check_mark: |
+| release (1.0.4) | :white_check_mark: |
 
 ## Reporting a Vulnerability
 

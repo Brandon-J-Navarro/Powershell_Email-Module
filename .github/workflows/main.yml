@@ -6,12 +6,16 @@ on:
     paths:
       - 'src/**'
       - '!.github/**'
-      - '!.docs/**'
+      - '!docs/**'
       - '!tests/**'
       - '!README.md'
       - '!CHANGELOG.md'
       - '!CODE_OF_CONDUCT.md'
+      - '!SECURITY.md'
+      - '!LICENSE'
       - '!CONTRIBUTING.md'
+
+  workflow_dispatch:
   # pull_request:
   #   branches: [ main ]
   #   types: [closed]
@@ -22,8 +26,6 @@ on:
   #     - '!.github/workflows/**'
   #     - '!README.md'
   #     - '!.wiki/**'
-
-  workflow_dispatch:
 
 permissions:
   contents: write
