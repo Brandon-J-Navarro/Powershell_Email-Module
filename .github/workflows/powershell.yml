@@ -10,7 +10,6 @@
 name: PSScriptAnalyzer
 
 on:
-  workflow_dispatch:
   push:
     branches: [ "testing" ]
     paths:
