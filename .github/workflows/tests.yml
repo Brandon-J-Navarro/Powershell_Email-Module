@@ -864,7 +864,7 @@ jobs:
               -EmailPriority $EmailPriority -EmailImportance $EmailImportance `
               -EmailAttachment $EmailAttachment
 
-  # Integration Tests Core
+  # Integration Tests Desktop
   integration-test-desktop:
     environment: Build and Test PowerShell Module
     runs-on: windows-latest
@@ -1422,3 +1422,10 @@ jobs:
           }
 
 
+  deployment-status:
+    needs: [ build, integration-test-core, integration-test-desktop ]
+    runs-on: ubuntu-latest
+    environment: Build and Test PowerShell Module
+    steps:
+      - name: Deployment Completed
+        run: echo "Production deployment completed successfully"
