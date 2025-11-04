@@ -1,5 +1,5 @@
 # Build / Release for local testing
-
+Clear-Host
 if (Test-Path ".\release\"){
     Remove-Item -Path .\release -Recurse -Force
 }
@@ -176,7 +176,7 @@ Copy-Item -Path ".\LICENSE" -Destination ".\release\EmailModule\$NewVersion\"
 </package>
 "@ | Out-File -FilePath ".\release\EmailModule\$NewVersion\EmailModule.nuspec"
 
-nuget pack .\release\EmailModule\$NewVersion\EmailModule.nuspec -Properties Configuration=Release
+nuget pack .\release\EmailModule\$NewVersion\EmailModule.nuspec -Properties Configuration=Release -OutputDirectory ".\release\EmailModule\$NewVersion\"
 
 # Import-Module ./Powershell_Email-Module/release/EmailModule/ -ArgumentList $true
 # Import-Module ".\Powershell_Email-Module\release\EmailModule"-ArgumentList $true
