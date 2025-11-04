@@ -328,7 +328,7 @@ jobs:
           $Linux = $IsLinux
           $MacOS = $IsMacOS
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1
+          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -894,7 +894,7 @@ jobs:
         shell: powershell
         run: |
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1
+          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
