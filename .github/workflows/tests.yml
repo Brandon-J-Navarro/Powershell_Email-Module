@@ -287,7 +287,7 @@ jobs:
   #      - name: Integration Test - My New Feature
   #        shell: pwsh
   #        run: |
-  #          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+  #          Import-Module .\EmailModule\EmailModule.psm1
   #          # Prepare inputs and secrets (refer to PR description for required secrets)
   #          $AuthUser = "${{ secrets.AUTHUSER }}"
   #          $AuthPass = "${{ secrets.AUTHPASS }}"
@@ -328,7 +328,7 @@ jobs:
           $Linux = $IsLinux
           $MacOS = $IsMacOS
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -366,7 +366,7 @@ jobs:
           $Linux = $IsLinux
           $MacOS = $IsMacOS
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $Username = "${{ secrets.AUTHUSER }}"
           $Password = "${{ secrets.AUTHPASS }}" | ConvertTo-SecureString -AsPlainText -Force
           $Credential = New-Object System.Management.Automation.PSCredential($Username, $Password)
@@ -399,7 +399,7 @@ jobs:
           $Linux = $IsLinux
           $MacOS = $IsMacOS
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $SecurePass = "${{ secrets.AUTHPASS }}" | ConvertTo-SecureString -AsPlainText -Force
           $To = "${{ secrets.TO }}"
@@ -431,7 +431,7 @@ jobs:
           $Linux = $IsLinux
           $MacOS = $IsMacOS
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }};${{ secrets.BCC }}"
@@ -473,7 +473,7 @@ jobs:
           $Linux = $IsLinux
           $MacOS = $IsMacOS
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -510,7 +510,7 @@ jobs:
           $Linux = $IsLinux
           $MacOS = $IsMacOS
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -527,7 +527,7 @@ jobs:
           $Linux = $IsLinux
           $MacOS = $IsMacOS
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -556,7 +556,7 @@ jobs:
           $Linux = $IsLinux
           $MacOS = $IsMacOS
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }};${{ secrets.CC }};${{ secrets.BCC }}"
@@ -591,7 +591,7 @@ jobs:
           $Linux = $IsLinux
           $MacOS = $IsMacOS
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -628,7 +628,7 @@ jobs:
           $Linux = $IsLinux
           $MacOS = $IsMacOS
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -672,7 +672,7 @@ jobs:
           $Linux = $IsLinux
           $MacOS = $IsMacOS
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -717,7 +717,7 @@ jobs:
           $Linux = $IsLinux
           $MacOS = $IsMacOS
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -894,7 +894,7 @@ jobs:
         shell: powershell
         run: |
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -928,7 +928,7 @@ jobs:
         shell: powershell
         run: |
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $Username = "${{ secrets.AUTHUSER }}"
           $Password = "${{ secrets.AUTHPASS }}" | ConvertTo-SecureString -AsPlainText -Force
           $Credential = New-Object System.Management.Automation.PSCredential($Username, $Password)
@@ -957,7 +957,7 @@ jobs:
         shell: powershell
         run: |
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $SecurePass = "${{ secrets.AUTHPASS }}" | ConvertTo-SecureString -AsPlainText -Force
           $To = "${{ secrets.TO }}"
@@ -985,7 +985,7 @@ jobs:
         shell: powershell
         run: |
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }};${{ secrets.BCC }}"
@@ -1023,7 +1023,7 @@ jobs:
         shell: powershell
         run: |
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -1056,7 +1056,7 @@ jobs:
         shell: powershell
         run: |
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -1071,7 +1071,7 @@ jobs:
         shell: powershell
         run: |
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -1096,7 +1096,7 @@ jobs:
         shell: powershell
         run: |
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }};${{ secrets.CC }};${{ secrets.BCC }}"
@@ -1127,7 +1127,7 @@ jobs:
         shell: powershell
         run: |
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -1160,7 +1160,7 @@ jobs:
         shell: powershell
         run: |
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -1200,7 +1200,7 @@ jobs:
         shell: powershell
         run: |
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -1241,7 +1241,7 @@ jobs:
         shell: powershell
         run: |
           $Windows = $IsWindows
-          Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+          Import-Module .\EmailModule\EmailModule.psm1
           $AuthUser = "${{ secrets.AUTHUSER }}"
           $AuthPass = "${{ secrets.AUTHPASS }}"
           $To = "${{ secrets.TO }}"
@@ -1392,7 +1392,7 @@ jobs:
         run: |
           if ($IsWindows){
             powershell -command {
-              Import-Module .\EmailModule\EmailModule.psm1 -ArgumentList $true
+              Import-Module .\EmailModule\EmailModule.psm1
               $AuthUser = "${{ secrets.AUTHUSER }}"
               $AuthPass = "${{ secrets.AUTHPASS }}"
               $To = "${{ secrets.TO }}"
