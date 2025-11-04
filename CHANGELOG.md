@@ -1,8 +1,7 @@
 ## Release Notes
 - Release: 1.0.7
     - Added the DDLs that do not import with Add-Type in powershell to the Exclude list during the import and during the release
-    - Added a check to see if a newer version is released to the PSGallery
-    - Version check will perform a Web Request to the PSGallery to check for new stable release, and will compare against the current installed version and will display a message if there is a new version, the check can be silenced with by passing $true as an argument list parameter (Ex. `Import-Module EmailModule -ArgumentList $true`)
+    - Updated Module Banner for state to check PSGallery for updates
 - Release: 1.0.6 
     - Added multiple parameter sets for authentication:
         - 'UserPass' parameter set using AuthUser and AuthPass

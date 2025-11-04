@@ -1,10 +1,4 @@
-﻿[CmdletBinding()]
-param(
-    [Parameter(Position=0, Mandatory=$false)]
-    [boolean]$DisableVersionCheck = $false
-)
-
-. $PSScriptRoot\EmailModule.Libraries.ps1 -DisableVersionCheck $DisableVersionCheck
+﻿. $PSScriptRoot\EmailModule.Libraries.ps1
 
 function Send-Email {
     [CmdletBinding(HelpUri = 'https://github.com/Brandon-J-Navarro/Powershell_Email-Module')]

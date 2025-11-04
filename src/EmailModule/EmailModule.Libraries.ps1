@@ -1,53 +1,9 @@
 # EmailModule.Libraries.ps1
-[CmdletBinding()]
-param(
-    [Parameter(Position=0, Mandatory=$false)]
-    [boolean]$DisableVersionCheck = $false
-)
-
 
 function Get-Banner {
-    [CmdletBinding()]
-    param(
-        [Parameter(Position=0, Mandatory=$false)]
-        [boolean]$DisableVersionCheck = $false
-    )
-
-    $LatestVersion = $null
-    if (-not $DisableVersionCheck) {
-        if ($IsLinux -or $IsMacOS) {
-            $CurrentVersion = $PSScriptRoot.Split("/")
-        } else {
-            $CurrentVersion = $PSScriptRoot.Split("\")
-        }
-        $CurrentVersion = $CurrentVersion | Select-Object -Last 1
-        if ($CurrentVersion -notlike "*.*.*") {
-            $LatestVersion = $null
-        } else {
-            try {
-                if ( $(if ($IsLinux -or $IsMacOS) {
-                    Test-Connection "powershellgallery.com"
-                } else{
-                    Test-NetConnection "powershellgallery.com"
-                }) ) {
-                    $LatestVersion = Invoke-WebRequest -Uri "https://www.powershellgallery.com/packages/EmailModule/" -ErrorAction Stop
-                    $LatestVersion = $LatestVersion.Links | Where-Object {$_.'outerHTML' -like '*(current version)*'}
-                    $LatestVersion = $LatestVersion.href.replace('/packages/EmailModule/','')
-                    if ( $LatestVersion -lt $CurrentVersion) {
-                        $LatestVersion = $null
-                    }
-                }
-            } catch { }
-        }
-    }
-
-
-
-    $newVersion =  ("
-    A new EmailModule stable release is available: v{0}
-    Upgrade now, or check out the release page at:
-    https://www.powershellgallery.com/packages/EmailModule/{0}" -f $LatestVersion
-    )
+    $versionText1 =  "
+    Check PSGallery for the latest release:"
+    $versionText2 = "        Update-Module EmailModule"
 
     $Banner = "
         ____           _ __  __  ___        __     __    
@@ -63,11 +19,10 @@ function Get-Banner {
     "
 
     $OriginalForeground = $host.ui.RawUI.ForegroundColor
-    if ($null -ne $LatestVersion) {
-        $host.ui.RawUI.ForegroundColor = "Yellow"
-        Write-Output $newVersion 
-    }
-
+    $host.ui.RawUI.ForegroundColor = $OriginalForeground
+    Write-Output $versionText1
+    $host.ui.RawUI.ForegroundColor = "Yellow"
+    Write-Output $versionText2
     $host.ui.RawUI.ForegroundColor = $OriginalForeground
     Write-Output $Banner
     Write-Output $helpText1
@@ -80,7 +35,7 @@ function Get-Banner {
     $host.ui.RawUI.ForegroundColor = $OriginalForeground
 }
 
-Get-Banner -DisableVersionCheck $DisableVersionCheck
+Get-Banner
 
 if ($PSEdition -eq 'Core') {
     Get-ChildItem -Path (Join-Path $PSScriptRoot 'lib/net8.0') -Filter *.dll |
