@@ -83,6 +83,41 @@ Originally I wrote this in .NET 8 but in order to have it available and work on 
 - Guide in the <a href="https://github.com/Brandon-J-Navarro/Powershell_Email-Module/wiki/Build-from-source">Wiki</a>
 
 #
+### Disable Version Check
+```powershell
+Import-Module EmailModule
+"
+    A new EmailModule stable release is available: v1.0.6
+    Upgrade now, or check out the release page at:
+    https://www.powershellgallery.com/packages/EmailModule/1.0.6
+
+        ____           _ __  __  ___        __     __
+       / __/_ _  ___ _(_/ / /  |/  /__  ___/ /_ __/ /__
+      / _//  ' \/ _ '/ / / / /|_/ / _ \/ _  / // / / -_)
+     /___/_/_/_/\_,_/_/_/ /_/  /_/\___/\_,_/\_,_/_/\__/
+
+    Cmdlets available:
+        Send-Email
+    Get help for Send-Email cmdlet:
+        Get-Help Send-Email or Send-Email -?
+"
+
+Import-Module EmailModule -ArgumentList $true
+"
+        ____           _ __  __  ___        __     __
+       / __/_ _  ___ _(_/ / /  |/  /__  ___/ /_ __/ /__
+      / _//  ' \/ _ '/ / / / /|_/ / _ \/ _  / // / / -_)
+     /___/_/_/_/\_,_/_/_/ /_/  /_/\___/\_,_/\_,_/_/\__/
+
+    Cmdlets available:
+        Send-Email
+    Get help for Send-Email cmdlet:
+        Get-Help Send-Email or Send-Email -?
+"
+```
+
+
+
 ### Basic Usage (Username/Password Authentication)
 ```powershell
 $AuthUser = "DoNotReply@Domain.com"
