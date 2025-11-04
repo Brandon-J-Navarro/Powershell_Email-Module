@@ -15,18 +15,33 @@ function Get-Banner {
 
     $LatestVersion = $null
     if (-not $DisableVersionCheck) {
-        try {
-            if (Test-NetConnection -ComputerName "powershellgallery.com"){
-                $LatestVersion = Invoke-WebRequest -Uri "https://www.powershellgallery.com/packages/EmailModule/" -ErrorAction Stop
-                $LatestVersion = $LatestVersion.Links | Where-Object {$_.'outerHTML' -like '*(current version)*'}
-                $LatestVersion = $LatestVersion.href.replace('/packages/EmailModule/','')
-                $CurrentVersion = Get-Module -Name EmailModule  -ErrorAction Stop
-                if ( $LatestVersion -lt $CurrentVersion.Version) {
-                    $LatestVersion = $null
+        if ($IsLinux -or $IsMacOS) {
+            $CurrentVersion = $PSScriptRoot.Split("/")
+        } else {
+            $CurrentVersion = $PSScriptRoot.Split("\")
+        }
+        $CurrentVersion = $CurrentVersion | Select-Object -Last 1
+        if ($CurrentVersion -notlike "*.*.*") {
+            $LatestVersion = $null
+        } else {
+            try {
+                if ( $(if ($IsLinux -or $IsMacOS) {
+                    Test-Connection "powershellgallery.com"
+                } else{
+                    Test-NetConnection "powershellgallery.com"
+                }) ) {
+                    $LatestVersion = Invoke-WebRequest -Uri "https://www.powershellgallery.com/packages/EmailModule/" -ErrorAction Stop
+                    $LatestVersion = $LatestVersion.Links | Where-Object {$_.'outerHTML' -like '*(current version)*'}
+                    $LatestVersion = $LatestVersion.href.replace('/packages/EmailModule/','')
+                    if ( $LatestVersion -lt $CurrentVersion) {
+                        $LatestVersion = $null
+                    }
                 }
-            }
-        } catch { }
+            } catch { }
+        }
     }
+
+
 
     $newVersion =  ("
     A new EmailModule stable release is available: v{0}
@@ -90,7 +105,8 @@ if ($PSEdition -eq 'Core') {
         'Microsoft.AspNetCore.Http.Abstractions.dll',
         'Microsoft.AspNetCore.Http.Features.dll',
         'Microsoft.Extensions.FileProviders.Abstractions.dll',
-        'Microsoft.Net.Http.Headers.dll'
+        'Microsoft.Net.Http.Headers.dll',
+        'Microsoft.AspNetCore.StaticFiles.dll'
     )
     Get-ChildItem -Path (Join-Path $PSScriptRoot 'lib/net472') -Filter *.dll |
     Where-Object  { $_.Name -notin $exclude } |
