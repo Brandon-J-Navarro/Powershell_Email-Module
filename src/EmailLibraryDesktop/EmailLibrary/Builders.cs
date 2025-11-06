@@ -35,7 +35,7 @@ namespace EmailLibrary
 
         static internal MimeMessage AddRecipients(MimeMessage mailMessage, string emails, string names, MailboxType mailboxType, bool isRequired = false)
         {
-            if (string.IsNullOrEmpty(emails) || string.IsNullOrWhiteSpace(emails) || isRequired)
+            if ((string.IsNullOrEmpty(emails) || string.IsNullOrWhiteSpace(emails)) && isRequired == true)
             {
                 throw new Exception($"Address line \"{mailboxType}\" is empty and is required");
             }
