@@ -146,6 +146,7 @@
   <ItemGroup>
     <Compile Include="Builders.cs" />
     <Compile Include="EmailCommands.cs" />
+    <Compile Include="Log.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
