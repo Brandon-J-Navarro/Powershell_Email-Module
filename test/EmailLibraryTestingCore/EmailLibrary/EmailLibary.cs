@@ -27,10 +27,8 @@ namespace EmailLibraryTestingCore
             string EmailAttachment = _configuration["EmailParameters:EmailAttachment"];
             string EmailPriority = _configuration["EmailParameters:EmailPriority"];
             string EmailImportance = _configuration["EmailParameters:EmailImportance"];
-
             try
             {
-                // Call into the library directly (requires ProjectReference to src\EmailLibraryCore\EmailLibrary\EmailLibrary.csproj)
                 EmailCommands.SendEmail(
                     AuthUser,
                     AuthPass,

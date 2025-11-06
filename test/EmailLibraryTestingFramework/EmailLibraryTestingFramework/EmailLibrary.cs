@@ -31,7 +31,6 @@ namespace EmailLibraryTestingFramework
             string EmailImportance = emailParameters.EmailImportance;
             try
             {
-                // Call into the desktop/framework library directly
                 EmailCommands.SendEmail(
                     AuthUser,
                     AuthPass,
