@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text.Json;
 using EmailLibrary;
 
 namespace EmailLibraryTestingFramework
@@ -10,10 +11,10 @@ namespace EmailLibraryTestingFramework
         {
             string jsonFilePath = "..\\..\\appSetting.json";
             string jsonContent = File.ReadAllText(jsonFilePath);
-            EmailParameters emailParameters = System.Text.Json.JsonSerializer.Deserialize<EmailParameters>(jsonContent);
+            EmailParameters emailParameters = JsonSerializer.Deserialize<EmailParameters>(jsonContent);
 
             string AuthUser = emailParameters.AuthUser;
-            object AuthPass = emailParameters.AuthPass;
+            string AuthPass = emailParameters.AuthPass;
             string EmailTo = emailParameters.EmailTo;
             string EmailToName = emailParameters.EmailToName;
             string EmailFrom = emailParameters.EmailFrom;
