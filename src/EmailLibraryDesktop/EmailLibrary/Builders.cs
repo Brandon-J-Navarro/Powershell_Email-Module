@@ -121,15 +121,15 @@ namespace EmailLibrary
                         {
                             if (mailboxLine.Equals("TO"))
                             {
-                                mailMessage.To.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
+                                mailMessage.To.Add(new MailboxAddress(EmailRecipientName[i], EmailRecipient[i]));
                             }
                             else if (mailboxLine.Equals("CC"))
                             {
-                                mailMessage.Cc.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
+                                mailMessage.Cc.Add(new MailboxAddress(EmailRecipientName[i], EmailRecipient[i]));
                             }
                             else if (mailboxLine.Equals("BCC"))
                             {
-                                mailMessage.Bcc.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
+                                mailMessage.Bcc.Add(new MailboxAddress(EmailRecipientName[i], EmailRecipient[i]));
                             }
 #if DEBUG
                             Console.WriteLine($"[DEBUG] Added '{mailboxLine}' recipients. Name: {EmailRecipientName[i]} Email: {EmailRecipient[i]}");
