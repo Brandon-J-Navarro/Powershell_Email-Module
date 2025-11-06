@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Security;
 
 public class EmailCommands
@@ -36,19 +37,19 @@ public class EmailCommands
         Console.WriteLine("[DEBUG] Creating Mail Message...");
 #endif
 
-        mailMessage = BuildMailMessageFrom(mailMessage, emailFrom, fromName);
+        mailMessage = BuildMailMessage(mailMessage, emailFrom, fromName, "FROM");
 #if DEBUG
         Console.WriteLine("[DEBUG] Successfully added FROM.");
 #endif
 
-        mailMessage = BuildMailMessageTo(mailMessage, emailTo, toName);
+        mailMessage = BuildMailMessage(mailMessage, emailTo, toName, "TO");
 #if DEBUG
         Console.WriteLine("[DEBUG] Successfully added TO recipients.");
 #endif
 
         if (!(string.IsNullOrEmpty(emailCc)))
         {
-            mailMessage = BuildMailMessageCc(mailMessage, emailCc, ccName);
+            mailMessage = BuildMailMessage(mailMessage, emailCc, ccName, "CC");
 #if DEBUG
             Console.WriteLine("[DEBUG] Successfully added CC recipients.");
 #endif
@@ -62,7 +63,7 @@ public class EmailCommands
 
         if (!(string.IsNullOrEmpty(emailBcc)))
         {
-            mailMessage = BuildMailMessageBcc(mailMessage, emailBcc, bccName);
+            mailMessage = BuildMailMessage(mailMessage, emailBcc, bccName, "BCC");
 #if DEBUG
             Console.WriteLine("[DEBUG] Successfully added BCC recipients.");
 #endif
@@ -105,7 +106,6 @@ public class EmailCommands
 
         if (!(string.IsNullOrEmpty(emailSubject)))
         {
-            //mailMessage.Subject = emailSubject ?? string.Empty;
             mailMessage.Subject = emailSubject;
 #if DEBUG
             Console.WriteLine($"[DEBUG] SUBJECT Added: {emailSubject}");
@@ -238,6 +238,23 @@ public class EmailCommands
         Console.WriteLine($"[DEBUG] MailServer: {mailServer}:{serverPort}");
 #endif
 
+        if (Environment.GetEnvironmentVariable("CI") == "true" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            smtpClient.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
+            {
+#if DEBUG
+                Console.WriteLine("[DEBUG] macOS CI detected – bypassing partial revocation SSL errors.");
+#endif
+                if (sslPolicyErrors == System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors &&
+                    chain?.ChainStatus?.Any(s => s.Status == System.Security.Cryptography.X509Certificates.X509ChainStatusFlags.RevocationStatusUnknown) == true)
+                {
+                    return true;
+                }
+
+                return sslPolicyErrors == System.Net.Security.SslPolicyErrors.None;
+            };
+        }
+
         smtpClient.Connect(mailServer, serverPort, SecureSocketOptions.StartTls);
 #if DEBUG
         Console.WriteLine("[DEBUG] Connected to SMTP server.");
@@ -254,22 +271,12 @@ public class EmailCommands
 #if DEBUG
         Console.WriteLine("[DEBUG] Authenticated successfully.");
         Console.WriteLine($"[DEBUG] Is Authenticated: {smtpClient.IsAuthenticated}");
-        //Console.WriteLine($"[DEBUG] Is Connected: {smtpClient.IsConnected}");
-        //Console.WriteLine($"[DEBUG] Is Encrypted: {smtpClient.IsEncrypted}");
-        //Console.WriteLine($"[DEBUG] Is Secure: {smtpClient.IsSecure}");
-        //Console.WriteLine($"[DEBUG] Protocol: {smtpClient.Protocol}");
-        //Console.WriteLine($"[DEBUG] Ssl Cipher Algorithm: {smtpClient.SslCipherAlgorithm}");
-        //Console.WriteLine($"[DEBUG] Ssl Cipher Suite: {smtpClient.SslCipherSuite}");
-        //Console.WriteLine($"[DEBUG] Ssl Hash Algorithm: {smtpClient.SslHashAlgorithm}");
-        //Console.WriteLine($"[DEBUG] Ssl Protocol: {smtpClient.SslProtocol}");
 #endif
 
         var mailSent = smtpClient.Send(mailMessage);
 #if DEBUG
         Console.WriteLine("[DEBUG] Email sent successfully.");
         Console.WriteLine($"[DEBUG] {mailSent}");
-        //#else
-        //        Console.WriteLine($"[Response]: {mailSent}");
 #endif
 
         smtpClient.Disconnect(true);
@@ -308,164 +315,109 @@ public class EmailCommands
         return credentials;
     }
 
-    static private MimeMessage BuildMailMessageFrom(MimeMessage mailMessage, string emailFrom, string? fromName)
+    static internal MimeMessage BuildMailMessage(MimeMessage mailMessage, string emailAddress, string? emailName, string mailboxLine)
     {
-#if DEBUG
-        Console.WriteLine("[DEBUG] Building 'From' address");
-#endif
-        mailMessage.From.Add(string.IsNullOrEmpty(fromName)
-            ? new MailboxAddress(emailFrom, emailFrom)
-            : new MailboxAddress(fromName, emailFrom));
-
-        if (!(string.IsNullOrEmpty(fromName)))
+        if (mailboxLine.Equals("FROM"))
         {
 #if DEBUG
-            Console.WriteLine($"[DEBUG] Added FROM recipient(s). Name: {fromName} Email: {emailFrom}");
+            Console.WriteLine($"[DEBUG] Building '{mailboxLine}' address");
 #endif
+            mailMessage.From.Add(string.IsNullOrEmpty(emailName)
+                ? new MailboxAddress(emailAddress, emailAddress)
+                : new MailboxAddress(emailName, emailAddress));
+
+            if (!(string.IsNullOrEmpty(emailName)))
+            {
+#if DEBUG
+                Console.WriteLine($"[DEBUG] Added '{mailboxLine}' recipient(s). Name: {emailName} Email: {emailAddress}");
+#endif
+            }
+            else
+            {
+#if DEBUG
+                Console.WriteLine($"[DEBUG] No '{mailboxLine}' Name Added, set to string.Empty.");
+                Console.WriteLine($"[DEBUG] Added '{mailboxLine}' recipient(s). Name: {emailAddress} Email: {emailAddress}");
+#endif
+            }
+
+            return mailMessage;
         }
         else
         {
 #if DEBUG
-            Console.WriteLine("[DEBUG] No FROM Name Added, set to string.Empty.");
-            Console.WriteLine($"[DEBUG] Added FROM recipient(s). Name: {emailFrom} Email: {emailFrom}");
+            Console.WriteLine($"[DEBUG] Building '{mailboxLine}' address(es)");
 #endif
-        }
-
-        return mailMessage;
-    }
-
-    static private MimeMessage BuildMailMessageTo(MimeMessage mailMessage, string emailTo, string? toName)
-    {
-#if DEBUG
-        Console.WriteLine("[DEBUG] Building 'To' address(es)");
-#endif
-        var EmailRecipientTo = emailTo.Split(';');
-        if (string.IsNullOrEmpty(toName))
-        {
-#if DEBUG
-            Console.WriteLine($"[DEBUG] TO Name is NULL or Empty String using Email Address as the Name");
-#endif
-            for (int i = 0; i < EmailRecipientTo.Length; i++)
+            var EmailRecipient = emailAddress.Split(';');
+            if (string.IsNullOrEmpty(emailName))
             {
 #if DEBUG
-                Console.WriteLine($"[DEBUG] Added TO recipient(s). Name: {EmailRecipientTo[i]} Email: {EmailRecipientTo[i]}");
+                Console.WriteLine($"[DEBUG] '{mailboxLine}' Name is NULL or Empty String using Email Address as the Name");
 #endif
-                mailMessage.To.Add(new MailboxAddress(EmailRecipientTo[i], EmailRecipientTo[i]));
+                for (int i = 0; i < EmailRecipient.Length; i++)
+                {
+                    if (mailboxLine.Equals("TO"))
+                    {
+                        mailMessage.To.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
+                    }
+                    else if (mailboxLine.Equals("CC"))
+                    {
+                        mailMessage.Cc.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
+                    }
+                    else if (mailboxLine.Equals("BCC"))
+                    {
+                        mailMessage.Bcc.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
+                    }
+#if DEBUG
+                    Console.WriteLine($"[DEBUG] Added '{mailboxLine}' recipient(s). Name: {EmailRecipient[i]} Email: {EmailRecipient[i]}");
+#endif
+                }
             }
-        }
-        else
-        {
-            var EmailRecipientToName = toName.Split(';');
-            for (int i = 0; i < EmailRecipientTo.Length; i++)
+            else
             {
-                if (EmailRecipientToName.Length < EmailRecipientTo.Length || EmailRecipientToName.Length > EmailRecipientTo.Length)
+                var EmailRecipientName = emailName.Split(';');
+                for (int i = 0; i < EmailRecipient.Length; i++)
                 {
+                    if (EmailRecipientName.Length < EmailRecipient.Length || EmailRecipientName.Length > EmailRecipient.Length)
+                    {
+                        if (mailboxLine.Equals("TO"))
+                        {
+                            mailMessage.To.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
+                        }
+                        else if (mailboxLine.Equals("CC"))
+                        {
+                            mailMessage.Cc.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
+                        }
+                        else if (mailboxLine.Equals("BCC"))
+                        {
+                            mailMessage.Bcc.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
+                        }
 #if DEBUG
-                    Console.WriteLine($"[DEBUG] The Amount of Name(s) and Eamil Address(es) do not match, using Email Address as the Name");
-                    Console.WriteLine($"[DEBUG] Added TO recipient(s). Name: {EmailRecipientTo[i]} Email: {EmailRecipientTo[i]}");
+                        Console.WriteLine($"[DEBUG] The Amount of Name(s) and Eamil Address(es) do not match, using Email Address as the Name");
+                        Console.WriteLine($"[DEBUG] Added '{mailboxLine}' recipient(s). Name: {EmailRecipient[i]} Email: {EmailRecipient[i]}");
 #endif
-                    mailMessage.To.Add(new MailboxAddress(EmailRecipientTo[i], EmailRecipientTo[i]));
-                }
-                else if (EmailRecipientToName.Length == EmailRecipientTo.Length)
-                {
+                    }
+                    else if (EmailRecipientName.Length == EmailRecipient.Length)
+                    {
+                        if (mailboxLine.Equals("TO"))
+                        {
+                            mailMessage.To.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
+                        }
+                        else if (mailboxLine.Equals("CC"))
+                        {
+                            mailMessage.Cc.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
+                        }
+                        else if (mailboxLine.Equals("BCC"))
+                        {
+                            mailMessage.Bcc.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
+                        }
 #if DEBUG
-                    Console.WriteLine($"[DEBUG] Added TO recipient(s). Name: {EmailRecipientToName[i]} Email: {EmailRecipientTo[i]}");
+                        Console.WriteLine($"[DEBUG] Added '{mailboxLine}' recipients. Name: {EmailRecipientName[i]} Email: {EmailRecipient[i]}");
 #endif
-                    mailMessage.To.Add(new MailboxAddress(EmailRecipientToName[i], EmailRecipientTo[i]));
-                }
-            }
-        }
-        return mailMessage;
-    }
-
-    static private MimeMessage BuildMailMessageCc(MimeMessage mailMessage, string emailCc, string? ccName)
-    {
-#if DEBUG
-        Console.WriteLine("[DEBUG] Building 'CC' address(es)}");
-#endif
-
-        var EmailRecipientCc = emailCc.Split(';');
-        if (string.IsNullOrEmpty(ccName))
-        {
-#if DEBUG
-            Console.WriteLine($"[DEBUG] CC Name is NULL or Empty String using Email Address as the Name");
-#endif
-            for (int i = 0; i < EmailRecipientCc.Length; i++)
-            {
-#if DEBUG
-                Console.WriteLine($"[DEBUG] Added CC recipient(s). Name: {EmailRecipientCc[i]} Email: {EmailRecipientCc[i]}");
-#endif
-                mailMessage.To.Add(new MailboxAddress(EmailRecipientCc[i], EmailRecipientCc[i]));
-            }
-        }
-        else
-        {
-            var EmailRecipientCcName = ccName.Split(';');
-            for (int i = 0; i < EmailRecipientCc.Length; i++)
-            {
-                if (EmailRecipientCcName.Length < EmailRecipientCc.Length || EmailRecipientCcName.Length > EmailRecipientCc.Length)
-                {
-#if DEBUG
-                    Console.WriteLine($"[DEBUG] The Amount of Name(s) and Eamil Address(es) do not match, using Email Address as the Name");
-                    Console.WriteLine($"[DEBUG] Added CC recipient(s). Name: {EmailRecipientCc[i]} Email: {EmailRecipientCc[i]}");
-#endif
-                    mailMessage.To.Add(new MailboxAddress(EmailRecipientCc[i], EmailRecipientCc[i]));
-                }
-                else if (EmailRecipientCcName.Length == EmailRecipientCc.Length)
-                {
-#if DEBUG
-                    Console.WriteLine($"[DEBUG] Added CC recipients. Name: {EmailRecipientCcName[i]} Email: {EmailRecipientCc[i]}");
-#endif
-                    mailMessage.To.Add(new MailboxAddress(EmailRecipientCcName[i], EmailRecipientCc[i]));
+                    }
                 }
             }
+            return mailMessage;
         }
-        return mailMessage;
-    }
-
-    static private MimeMessage BuildMailMessageBcc(MimeMessage mailMessage, string emailBcc, string? bccName)
-    {
-#if DEBUG
-        Console.WriteLine("[DEBUG] Building 'BCC' address(es)");
-#endif
-
-        var EmailRecipientBcc = emailBcc.Split(';');
-        if (string.IsNullOrEmpty(bccName))
-        {
-#if DEBUG
-            Console.WriteLine($"[DEBUG] BCC Name is NULL or Empty String using Email Address as the Name");
-#endif
-            for (int i = 0; i < EmailRecipientBcc.Length; i++)
-            {
-#if DEBUG
-                Console.WriteLine($"[DEBUG] Added BCC recipient(s). Name: {EmailRecipientBcc[i]} Email: {EmailRecipientBcc[i]}");
-#endif
-                mailMessage.To.Add(new MailboxAddress(EmailRecipientBcc[i], EmailRecipientBcc[i]));
-            }
-        }
-        else
-        {
-            var EmailRecipientBccName = bccName.Split(';');
-            for (int i = 0; i < EmailRecipientBcc.Length; i++)
-            {
-                if (EmailRecipientBccName.Length < EmailRecipientBcc.Length || EmailRecipientBccName.Length > EmailRecipientBcc.Length)
-                {
-#if DEBUG
-                    Console.WriteLine($"[DEBUG] The Amount of Name(s) and Eamil Address(es) do not match, using Email Address as the Name");
-                    Console.WriteLine($"[DEBUG] Added BCC recipient(s). Name: {EmailRecipientBcc[i]} Email: {EmailRecipientBcc[i]}");
-#endif
-                    mailMessage.To.Add(new MailboxAddress(EmailRecipientBcc[i], EmailRecipientBcc[i]));
-                }
-                else if (EmailRecipientBccName.Length == EmailRecipientBcc.Length)
-                {
-#if DEBUG
-                    Console.WriteLine($"[DEBUG] Added BCC recipients. Name: {EmailRecipientBccName[i]} Email: {EmailRecipientBcc[i]}");
-#endif
-                    mailMessage.To.Add(new MailboxAddress(EmailRecipientBccName[i], EmailRecipientBcc[i]));
-                }
-            }
-        }
-        return mailMessage;
     }
 
     static void Main(string[] args)
