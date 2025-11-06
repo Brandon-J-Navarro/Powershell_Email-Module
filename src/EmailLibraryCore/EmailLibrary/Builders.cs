@@ -1,7 +1,9 @@
-﻿using MimeKit;
+﻿using Microsoft.AspNetCore.StaticFiles;
+using MimeKit;
 using System.Net;
 using System.Security;
 using static EmailLibrary.Log;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace EmailLibrary
 {
@@ -14,7 +16,7 @@ namespace EmailLibrary
             {
                 string stringPassword => new NetworkCredential(userName, stringPassword),
                 SecureString securePassword => new NetworkCredential(userName, securePassword),
-                _ => throw new ArgumentException("Password must be either string or SecureString", nameof(password)),
+                _ => throw new ArgumentException("Password must be either string or SecureString", nameof(password))
             };
             string typeName = password.GetType().Name;
             Debug($"Using Authentication Password of Type {typeName} to create Credentials.");
@@ -22,86 +24,152 @@ namespace EmailLibrary
             return credentials;
         }
 
-        static internal MimeMessage BuildMailMessage(MimeMessage mailMessage, string emailAddress, string? emailName,string mailboxLine)
+        public enum MailboxType
         {
-            if (mailboxLine.Equals("FROM"))
+            From,
+            To,
+            Cc,
+            Bcc
+        }
+
+        static internal MimeMessage AddRecipients(MimeMessage mailMessage, string emails, string names, MailboxType mailboxType, bool isRequired = false)
+        {
+            if (string.IsNullOrEmpty(emails) || string.IsNullOrWhiteSpace(emails) && isRequired)
             {
-                Debug($"Building '{mailboxLine}' address");
-                mailMessage.From.Add(string.IsNullOrEmpty(emailName) ? new MailboxAddress(emailAddress, emailAddress) : new MailboxAddress(emailName, emailAddress));
-                var displayName = !string.IsNullOrEmpty(emailName) ? emailName : emailAddress;
-                if (string.IsNullOrEmpty(emailName))
-                {
-                    Debug($"No '{mailboxLine}' Name Added, set to string.Empty.");
-                }
-                Debug($"Added '{mailboxLine}' recipient(s). Name: {displayName} Email: {emailAddress}");
+                throw new Exception($"Address line \"{mailboxType}\" is empty and is required");
+            }
+            else if (!string.IsNullOrEmpty(emails) && !string.IsNullOrWhiteSpace(emails))
+            {
+                mailMessage = BuildMailMessage(mailMessage, emails, names, mailboxType);
+                Debug($"Successfully added {mailboxType}{(isRequired ? "." : " recipients.")}");
                 return mailMessage;
             }
             else
             {
-                Debug($"Building '{mailboxLine}' address(es)");
-                var EmailRecipient = emailAddress.Split(';');
-                if (string.IsNullOrEmpty(emailName))
-                {
-                    Debug($"'{mailboxLine}' Name is NULL or Empty String using Email Address as the Name");
-                    for (int i = 0; i < EmailRecipient.Length; i++)
-                    {
-                        if (mailboxLine.Equals("TO"))
-                        {
-                            mailMessage.To.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
-                        }
-                        else if (mailboxLine.Equals("CC"))
-                        {
-                            mailMessage.Cc.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
-                        }
-                        else if (mailboxLine.Equals("BCC"))
-                        {
-                            mailMessage.Bcc.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
-                        }
-                        Debug($"Added '{mailboxLine}' recipient(s). Name: {EmailRecipient[i]} Email: {EmailRecipient[i]}");
-                    }
-                }
-                else
-                {
-                    var EmailRecipientName = emailName.Split(';');
-                    for (int i = 0; i < EmailRecipient.Length; i++)
-                    {
-                        if (EmailRecipientName.Length < EmailRecipient.Length || EmailRecipientName.Length > EmailRecipient.Length)
-                        {
-                            if (mailboxLine.Equals("TO"))
-                            {
-                                mailMessage.To.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
-                            }
-                            else if (mailboxLine.Equals("CC"))
-                            {
-                                mailMessage.Cc.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
-                            }
-                            else if (mailboxLine.Equals("BCC"))
-                            {
-                                mailMessage.Bcc.Add(new MailboxAddress(EmailRecipient[i], EmailRecipient[i]));
-                            }
-                            Debug($"The Amount of Name(s) and Eamil Address(es) do not match, using Email Address as the Name");
-                            Debug($"Added '{mailboxLine}' recipient(s). Name: {EmailRecipient[i]} Email: {EmailRecipient[i]}");
-                        }
-                        else if (EmailRecipientName.Length == EmailRecipient.Length)
-                        {
-                            if (mailboxLine.Equals("TO"))
-                            {
-                                mailMessage.To.Add(new MailboxAddress(EmailRecipientName[i], EmailRecipient[i]));
-                            }
-                            else if (mailboxLine.Equals("CC"))
-                            {
-                                mailMessage.Cc.Add(new MailboxAddress(EmailRecipientName[i], EmailRecipient[i]));
-                            }
-                            else if (mailboxLine.Equals("BCC"))
-                            {
-                                mailMessage.Bcc.Add(new MailboxAddress(EmailRecipientName[i], EmailRecipient[i]));
-                            }
-                            Debug($"Added '{mailboxLine}' recipients. Name: {EmailRecipientName[i]} Email: {EmailRecipient[i]}");
-                        }
-                    }
-                }
+                Debug($"No {mailboxType} Added.");
                 return mailMessage;
             }
+        }
+
+        static internal MimeMessage BuildMailMessage(MimeMessage mailMessage, string emailAddress, string? emailName, MailboxType mailboxType)
+        {
+            // Get the appropriate address list based on mailbox type
+            var addressList = mailboxType switch
+            {
+                MailboxType.From => mailMessage.From,
+                MailboxType.To => mailMessage.To,
+                MailboxType.Cc => mailMessage.Cc,
+                MailboxType.Bcc => mailMessage.Bcc,
+                _ => throw new ArgumentException($"Unknown mailbox type: {mailboxType}")
+            };
+
+            var typeName = mailboxType.ToString().ToUpper();
+            Debug($"Building '{typeName}' address(es)");
+
+            // Split email addresses and names by semicolon
+            var emailRecipients = emailAddress.Split(';', StringSplitOptions.RemoveEmptyEntries);
+            var emailNames = emailName?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
+
+            // If names and emails don't match, use email addresses as names
+            if (emailNames.Length != emailRecipients.Length)
+            {
+                emailNames = emailRecipients;
+                Debug($"The amount of Name(s) and Email Address(es) do not match, using Email Address as the Name");
+            }
+
+            // Add each recipient to the address list
+            for (int i = 0; i < emailRecipients.Length; i++)
+            {
+                var email = emailRecipients[i].Trim();
+                var name = emailNames[i].Trim();
+
+                // Use email as display name if name is empty
+                var displayName = !string.IsNullOrEmpty(name) ? name : email;
+
+                // Add to the address list
+                addressList.Add(new MailboxAddress(displayName, email));
+                Debug($"Added '{typeName}' recipient(s). Name: {displayName} Email: {email}");
+            }
+            return mailMessage;
+        }
+
+        static internal MimeMessage SetEmailBody(MimeMessage mailMessage, string emailBody, string emailAttachment)
+        {
+            if (!string.IsNullOrEmpty(emailAttachment))
+            {
+                Debug($"Attachment found: {emailAttachment}");
+                mailMessage.Body = CreateMultipartBody(emailBody, emailAttachment);
+                Debug("Set multipart message (body + attachments) as email body.");
+            }
+            else
+            {
+                mailMessage.Body = CreateTextBody(emailBody);
+            }
+            Debug(string.IsNullOrEmpty(emailBody)
+                ? "No BODY Added, set to string.Empty."
+                : $"BODY Added: {emailBody}");
+            return mailMessage;
+        }
+
+        private static TextPart CreateTextBody(string emailBody)
+        {
+            return new TextPart("plain")
+            {
+                Text = emailBody ?? string.Empty
+            };
+        }
+
+        private static MimeKit.Multipart CreateMultipartBody(string emailBody, string emailAttachment)
+        {
+            var body = CreateTextBody(emailBody);
+            var multipart = new MimeKit.Multipart("mixed");
+            multipart.Add(body);
+            Debug("Created multipart container and added email body.");
+            multipart = TryAddAttachment(multipart, emailAttachment);
+            return multipart;
+        }
+
+        private static MimeKit.Multipart TryAddAttachment(MimeKit.Multipart multipart, string emailAttachment)
+        {
+            if (!File.Exists(emailAttachment))
+            {
+                Debug($"Attachment file not found at path: {emailAttachment}");
+                return multipart;
+            }
+            Debug($"Attachment file exists at path: {emailAttachment}");
+            var contentType = GetContentType(emailAttachment);
+            var attachment = CreateAttachment(emailAttachment, contentType);
+            multipart.Add(attachment);
+            Debug("Added attachment to multipart message.");
+            return multipart;
+        }
+
+        private static string GetContentType(string filePath)
+        {
+            const string DefaultContentType = "application/octet-stream";
+            var provider = new FileExtensionContentTypeProvider();
+            if (!provider.TryGetContentType(filePath, out string contentType))
+            {
+                Debug($"Could not determine MIME type for '{filePath}'. Defaulting to '{DefaultContentType}'.");
+                return DefaultContentType;
+            }
+            Debug($"Determined MIME type for '{filePath}': {contentType}");
+            return contentType;
+        }
+
+        private static MimePart CreateAttachment(string filePath, string contentType)
+        {
+            var stream = File.OpenRead(filePath);
+            Debug($"Opened file stream for attachment: {filePath}");
+            var attachment = new MimePart(contentType)
+            {
+                Content = new MimeContent(stream, ContentEncoding.Default),
+                ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
+                ContentTransferEncoding = ContentEncoding.Base64,
+                FileName = Path.GetFileName(filePath)
+            };
+            Debug($"Created MimePart for attachment: {attachment.FileName}");
+            return attachment;
         }
     }
 }

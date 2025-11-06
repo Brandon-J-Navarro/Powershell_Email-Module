@@ -3,6 +3,8 @@
     - Added the DDLs that do not import with Add-Type in powershell to the Exclude list during the import and during the release
     - Updated Module Banner for state to check PSGallery for updates
     - Fixed bug were recipients name was not being used when the number of name and emails are equal
+    - Broke up SendEmail method into smaller methods
+    - Created Log class and Debug method so clean up the if DEBUG statements
 - Release: 1.0.6 
     - Added multiple parameter sets for authentication:
         - 'UserPass' parameter set using AuthUser and AuthPass
