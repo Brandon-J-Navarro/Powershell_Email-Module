@@ -3,6 +3,7 @@ using MimeKit;
 using System.Net;
 using System.Security;
 using static EmailLibrary.Log;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace EmailLibrary
 {
@@ -33,7 +34,11 @@ namespace EmailLibrary
 
         static internal MimeMessage AddRecipients(MimeMessage mailMessage, string emails, string names, MailboxType mailboxType, bool isRequired = false)
         {
-            if (!string.IsNullOrEmpty(emails) || isRequired)
+            if (string.IsNullOrEmpty(emails) || string.IsNullOrWhiteSpace(emails) && isRequired)
+            {
+                throw new Exception($"Address line \"{mailboxType}\" is empty and is required");
+            }
+            else if (!string.IsNullOrEmpty(emails) && !string.IsNullOrWhiteSpace(emails))
             {
                 mailMessage = BuildMailMessage(mailMessage, emails, names, mailboxType);
                 Debug($"Successfully added {mailboxType}{(isRequired ? "." : " recipients.")}");
@@ -83,12 +88,6 @@ namespace EmailLibrary
 
                 // Add to the address list
                 addressList.Add(new MailboxAddress(displayName, email));
-
-                // Log the result
-                if (string.IsNullOrEmpty(name) || name == email)
-                {
-                    Debug($"No '{typeName}' Name Added, set to string.Empty.");
-                }
                 Debug($"Added '{typeName}' recipient(s). Name: {displayName} Email: {email}");
             }
             return mailMessage;
@@ -120,17 +119,17 @@ namespace EmailLibrary
             };
         }
 
-        private static Multipart CreateMultipartBody(string emailBody, string emailAttachment)
+        private static MimeKit.Multipart CreateMultipartBody(string emailBody, string emailAttachment)
         {
             var body = CreateTextBody(emailBody);
-            var multipart = new Multipart("mixed");
+            var multipart = new MimeKit.Multipart("mixed");
             multipart.Add(body);
             Debug("Created multipart container and added email body.");
             multipart = TryAddAttachment(multipart, emailAttachment);
             return multipart;
         }
 
-        private static Multipart TryAddAttachment(Multipart multipart, string emailAttachment)
+        private static MimeKit.Multipart TryAddAttachment(MimeKit.Multipart multipart, string emailAttachment)
         {
             if (!File.Exists(emailAttachment))
             {

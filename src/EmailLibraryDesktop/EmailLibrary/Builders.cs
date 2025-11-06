@@ -35,7 +35,11 @@ namespace EmailLibrary
 
         static internal MimeMessage AddRecipients(MimeMessage mailMessage, string emails, string names, MailboxType mailboxType, bool isRequired = false)
         {
-            if (!string.IsNullOrEmpty(emails) || isRequired)
+            if (string.IsNullOrEmpty(emails) || string.IsNullOrWhiteSpace(emails) || isRequired)
+            {
+                throw new Exception($"Address line \"{mailboxType}\" is empty and is required");
+            }
+            else if (!string.IsNullOrEmpty(emails) && !string.IsNullOrWhiteSpace(emails))
             {
                 mailMessage = BuildMailMessage(mailMessage, emails, names, mailboxType);
                 Debug($"Successfully added {mailboxType}{(isRequired ? "." : " recipients.")}");
@@ -85,12 +89,6 @@ namespace EmailLibrary
 
                 // Add to the address list
                 addressList.Add(new MailboxAddress(displayName, email));
-
-                // Log the result
-                if (string.IsNullOrEmpty(name) || name == email)
-                {
-                    Debug($"No '{typeName}' Name Added, set to string.Empty.");
-                }
                 Debug($"Added '{typeName}' recipient(s). Name: {displayName} Email: {email}");
             }
             return mailMessage;
