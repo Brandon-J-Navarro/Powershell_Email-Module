@@ -10,11 +10,7 @@ namespace EmailLibrary
     {
         public static void ConfigureForEnvironment(SmtpClient smtpClient)
         {
-            if (IsMacOsCiEnvironment())
-            {
-                smtpClient.ServerCertificateValidationCallback = ValidateCertificateForMacOsCi;
-                Debug("macOS CI environment detected – configured SSL bypass for revocation errors.");
-            }
+            smtpClient.ServerCertificateValidationCallback = ValidateCertificateForMacOsCi;
         }
 
         private static bool IsMacOsCiEnvironment()
@@ -29,7 +25,6 @@ namespace EmailLibrary
             {
                 return true;
             }
-
             return sslPolicyErrors == SslPolicyErrors.None;
         }
     }
