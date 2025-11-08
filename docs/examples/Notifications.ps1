@@ -13,22 +13,22 @@
 ###################### EXPIRING PASSWORDS NOTIFICATIONS ######################
 
 $DAYS = <# NUMBER OF DAYS #>
-$PasswordExparationDate = Get-ADUser -Filter { Enabled -eq $True -and PasswordNeverExpires -eq $False } -SearchScope OneLeve -SearchBase ('OU=Users,DC=Domain,DC=com') -Properties 'DisplayName', 'msDS-UserPasswordExpiryTimeComputed' | Select-Object -Property 'Displayname', @{Name = 'ExparationDate'; Expression = { [datetime]::FromFileTime($_.'msDS-UserPasswordExpiryTimeComputed') } } | Where-Object { $_.ExparationDate -le (Get-Date).Date.AddDays($DAYS) } | Select-Object DisplayName, ExparationDate
+$PasswordExpirationDate = Get-ADUser -Filter { Enabled -eq $True -and PasswordNeverExpires -eq $False } -SearchScope OneLevel -SearchBase ('OU=Users,DC=Domain,DC=com') -Properties 'DisplayName', 'msDS-UserPasswordExpiryTimeComputed' | Select-Object -Property 'displayName', @{Name = 'ExpirationDate'; Expression = { [datetime]::FromFileTime($_.'msDS-UserPasswordExpiryTimeComputed') } } | Where-Object { $_.ExpirationDate -le (Get-Date).Date.AddDays($DAYS) } | Select-Object DisplayName, ExpirationDate
 
-if (0 -lt $PasswordExparationDate.Displayname.Count) {
+if (0 -lt $PasswordExpirationDate.displayName.Count) {
     $EmailBody = "Domain accounts with passwords expiring within $DAYS days `n`n"
-    for ($i = 0; $i -lt $PasswordExparationDate.Displayname.Count; $i++) {
-        $EmailBody += "Display Name:    $($PasswordExparationDate[$i].DisplayName)`n"
-        $EmailBody += "Exparation Date: $($PasswordExparationDate[$i].ExparationDate.DateTime)`n`n"
+    for ($i = 0; $i -lt $PasswordExpirationDate.displayName.Count; $i++) {
+        $EmailBody += "Display Name:    $($PasswordExpirationDate[$i].DisplayName)`n"
+        $EmailBody += "Expiration Date: $($PasswordExpirationDate[$i].ExpirationDate.DateTime)`n`n"
     }
     $EmailBody += "To reset your Domain password go to the link below and select forgot password`n" 
     $EmailBody += "https://passwordreset.microsoftonline.com/`n`n"
     $EmailBody += "Thank you for your attention to this matter.`n"
-    Invoke-RestMethod -Uri $uri -Method $method -Headers $headers -Body $body -UseBasicParsing
+
     $AuthUser = "DoNotReply@Domain.com"
     $AuthPass = "**********************"
-    $To = "DistroName@Domain.com"
-    $ToName = "DistroName"
+    $To = "DistributionName@Domain.com"
+    $ToName = "DistributionName"
     $From = "DoNotReply@Domain.com"
     $FromName = "DoNotReply"
     $Subject = "Domain accounts with passwords expiring within $DAYS days"
@@ -52,7 +52,7 @@ if (0 -lt $PasswordExparationDate.Displayname.Count) {
 ###################### INACTIVITY NOTIFICATIONS ######################
 
 $DAYS = <# NUMBER OF DAYS #>
-$LastLogonDate = Get-ADUser -Filter { Enabled -eq $True -and PasswordNeverExpires -eq $False } -SearchScope OneLeve -SearchBase ('OU=Users,DC=Domain,DC=com') -Properties LastLogonDate | Where-Object { $_.LastLogonDate -le (Get-Date).Date.AddDays(-$DAYS) } | Select-Object Name, SamAccountName, LastLogonDate
+$LastLogonDate = Get-ADUser -Filter { Enabled -eq $True -and PasswordNeverExpires -eq $False } -SearchScope OneLevel -SearchBase ('OU=Users,DC=Domain,DC=com') -Properties LastLogonDate | Where-Object { $_.LastLogonDate -le (Get-Date).Date.AddDays(-$DAYS) } | Select-Object Name, SamAccountName, LastLogonDate
 
 if (0 -lt $LastLogonDate.SamAccountName.Count) {
     $DisabledMessage = "Domain accounts disabled for $DAYS days of inactivity`n`n"
@@ -71,8 +71,8 @@ if (0 -lt $LastLogonDate.SamAccountName.Count) {
     $DisabledMessage  += "Thank you for your attention to this matter.`n"
     $AuthUser = "DoNotReply@Domain.com"
     $AuthPass = "**********************"
-    $To = "DistroName@Domain.com"
-    $ToName = "DistroName"
+    $To = "DistributionName@Domain.com"
+    $ToName = "DistributionName"
     $From = "DoNotReply@Domain.com"
     $FromName = "DoNotReply"
     $Subject = "Domain accounts with passwords expiring within $DAYS days"
@@ -148,8 +148,8 @@ if (0 -lt $disableUsers.UserPrincipalName.Count) {
     $DisabledMessage  += "Thank you for your attention to this matter.`n"
     $AuthUser = "DoNotReply@Domain.com"
     $AuthPass = "**********************"
-    $To = "DistroName@Domain.com"
-    $ToName = "DistroName"
+    $To = "DistributionName@Domain.com"
+    $ToName = "DistributionName"
     $From = "DoNotReply@Domain.com"
     $FromName = "DoNotReply"
     $Subject = "Domain accounts with passwords expiring within $DAYS days"
@@ -194,8 +194,8 @@ $UserOldPass += "Thank you for your attention to this matter.`n"
 if (0 -lt $badUsers.Count) {
     $AuthUser = "DoNotReply@Domain.com"
     $AuthPass = "**********************"
-    $To = "DistroName@Domain.com"
-    $ToName = "DistroName"
+    $To = "DistributionName@Domain.com"
+    $ToName = "DistributionName"
     $From = "DoNotReply@Domain.com"
     $FromName = "DoNotReply"
     $Subject = "Domain accounts with passwords expiring within $DAYS days"
