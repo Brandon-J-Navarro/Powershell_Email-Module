@@ -1,15 +1,3 @@
-<#
-.NOTES
-    File Name      : ExpiringPasswords.ps1
-    Author         : Brandon Navarro
-#>
-
-
-
-
-
-
-
 ###################### EXPIRING PASSWORDS NOTIFICATIONS ######################
 
 $DAYS = <# NUMBER OF DAYS #>
@@ -43,12 +31,6 @@ if (0 -lt $PasswordExpirationDate.displayName.Count) {
         -SmtpServer $MailServer -SmtpPort $ServerPort
 }
 
-
-
-
-
-
-
 ###################### INACTIVITY NOTIFICATIONS ######################
 
 $DAYS = <# NUMBER OF DAYS #>
@@ -66,17 +48,17 @@ if (0 -lt $LastLogonDate.SamAccountName.Count) {
             Remove-ADGroupMember -Identity $UserGroups[$j].SamAccountName -Members $LastLogonDate[$i].SamAccountName -WhatIf # What if, NOT disabling user or removing group
         }
     }
-
     $DisabledMessage  += "Please have you supervisor contact the System Administrator to reactive your account`n`n"
     $DisabledMessage  += "Thank you for your attention to this matter.`n"
+
     $AuthUser = "DoNotReply@Domain.com"
     $AuthPass = "**********************"
     $To = "DistributionName@Domain.com"
     $ToName = "DistributionName"
     $From = "DoNotReply@Domain.com"
     $FromName = "DoNotReply"
-    $Subject = "Domain accounts with passwords expiring within $DAYS days"
-    $Body = $EmailBody
+    $Subject = "Domain accounts disabled for $DAYS days of inactivity"
+    $Body = $DisabledMessage
     $MailServer = "mail.Domain.com"
     $ServerPort = "587"
 
@@ -86,12 +68,6 @@ if (0 -lt $LastLogonDate.SamAccountName.Count) {
         -Subject $Subject -Body $Body `
         -SmtpServer $MailServer -SmtpPort $ServerPort
 }
-
-
-
-
-
-
 
 ###################### INACTIVITY NOTIFICATIONS ######################
 
@@ -127,33 +103,33 @@ foreach ($user in $users) {
     }
 }
 
-$disableUsers = $userData | Where-Object { $_.LastLoginDate.Date -le (Get-Date).Date.AddDays(-$DAYS) -and $_.AccountEnabled -eq $true }
-if (0 -lt $disableUsers.UserPrincipalName.Count) {
+$InactiveUsers = $userData | Where-Object { $_.LastLoginDate.Date -le (Get-Date).Date.AddDays(-$DAYS) -and $_.AccountEnabled -eq $true }
+if (0 -lt $InactiveUsers.UserPrincipalName.Count) {
     $DisabledMessage = "Azure accounts disabled for $DAYS days of inactivity`n`n"
-    for ($i = 0; $i -lt $disableUsers.UserPrincipalName.Count; $i++) {
+    for ($i = 0; $i -lt $InactiveUsers.UserPrincipalName.Count; $i++) {
         $params = @{
             AccountEnabled = $false
         }
-        Update-MgUser -UserId $disableUsers[$i].Id -BodyParameter $params -WhatIf # What if, NOT disabling user or removing group
-        $DisabledMessage += "Display Name:    $($disableUsers[$i].DisplayName)`n"
-        $DisabledMessage += "Last Login Date: $($disableUsers[$i].LastLoginDate.DateTime)`n"
+        Update-MgUser -UserId $InactiveUsers[$i].Id -BodyParameter $params -WhatIf # What if, NOT disabling user or removing group
+        $DisabledMessage += "Display Name:    $($InactiveUsers[$i].DisplayName)`n"
+        $DisabledMessage += "Last Login Date: $($InactiveUsers[$i].LastLoginDate.DateTime)`n"
         $DisabledMessage += "Date Disabled:   $((Get-Date).DateTime)`n`n"
-        $Groups = Get-MgUserMemberOf -UserId $($disableUsers[$i].Id) -Property "Id", "displayName"
+        $Groups = Get-MgUserMemberOf -UserId $($InactiveUsers[$i].Id) -Property "Id", "displayName"
         for ($j = 0; $j -lt $Groups.Id.Count; $j++) {
-            Remove-MgGroupMemberByRef -GroupId $Groups[$j].Id -DirectoryObjectId $disableUsers[$i].Id -WhatIf # What if, NOT disabling user or removing group
+            Remove-MgGroupMemberByRef -GroupId $Groups[$j].Id -DirectoryObjectId $InactiveUsers[$i].Id -WhatIf # What if, NOT disabling user or removing group
         }
     }
-
     $DisabledMessage  += "Please have you supervisor contact the System Administrator to reactive your account`n`n"
     $DisabledMessage  += "Thank you for your attention to this matter.`n"
+
     $AuthUser = "DoNotReply@Domain.com"
     $AuthPass = "**********************"
     $To = "DistributionName@Domain.com"
     $ToName = "DistributionName"
     $From = "DoNotReply@Domain.com"
     $FromName = "DoNotReply"
-    $Subject = "Domain accounts with passwords expiring within $DAYS days"
-    $Body = $EmailBody
+    $Subject = "Azure accounts disabled for $DAYS days of inactivity"
+    $Body = $DisabledMessage
     $MailServer = "mail.Domain.com"
     $ServerPort = "587"
 
@@ -164,12 +140,6 @@ if (0 -lt $disableUsers.UserPrincipalName.Count) {
         -SmtpServer $MailServer -SmtpPort $ServerPort
 }
 
-
-
-
-
-
-
 ###################### PASSWORDS NOTIFICATIONS ######################
 
 $DAYS = <# NUMBER OF DAYS #>
@@ -177,19 +147,19 @@ $DomainAdmins = Get-ADGroupMember -Identity "Domain Admins" | Get-ADUser -Proper
 $EnterpriseAdmins = Get-ADGroupMember -Identity "Enterprise Admins" | Get-ADUser -Properties DisplayName, Enabled, pwdLastSet | Where-Object { $_.Enabled -eq $true -and $_.UserPrincipalName -ne $null}
 $users = $DomainAdmins + $EnterpriseAdmins
 $badUsers = @()
-$UserOldPass = "Domain.com admin accounts that haven't reset password in $DAYS days`n`n"
+$AdminOldPass = "Domain.com admin accounts that haven't reset password in $DAYS days`n`n"
 foreach($user in $users){
     $PasswordSetDate = [datetime]::FromFileTimeUtc($user.pwdLastSet)
     if ($PasswordSetDate -le (Get-Date).Date.AddDays(-$DAYS)) {
         $daysSince = $PasswordSetDate - (Get-Date)
-        $UserOldPass += "Display Name:      $($user.Name)`n"
-        $UserOldPass += "Password Set Date: $($PasswordSetDate.DateTime)`n"
-        $UserOldPass += "Days Since Set:    $(($daysSince.Days).ToString().Replace('-',''))`n`n"
+        $AdminOldPass += "Display Name:      $($user.Name)`n"
+        $AdminOldPass += "Password Set Date: $($PasswordSetDate.DateTime)`n"
+        $AdminOldPass += "Days Since Set:    $(($daysSince.Days).ToString().Replace('-',''))`n`n"
         $badUsers += $user
     }
 }
-$UserOldPass += "Please update your admin account password.`n`n"
-$UserOldPass += "Thank you for your attention to this matter.`n"
+$AdminOldPass += "Please update your admin account password.`n`n"
+$AdminOldPass += "Thank you for your attention to this matter.`n"
 
 if (0 -lt $badUsers.Count) {
     $AuthUser = "DoNotReply@Domain.com"
@@ -198,8 +168,8 @@ if (0 -lt $badUsers.Count) {
     $ToName = "DistributionName"
     $From = "DoNotReply@Domain.com"
     $FromName = "DoNotReply"
-    $Subject = "Domain accounts with passwords expiring within $DAYS days"
-    $Body = $EmailBody
+    $Subject = "Admin accounts that have not reset password in $DAYS days"
+    $Body = $AdminOldPass
     $MailServer = "mail.Domain.com"
     $ServerPort = "587"
 
