@@ -5,6 +5,15 @@
     - Fixed bug were recipients name was not being used when the number of name and emails are equal
     - Broke up SendEmail method into smaller methods
     - Created Log class and Debug method so clean up the if DEBUG statements
+    - General Repo clean up and organization
+    - EmailLibrary Debugging Console apps for .NET Core and Framework now import the Dlls instead of having duplicate code with in them
+    - Added Script to test Directory for Local Build and Release
+    - Added a Markdown Version of the Get-Help to the docs \ wiki Directory
+    - Added multiple example scripts to docs \ examples Directory
+    - Added Issue Templates for bug reports and feature requests
+
+    ***These are non-breaking changes. Any scripts or automation using pervious releases are still supported. All new parameters and features are options and not required.***
+
 - Release: 1.0.6 
     - Added multiple parameter sets for authentication:
         - 'UserPass' parameter set using AuthUser and AuthPass
@@ -42,10 +51,12 @@
     - Combined and Moved mime message builder methods to separate class
     - Added check for CI environment variable and MacOS and if it returns true it will bypass the OCSP/CRL checks for github actions integration tests
 
-    *** These are non-breaking changes. Any scripts or automation using pervious releases are still supported. All new parameters and features are options and not required. ***
+    ***These are non-breaking changes. Any scripts or automation using pervious releases are still supported. All new parameters and features are options and not required.***
 
 - Release: 1.0.5
     - EmailToName, and EmailFromName are NULLABLE
+
+    ***These are non-breaking changes. Any scripts or automation using pervious releases are still supported. All new parameters and features are options and not required.***
 
 - Release: 1.0.4
     - All Parameters are required 
