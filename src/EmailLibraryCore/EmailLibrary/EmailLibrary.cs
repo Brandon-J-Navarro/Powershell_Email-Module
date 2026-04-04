@@ -53,7 +53,11 @@ public class EmailCommands
         Debug("Connecting to SMTP server...");
         Debug($"MailServer: {mailServer}:{serverPort}");
 
-        SmtpClientHelper.ConfigureForEnvironment(smtpClient);
+        if (IsMacOsCiEnvironment())
+        {
+            SmtpClientHelper.ConfigureForEnvironment(smtpClient);
+            Debug("macOS CI environment detected - configured SSL bypass for revocation errors.");
+        }
 
         smtpClient.Connect(mailServer, serverPort, SecureSocketOptions.StartTls);
         Debug("Connected to SMTP server.");
