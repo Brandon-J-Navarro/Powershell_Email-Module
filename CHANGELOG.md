@@ -11,6 +11,9 @@
     - Added a Markdown Version of the Get-Help to the docs \ wiki Directory
     - Added multiple example scripts to docs \ examples Directory
     - Added Issue Templates for bug reports and feature requests
+    - Updated Nuget Packages and cleared a vulnerability with MineKit
+
+    ***Not Final Release but not sure what other features to implement at this moment in time. Works for my use case of automating notification at work, and I dont have a lot of time to make major changes with work and school. I will periodically check packages for updates and vulnerabilities. If you have any questions or issues please feel free to open an [issue](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/issues) or join the [discussion](https://github.com/Brandon-J-Navarro/Powershell_Email-Module/discussions)***
 
     ***These are non-breaking changes. Any scripts or automation using pervious releases are still supported. All new parameters and features are options and not required.***
 
