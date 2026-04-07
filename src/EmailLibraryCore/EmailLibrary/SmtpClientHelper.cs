@@ -13,7 +13,7 @@ namespace EmailLibrary
             smtpClient.ServerCertificateValidationCallback = ValidateCertificateForMacOsCi;
         }
 
-        private static bool IsMacOsCiEnvironment()
+        internal static bool IsMacOsCiEnvironment()
         {
             return Environment.GetEnvironmentVariable("CI") == "true" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
         }
