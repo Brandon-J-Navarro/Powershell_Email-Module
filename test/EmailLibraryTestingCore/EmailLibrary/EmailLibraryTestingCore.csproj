@@ -9,12 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MailKit" Version="4.14.1" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.3.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
-    <PackageReference Include="MimeKit" Version="4.14.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,8 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- exclude the duplicate test-source that implements the library -->
-    <!-- <Compile Remove="EmailLibary.cs" /> -->
+    <Reference Include="EmailLibrary">
+      <HintPath>..\..\..\src\EmailLibraryCore\EmailLibrary\bin\Debug\net8.0\EmailLibrary.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
