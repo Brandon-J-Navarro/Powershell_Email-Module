@@ -35,7 +35,8 @@ Originally I wrote this in .NET 8 but in order to have it available and work on 
 - DotNet Framework Version: '.NET Framework 4.7.2'
 - DotNet Core Version: '.Net 8.0'
 - Tested with Microsoft Exchange Sever 2019 CU 15 and mailcow: dockerized 2025-09c
-- Tested on Microsoft Windows 11, WSL Ubuntu 22.04 and Omarchy Linux
+- Tested on Microsoft Windows 11, WSL Ubuntu 22.04, Debian 13, and Kubuntu 24.04
+- Also tested on FreeBSD 14.3 (Works and runs with no issues in my testing but not officially supported as it is not part of the testing before release)
 - GitHub Actions integration tests ran on Ubuntu 24.04 (`ubuntu-latest`), macOS 15 (`macos-15-intel`), macOS 15 Arm64 (`macos-latest`), macOS 26 Arm64 beta (`macos-26`), Windows Server 2025 (`windows-latest`)
 
 #### SMTP Server Connection DEBUG Log
