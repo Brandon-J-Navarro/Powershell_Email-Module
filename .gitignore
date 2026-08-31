@@ -402,3 +402,4 @@ FodyWeavers.xsd
 
 .archive/
 /EmailLibraryTestingFramework/EmailLibraryTestingFramework/appSetting.json
+test/EmailLibraryTestingFramework/EmailLibraryTestingFramework/appSetting.json

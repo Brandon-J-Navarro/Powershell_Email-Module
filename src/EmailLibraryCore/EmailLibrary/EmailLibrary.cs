@@ -1,10 +1,11 @@
 ﻿// EmailLibrary.cs dotNET Core 8.0
+using EmailLibrary;
 using MailKit.Security;
-using Microsoft.AspNetCore.StaticFiles;
 using MimeKit;
 using System.Net;
-using System.Runtime.InteropServices;
 using static EmailLibrary.Builders;
+using static EmailLibrary.Log;
+using static EmailLibrary.SmtpClientHelper;
 
 public class EmailCommands
 {
@@ -19,266 +20,65 @@ public class EmailCommands
         string? emailAttachment, string? emailPriority,
         string? emailImportance)
     {
-#if DEBUG
-        Console.WriteLine("[DEBUG] Starting SendEmail...");
-#endif
+        Debug("Starting SendEmail...");
 
         NetworkCredential credentials = CreateAuthCreds(authUser, authPass);
-#if DEBUG
-        Console.WriteLine("[DEBUG] Credentials created successfully.");
-#endif
+        Debug("Credentials created successfully.");
 
         var mailMessage = new MimeMessage();
-#if DEBUG
-        Console.WriteLine("[DEBUG] Creating Mail Message...");
-#endif
+        Debug("Creating Mail Message...");
 
-        mailMessage = BuildMailMessage(mailMessage, emailFrom, fromName, "FROM");
-#if DEBUG
-        Console.WriteLine("[DEBUG] Successfully added FROM.");
-#endif
+        AddRecipients(mailMessage, emailFrom, fromName, MailboxType.From, true);
+        AddRecipients(mailMessage, emailTo, toName, MailboxType.To, true);
+        AddRecipients(mailMessage, emailCc, ccName, MailboxType.Cc, false);
+        AddRecipients(mailMessage, emailBcc, bccName, MailboxType.Bcc, false);
 
-        mailMessage = BuildMailMessage(mailMessage, emailTo, toName,"TO");
-#if DEBUG
-        Console.WriteLine("[DEBUG] Successfully added TO recipients.");
-#endif
+        if (!string.IsNullOrEmpty(emailPriority))
+            mailMessage.Priority = (MessagePriority)Enum.Parse(typeof(MessagePriority), emailPriority);
+        if (!string.IsNullOrEmpty(emailImportance))
+            mailMessage.Importance = (MessageImportance)Enum.Parse(typeof(MessageImportance), emailImportance);
+        mailMessage.Subject = emailSubject ?? string.Empty;
 
-        if (!(string.IsNullOrEmpty(emailCc)))
-        {
-            mailMessage = BuildMailMessage(mailMessage, emailCc, ccName, "CC");
-#if DEBUG
-            Console.WriteLine("[DEBUG] Successfully added CC recipients.");
-#endif
-        }
-        else
-        {
-#if DEBUG
-            Console.WriteLine("[DEBUG] No CC Added.");
-#endif
-        }
+        Debug($"Email PRIORITY {(!string.IsNullOrEmpty(emailPriority) ? $"set to: {emailPriority}" : "not set.")}");
+        Debug($"Email IMPORTANCE {(!string.IsNullOrEmpty(emailImportance) ? $"set to: {emailImportance}" : "not set.")}");
+        Debug($"{(string.IsNullOrEmpty(emailSubject) ? "No SUBJECT Added, set to string.Empty." : $"SUBJECT Added: {emailSubject}")}");
 
-        if (!(string.IsNullOrEmpty(emailBcc)))
-        {
-            mailMessage = BuildMailMessage(mailMessage, emailBcc, bccName, "BCC");
-#if DEBUG
-            Console.WriteLine("[DEBUG] Successfully added BCC recipients.");
-#endif
-        }
-        else
-        {
-#if DEBUG
-            Console.WriteLine("[DEBUG] No BCC Added.");
-#endif
-        }
+        mailMessage = SetEmailBody(mailMessage, emailBody, emailAttachment);
 
-        if (!(string.IsNullOrEmpty(emailPriority)))
-        {
-            mailMessage.Priority = (MessagePriority)System.Enum.Parse(typeof(MessagePriority), emailPriority);
-#if DEBUG
-
-            Console.WriteLine($"[DEBUG] Email PRIORITY set to: {emailPriority}");
-#endif
-        }
-        else
-        {
-#if DEBUG
-            Console.WriteLine("[DEBUG] No PRIORITY set.");
-#endif
-        }
-
-        if (!(string.IsNullOrEmpty(emailImportance)))
-        {
-            mailMessage.Importance = (MessageImportance)System.Enum.Parse(typeof(MessageImportance), emailImportance);
-#if DEBUG
-            Console.WriteLine($"[DEBUG] Email IMPORTANCE set to: {emailImportance}");
-#endif
-        }
-        else
-        {
-#if DEBUG
-            Console.WriteLine("[DEBUG] No IMPORTANCE set.");
-#endif
-        }
-
-        if (!(string.IsNullOrEmpty(emailSubject)))
-        {
-            mailMessage.Subject = emailSubject;
-#if DEBUG
-            Console.WriteLine($"[DEBUG] SUBJECT Added: {emailSubject}");
-#endif
-        }
-        else
-        {
-            mailMessage.Subject = string.Empty;
-#if DEBUG
-            Console.WriteLine("[DEBUG] No SUBJECT Added, set to string.Empty.");
-#endif
-        }
-
-        if (!(string.IsNullOrEmpty(emailAttachment)))
-        {
-#if DEBUG
-            Console.WriteLine($"[DEBUG] Attachment found: {emailAttachment} (currently not attached in this version)");
-#endif
-            var body = new TextPart("plain")
-            {
-                Text = emailBody ?? string.Empty
-            };
-
-            var multipart = new Multipart("mixed");
-            multipart.Add(body);
-#if DEBUG
-            Console.WriteLine("[DEBUG] Created multipart container and added email body.");
-#endif
-
-            if (!string.IsNullOrEmpty(emailAttachment) && File.Exists(emailAttachment))
-            {
-#if DEBUG
-                Console.WriteLine($"[DEBUG] Attachment file exists at path: {emailAttachment}");
-#endif
-                const string DefaultContentType = "application/octet-stream";
-                var provider = new FileExtensionContentTypeProvider();
-
-                if (!provider.TryGetContentType(emailAttachment, out string contentType))
-                {
-#if DEBUG
-                    Console.WriteLine($"[DEBUG] Could not determine MIME type for '{emailAttachment}'. Defaulting to '{DefaultContentType}'.");
-#endif
-                    contentType = DefaultContentType;
-                }
-                else
-                {
-#if DEBUG
-                    Console.WriteLine($"[DEBUG] Determined MIME type for '{emailAttachment}': {contentType}");
-#endif
-                }
-
-                var stream = File.OpenRead(emailAttachment);
-#if DEBUG
-                Console.WriteLine($"[DEBUG] Opened file stream for attachment: {emailAttachment}");
-#endif
-
-                var attachment = new MimePart(contentType)
-                {
-                    Content = new MimeContent(stream, ContentEncoding.Default),
-                    ContentDisposition = new ContentDisposition(ContentDisposition.Attachment),
-                    ContentTransferEncoding = ContentEncoding.Base64,
-                    FileName = Path.GetFileName(emailAttachment)
-                };
-#if DEBUG
-                Console.WriteLine($"[DEBUG] Created MimePart for attachment: {attachment.FileName}");
-#endif
-
-                multipart.Add(attachment);
-#if DEBUG
-                Console.WriteLine("[DEBUG] Added attachment to multipart message.");
-#endif
-            }
-            else
-            {
-#if DEBUG
-                Console.WriteLine($"[DEBUG] Attachment file not found at path: {emailAttachment}");
-#endif
-            }
-            mailMessage.Body = multipart;
-#if DEBUG
-            Console.WriteLine("[DEBUG] Set multipart message (body + attachments) as email body.");
-#endif
-
-            if (!(string.IsNullOrEmpty(emailBody)))
-            {
-#if DEBUG
-                Console.WriteLine($"[DEBUG] BODY Added: {emailBody}");
-#endif
-            }
-            else
-            {
-#if DEBUG
-                Console.WriteLine("[DEBUG] No BODY Added, set to string.Empty.");
-#endif
-            }
-        }
-        else
-        {
-            mailMessage.Body = new TextPart("plain")
-            {
-                Text = emailBody ?? string.Empty
-            };
-            if (!(string.IsNullOrEmpty(emailBody)))
-            {
-#if DEBUG
-                Console.WriteLine($"[DEBUG] BODY Added: {emailBody}");
-#endif
-            }
-            else
-            {
-#if DEBUG
-                Console.WriteLine("[DEBUG] No BODY Added, set to string.Empty.");
-#endif
-            }
-        }
-
-
-#if DEBUG
-        Console.WriteLine("[DEBUG] Email composed successfully.");
-        Console.WriteLine("[DEBUG] Mail Message contents.");
-        Console.WriteLine($"[DEBUG] {mailMessage}");
-#endif
+        Debug("Email composed successfully.");
+        Debug("Mail Message contents.");
+        Debug($"{mailMessage}");
 
         using var smtpClient = new MailKit.Net.Smtp.SmtpClient();
-#if DEBUG
-        Console.WriteLine("[DEBUG] Connecting to SMTP server...");
-#endif
+        Debug("Connecting to SMTP server...");
+        Debug($"MailServer: {mailServer}:{serverPort}");
 
-#if DEBUG
-        Console.WriteLine($"[DEBUG] MailServer: {mailServer}:{serverPort}");
-#endif
-
-        if (Environment.GetEnvironmentVariable("CI") == "true" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        if (IsMacOsCiEnvironment())
         {
-            smtpClient.ServerCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
-            {
-#if DEBUG
-                Console.WriteLine("[DEBUG] macOS CI detected – bypassing partial revocation SSL errors.");
-#endif
-                if (sslPolicyErrors == System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors &&
-                    chain?.ChainStatus?.Any(s => s.Status == System.Security.Cryptography.X509Certificates.X509ChainStatusFlags.RevocationStatusUnknown) == true)
-                {
-                    return true;
-                }
-
-                return sslPolicyErrors == System.Net.Security.SslPolicyErrors.None;
-            };
+            SmtpClientHelper.ConfigureForEnvironment(smtpClient);
+            Debug("macOS CI environment detected - configured SSL bypass for revocation errors.");
         }
 
         smtpClient.Connect(mailServer, serverPort, SecureSocketOptions.StartTls);
-#if DEBUG
-        Console.WriteLine("[DEBUG] Connected to SMTP server.");
-        Console.WriteLine($"[DEBUG] Is Connected: {smtpClient.IsConnected}");
-        Console.WriteLine($"[DEBUG] Is Encrypted: {smtpClient.IsEncrypted}");
-        Console.WriteLine($"[DEBUG] Is Secure: {smtpClient.IsSecure}");
-        Console.WriteLine($"[DEBUG] Ssl Cipher Algorithm: {smtpClient.SslCipherAlgorithm}");
-        Console.WriteLine($"[DEBUG] Ssl Cipher Suite: {smtpClient.SslCipherSuite}");
-        Console.WriteLine($"[DEBUG] Ssl Hash Algorithm: {smtpClient.SslHashAlgorithm}");
-        Console.WriteLine($"[DEBUG] Ssl Protocol: {smtpClient.SslProtocol}");
-#endif
+        Debug("Connected to SMTP server.");
+        Debug($"Is Connected: {smtpClient.IsConnected}");
+        Debug($"Is Encrypted: {smtpClient.IsEncrypted}");
+        Debug($"Is Secure: {smtpClient.IsSecure}");
+        Debug($"Ssl Cipher Algorithm: {smtpClient.SslCipherAlgorithm}");
+        Debug($"Ssl Cipher Suite: {smtpClient.SslCipherSuite}");
+        Debug($"Ssl Hash Algorithm: {smtpClient.SslHashAlgorithm}");
+        Debug($"Ssl Protocol: {smtpClient.SslProtocol}");
 
         smtpClient.Authenticate(credentials);
-#if DEBUG
-        Console.WriteLine("[DEBUG] Authenticated successfully.");
-        Console.WriteLine($"[DEBUG] Is Authenticated: {smtpClient.IsAuthenticated}");
-#endif
+        Debug("Authenticated successfully.");
+        Debug($"Is Authenticated: {smtpClient.IsAuthenticated}");
 
         var mailSent = smtpClient.Send(mailMessage);
-#if DEBUG
-        Console.WriteLine("[DEBUG] Email sent successfully.");
-        Console.WriteLine($"[DEBUG] {mailSent}");
-#endif
+        Debug("Email sent successfully.");
+        Debug($"{mailSent}");
 
         smtpClient.Disconnect(true);
-#if DEBUG
-        Console.WriteLine("[DEBUG] SMTP client disconnected.");
-#endif
+        Debug("SMTP client disconnected.");
         return mailSent;
     }
 }
